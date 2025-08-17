@@ -18,51 +18,33 @@
 )
 }
 \arguments{
-\item{n_items}{Integer vector giving the number of items per factor.}
+\item{n_items}{Integer vector giving the number of items per factor (length K).}
 
-\item{alpha}{Numeric vector of target Cronbach's alpha reliabilities
-for each factor.}
+\item{alpha}{Numeric scalar or length-K vector of target alphas.}
 
-\item{lv_var}{Numeric scalar or vector; latent variances (default = 1).}
+\item{lv_var}{Numeric scalar or length-K latent variances (default 1).}
 
-\item{x_var}{Numeric scalar or vector; item variances (default = 1).}
+\item{x_var}{Numeric scalar or length-K item variances (default 1).}
 
-\item{factors}{Character vector of latent factor names.}
+\item{factors}{Optional character vector (length K) of latent names (default F1, F2, ...).}
 
-\item{prefixes}{Character vector of item name prefixes.}
+\item{prefixes}{Optional character vector (length K) of item name prefixes (default X1_item, ...).}
 
-\item{corr_latent}{Either a single numeric correlation applied across all
-latent pairs, or a full correlation matrix.}
+\item{corr_latent}{Either a single correlation in (-1,1) (applied to all pairs),
+or a K x K correlation matrix. May be \code{NULL} when K = 1.}
+
+\item{round_loading}{Digits to round loadings in output.}
+
+\item{signif_resid}{Significant digits for residual variances.}
+
+\item{signif_cov}{Significant digits for latent covariances.}
 }
 \value{
-A character string representing a lavaan model specification,
-including measurement models, latent variances, residual variances,
-and latent correlations.
+A character string of lavaan syntax.
 }
 \description{
-This function constructs a lavaan model string for simulating data from
-K correlated latent factors, each with a specified number of items and
-target reliability (Cronbach’s alpha).
+Construct a lavaan model string for simulating data from K latent factors,
+each with a specified number of items and target reliability (Cronbach's alpha).
+Works for K = 1 (no latent correlations) and K >= 2.
 }
-\details{
-Each block is built by converting Cronbach’s alpha to an average
-inter-item correlation, then to a factor loading. Residual variances are
-calculated so that item variances equal \code{x_var}. The function allows
-specifying either a single common correlation between factors, or a full
-correlation matrix.
-}
-\examples{
-\dontrun{
-mod <- make_lavaan_kfactor_corr(
-  n_items     = c(5, 6, 7),
-  alpha       = c(.70, .75, .80),
-  lv_var      = 1,
-  x_var       = 1,
-  factors     = c("X1_latent","X2_latent","X3_latent"),
-  prefixes    = c("X1_item","X2_item","X3_item"),
-  corr_latent = 0.3
-)
-cat(mod)
-}
-
-}
+\keyword{internal}
