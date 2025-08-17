@@ -32,15 +32,16 @@ for each factor.}
 
 \item{n_levels}{Integer; number of Likert response categories (default = 7).}
 
+\item{approx_d_between_groups}{Numeric. Either a single Cohen’s d applied
+to \strong{all} latents, or a length-K vector (optionally named by \code{factors})
+to set different d-values per latent.}
+
 \item{lv_var}{Numeric; latent variance (default = 1).}
 
 \item{x_var}{Numeric; item variance (default = 1).}
 
 \item{corr_latent}{Either a single numeric correlation applied across all
 latent pairs, or a correlation matrix.}
-
-\item{d_target}{Numeric; Cohen’s d mean shift applied to all latents in
-the treatment group (default = 0.5).}
 
 \item{n_per_group}{Integer; number of participants per group (default = 1000).}
 

@@ -14,8 +14,9 @@
 #' @param prefixes Character vector of item name prefixes.
 #' @param corr_latent Either a single numeric correlation applied across all 
 #'   latent pairs, or a correlation matrix.
-#' @param d_target Numeric; Cohen’s d mean shift applied to all latents in 
-#'   the treatment group (default = 0.5).
+#' @param approx_d_between_groups Numeric. Either a single Cohen’s d applied
+#' to **all** latents, or a length-K vector (optionally named by `factors`)
+#' to set different d-values per latent.
 #' @param n_per_group Integer; number of participants per group (default = 1000).
 #' @param n_levels Integer; number of Likert response categories (default = 7).
 #' @param ordered Logical; whether the Likert responses are returned as 
@@ -59,29 +60,27 @@
 #' @importFrom latent2likert discretize_density
 generate_data_likert_two_conditions <- function(
     n_per_condition = 100,
-    factors     = NULL,        # names of the K latents (defaults F1..FK if NULL)
-    prefixes    = NULL,        # item name prefixes (defaults X1_item, X2_item, ...)
-    alpha       = 0.70,        # scalar or length-K
-    n_items,                   # integer vector length K (items per factor)
-    n_levels    = 7,           # Likert categories
-    r_among_outcomes = 0.30,        # scalar or KxK correlation matrix
-    approx_d_between_groups    = 0.50,        # scalar (applied to ALL latents) or length-K vector
+    factors     = NULL,
+    prefixes    = NULL,
+    alpha       = 0.70,
+    n_items,
+    n_levels    = 7,
+    r_among_outcomes = 0.30,
+    approx_d_between_groups = 0.50,   # <- scalar or length-K
     condition_names = c("control", "treatment"),
     seed        = NULL,
-    lv_var      = 1,           # scalar or length-K
-    x_var       = 1,           # scalar or length-K
-    return_continuous = FALSE  # also return continuous data/models if TRUE
+    lv_var      = 1,
+    x_var       = 1,
+    return_continuous = FALSE
 ) {
   if (!is.null(seed)) set.seed(seed)
   
   K <- length(n_items)
   stopifnot(K >= 1, all(n_items >= 2))
   
-  # default factor names / prefixes if not supplied
   if (is.null(factors))  factors  <- paste0("X", seq_len(K), "_latent")
   if (is.null(prefixes)) prefixes <- paste0("X", seq_len(K), "_item")
   
-  # build structural (covariance) part and measurement with your helper
   mod <- .make_lavaan_kfactor_corr(
     n_items     = n_items,
     alpha       = alpha,
@@ -92,13 +91,30 @@ generate_data_likert_two_conditions <- function(
     corr_latent = r_among_outcomes
   )
   
-  # approx_d_between_groups can be scalar or length-K; recycle if needed
-  if (length(approx_d_between_groups) == 1L) approx_d_between_groups <- rep(approx_d_between_groups, K)
-  stopifnot(length(approx_d_between_groups) == K)
+  ## ---- d-target handling: scalar or length-K (optionally named) ----
+  if (!is.numeric(approx_d_between_groups) || any(!is.finite(approx_d_between_groups))) {
+    stop("`approx_d_between_groups` must be numeric and finite (scalar or length-K).")
+  }
+  if (length(approx_d_between_groups) == 1L) {
+    d_vec <- rep(approx_d_between_groups, K)
+    names(d_vec) <- factors
+  } else {
+    d_vec <- approx_d_between_groups
+    if (!is.null(names(d_vec))) {
+      # reorder to match `factors`
+      if (!all(factors %in% names(d_vec))) {
+        stop("Named `approx_d_between_groups` must include all factor names: ",
+             paste(factors, collapse = ", "))
+      }
+      d_vec <- d_vec[factors]
+    } else if (length(d_vec) != K) {
+      stop("If not scalar and unnamed, `approx_d_between_groups` must have length K = ", K, ".")
+    }
+  }
   
-  # latent mean structures for control (all 0) and treatment (shifted)
+  # latent means: control = 0; treatment = per-factor d
   means_ctrl  <- paste0(factors, " ~ 0*1", collapse = "\n")
-  means_treat <- paste0(factors, " ~ ", approx_d_between_groups, "*1", collapse = "\n")
+  means_treat <- paste0(factors, " ~ ", d_vec, "*1", collapse = "\n")
   
   mod_ctrl  <- paste(mod, means_ctrl,  sep = "\n")
   mod_treat <- paste(mod, means_treat, sep = "\n")
@@ -109,7 +125,7 @@ generate_data_likert_two_conditions <- function(
   dat_ctrl_cont$condition  <- "control"
   dat_treat_cont$condition <- "treatment"
   
-  # item column regex from prefixes, e.g., ^(X1_item|X2_item|...)\d+$
+  # item columns
   pref_regex <- paste0("^(", paste0(prefixes, collapse = "|"), ")\\d+$")
   item_cols_ctrl  <- grep(pref_regex, names(dat_ctrl_cont),  value = TRUE)
   item_cols_treat <- grep(pref_regex, names(dat_treat_cont), value = TRUE)
@@ -118,29 +134,23 @@ generate_data_likert_two_conditions <- function(
   }
   item_cols <- item_cols_ctrl
   
-  # discretize using a FIXED reference (mu_ref=0, sd_ref=1) with shared cutpoints
+  # discretize with shared cutpoints
   dat_ctrl_lik <- continuous_to_likert_by_condition(
     dat_ctrl_cont[item_cols],
-    n_levels = n_levels,
-    ordered  = FALSE,
-    method   = "fixed",
-    mu_ref   = 0,
-    sd_ref   = 1
+    n_levels = n_levels, ordered = FALSE,
+    method = "fixed", mu_ref = 0, sd_ref = 1
   )
   dat_treat_lik <- continuous_to_likert_by_condition(
     dat_treat_cont[item_cols],
-    n_levels = n_levels,
-    ordered  = FALSE,
-    method   = "fixed",
-    mu_ref   = 0,
-    sd_ref   = 1
+    n_levels = n_levels, ordered = FALSE,
+    method = "fixed", mu_ref = 0, sd_ref = 1
   )
   
-  # add condition and bind
   dat_ctrl_lik$condition  <- condition_names[1]
   dat_treat_lik$condition <- condition_names[2]
+  
   dat_lik <- dplyr::bind_rows(dat_ctrl_lik, dat_treat_lik) |>
-    mutate(id = row_number()) |>
+    dplyr::mutate(id = dplyr::row_number()) |>
     dplyr::relocate(id, .before = 1) |>
     dplyr::relocate(condition, .after = id)
   
@@ -150,7 +160,8 @@ generate_data_likert_two_conditions <- function(
       dat_ctrl_cont  = dat_ctrl_cont,
       dat_treat_cont = dat_treat_cont,
       item_cols      = item_cols,
-      models         = list(base = mod, ctrl = mod_ctrl, treat = mod_treat)
+      models         = list(base = mod, ctrl = mod_ctrl, treat = mod_treat),
+      d_per_factor   = d_vec
     ))
   } else {
     return(dat_lik)
