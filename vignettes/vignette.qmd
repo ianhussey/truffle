@@ -37,6 +37,8 @@ library(missMethods)
 # not needed by truffle but used in this script
 library(janitor)
 library(readr)
+library(knitr)
+library(kableExtra)
 
 ```
 
@@ -57,17 +59,19 @@ library(readr)
 
 dat_truffle <- 
   generate_data_likert_two_conditions(n_per_condition = 20,
-                                      factors  = c("X1_latent", "X2_latent", "X3_latent"),
-                                      prefixes = c("X1_item", "X2_item", "X3_item"),
-                                      alpha = c(.70, .75, .80),
-                                      n_items = c(10, 7, 15),
+                                      factors  = "X1_latent",
+                                      prefixes = "X1_item",
+                                      alpha = .70,
+                                      n_items = 5,
                                       n_levels = 7,
-                                      r_among_outcomes = 0.50,
                                       approx_d_between_groups = 0.50,
                                       seed = 42) |>
   add_demographics() 
 
-head(dat_truffle, n = 10)
+dat_truffle |>
+  head(n = 10) |>
+  kable() |>
+  kable_classic(full_width = FALSE)
 
 ```
 
@@ -77,9 +81,12 @@ head(dat_truffle, n = 10)
 
 dat_truffle_sumscores <- dat_truffle |>
   add_sum_scores_by_scale() |>
-  select(condition, X1_sum, X2_sum, X3_sum)
+  select(condition, X1_sum) # X2_sum, X3_sum
 
-head(dat_truffle_sumscores, n = 10)
+dat_truffle |>
+  head(n = 10) |>
+  kable() |>
+  kable_classic(full_width = FALSE)
 
 # N, M, SD
 dat_truffle_sumscores |>
@@ -93,12 +100,13 @@ dat_truffle_sumscores |>
   mutate_if(is.numeric, round_half_up, digits = 2)
 
 ```
+### Check generated data
 
 Check that the sum scores conform to the predefined properties and that the item level data is approximately normal.
 
 ```{r}
-#| fig-height: 20
-#| fig-width: 20
+#| fig-height: 6
+#| fig-width: 10
 
 check_generated_data(dat_truffle)
 
@@ -114,39 +122,19 @@ Generate data for the same study but make the demographics data mess, add missin
 
 dat_truffle_and_dirt <- 
   generate_data_likert_two_conditions(n_per_condition = 20,
-                                      factors  = c("X1_latent", "X2_latent", "X3_latent"),
-                                      prefixes = c("X1_item", "X2_item", "X3_item"),
-                                      alpha = c(.70, .75, .80),
-                                      n_items = c(10, 7, 15),
+                                      factors  = "X1_latent",
+                                      prefixes = "X1_item",
+                                      alpha = .70,
+                                      n_items = 5,
                                       n_levels = 7,
-                                      r_among_outcomes = 0.50,
                                       approx_d_between_groups = 0.50,
                                       seed = 42) |>
   add_demographics_messy() 
 
-head(dat_truffle_and_dirt, n = 10)
-
-```
-
-### Missingness
-
-```{r}
-
-dat_truffle_and_dirt <- dat_truffle_and_dirt |>
-  add_missingness(proportion_missing = .05) 
-
-head(dat_truffle_and_dirt, n = 10)
-
-```
-
-### Messy missingness
-
-```{r}
-
-dat_truffle_and_dirt <- dat_truffle_and_dirt |>
-  add_missingness_messy(proportion_missing = .05)
-
-head(dat_truffle_and_dirt, n = 10)
+dat_truffle_and_dirt |>
+  head(n = 10) |>
+  kable() |>
+  kable_classic(full_width = FALSE)
 
 ```
 
@@ -157,7 +145,10 @@ head(dat_truffle_and_dirt, n = 10)
 dat_truffle_and_dirt <- dat_truffle_and_dirt |>
   add_impossible_values(proportion_impossible = .04, replacement_value = 8)
 
-head(dat_truffle_and_dirt, n = 10)
+dat_truffle_and_dirt |>
+  head(n = 10) |>
+  kable() |>
+  kable_classic(full_width = FALSE)
 
 ```
 
@@ -168,7 +159,10 @@ head(dat_truffle_and_dirt, n = 10)
 dat_truffle_and_dirt <- dat_truffle_and_dirt |>
   mutate(completion_time = generate_reaction_times(n = n()))
 
-head(dat_truffle_and_dirt, n = 10)
+dat_truffle_and_dirt |>
+  head(n = 10) |>
+  kable() |>
+  kable_classic(full_width = FALSE)
 
 ggplot(dat_truffle_and_dirt, aes(completion_time)) +
   geom_histogram()
@@ -182,7 +176,38 @@ ggplot(dat_truffle_and_dirt, aes(completion_time)) +
 dat_truffle_and_dirt <- dat_truffle_and_dirt |>
   mutate(completion_time = messy_numbers(completion_time))
 
-head(dat_truffle_and_dirt, n = 10)
+dat_truffle_and_dirt |>
+  head(n = 10) |>
+  kable() |>
+  kable_classic(full_width = FALSE)
+
+```
+
+### Missingness
+
+```{r}
+
+dat_truffle_and_dirt <- dat_truffle_and_dirt |>
+  add_missingness(proportion_missing = .05) 
+
+dat_truffle_and_dirt |>
+  head(n = 10) |>
+  kable() |>
+  kable_classic(full_width = FALSE)
+
+```
+
+### Messy missingness
+
+```{r}
+
+dat_truffle_and_dirt <- dat_truffle_and_dirt |>
+  add_missingness_messy(proportion_missing = .05)
+
+dat_truffle_and_dirt |>
+  head(n = 10) |>
+  kable() |>
+  kable_classic(full_width = FALSE)
 
 ```
 
@@ -193,7 +218,10 @@ head(dat_truffle_and_dirt, n = 10)
 dat_truffle_and_dirt <- dat_truffle_and_dirt |>
   add_non_tidy_column(col = "block_trial")
 
-head(dat_truffle_and_dirt, n = 10)
+dat_truffle_and_dirt |>
+  head(n = 10) |>
+  kable() |>
+  kable_classic(full_width = FALSE)
 
 ```
 
@@ -204,7 +232,10 @@ head(dat_truffle_and_dirt, n = 10)
 dat_truffle_and_dirt <- dat_truffle_and_dirt |>
   mutate(date = add_dates_messy(n = n()))
 
-head(dat_truffle_and_dirt, n = 10)
+dat_truffle_and_dirt |>
+  head(n = 10) |>
+  kable() |>
+  kable_classic(full_width = FALSE)
 
 ```
 
@@ -222,7 +253,10 @@ dat_truffle_and_dirt <- dat_truffle_and_dirt |>
 dat_truffle_and_dirt <- dat_truffle_and_dirt |>
   messy_colnames()
 
-head(dat_truffle_and_dirt, n = 10)
+dat_truffle_and_dirt |>
+  head(n = 10) |>
+  kable() |>
+  kable_classic(full_width = FALSE)
 
 ```
 
@@ -233,7 +267,10 @@ head(dat_truffle_and_dirt, n = 10)
 dat_truffle_and_dirt <- dat_truffle_and_dirt |>
   add_duplicates(prop = 0.05)
 
-head(dat_truffle_and_dirt, n = 10)
+dat_truffle_and_dirt |>
+  head(n = 10) |>
+  kable() |>
+  kable_classic(full_width = FALSE)
 
 ```
 
@@ -244,18 +281,62 @@ head(dat_truffle_and_dirt, n = 10)
 dat_truffle_and_dirt_with_header <- dat_truffle_and_dirt |>
   add_messy_header_rows()
 
-head(dat_truffle_and_dirt_with_header, n = 10)
+dat_truffle_and_dirt_with_header |>
+  head(n = 10) |>
+  kable() |>
+  kable_classic(full_width = FALSE)
 
 # write to desk
-readr::write_lines(dat_truffle_and_dirt_with_header, "dat_truffle_and_dirt_with_header.csv")
+dat_truffle_and_dirt_with_header |>
+  readr::write_lines("dat_truffle_and_dirt_with_header.csv")
 
 # re-import later
 messy <- readr::read_csv("dat_truffle_and_dirt_with_header.csv")
 
-head(messy)
+messy |>
+  head(n = 10) |>
+  kable() |>
+  kable_classic(full_width = FALSE)
 
 clean <- readr::read_csv("dat_truffle_and_dirt_with_header.csv", skip = 2)
 
-head(clean)
+clean |>
+  head(n = 10) |>
+  kable() |>
+  kable_classic(full_width = FALSE)
 
 ```
+
+## Truffle and dirt - more complicated
+
+```{r}
+#| fig-height: 20
+#| fig-width: 20
+
+dat_truffle_complex <- 
+  generate_data_likert_two_conditions(n_per_condition = 200,
+                                      factors  = c("X1_latent", "X2_latent", "X3_latent"),
+                                      prefixes = c("X1_item", "X2_item", "X3_item"),
+                                      alpha = c(.70, .75, .80),
+                                      n_items = c(10, 7, 15),
+                                      n_levels = 7,
+                                      r_among_outcomes = 0.50,
+                                      approx_d_between_groups = c(0.50, 0.20, 1.00),
+                                      seed = 42) 
+
+dat_truffle_complex |>
+  check_generated_data()
+
+dat_truffle_and_dirt_complex <- dat_truffle_complex |>
+  add_demographics_messy() |>
+  mutate(completion_time = generate_reaction_times(n = n())) |>
+  add_missingness_messy(proportion_missing = .05) |>
+  add_impossible_values(proportion_impossible = .04, replacement_value = 8) |>
+  add_non_tidy_column(col = "block_trial") |>
+  add_messy_header_rows()
+
+dat_truffle_and_dirt_complex |>
+  readr::write_lines("dat_truffle_and_dirt_complex.csv")
+
+```
+

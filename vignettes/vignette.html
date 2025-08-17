@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Ian Hussey">
-<meta name="dcterms.date" content="2025-08-17">
+<meta name="dcterms.date" content="2025-08-18">
 
 <title>truffles vignette</title>
 <style>
@@ -71,6 +71,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="vignette_files/libs/bootstrap/bootstrap.min.js"></script>
 <link href="vignette_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="vignette_files/libs/bootstrap/bootstrap-af535b1ef9766e6a11c3d843fd21c40e.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="vignette_files/libs/kePrint-0.0.1/kePrint.js"></script>
+<link href="vignette_files/libs/lightable-0.0.1/lightable.css" rel="stylesheet">
 
 
 </head>
@@ -88,21 +90,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul class="collapse">
   <li><a href="#generate-clean-data" id="toc-generate-clean-data" class="nav-link" data-scroll-target="#generate-clean-data">Generate clean data</a></li>
   <li><a href="#sum-scores-by-scale" id="toc-sum-scores-by-scale" class="nav-link" data-scroll-target="#sum-scores-by-scale">Sum scores by scale</a></li>
+  <li><a href="#check-generated-data" id="toc-check-generated-data" class="nav-link" data-scroll-target="#check-generated-data">Check generated data</a></li>
   </ul></li>
   <li><a href="#create-dirt" id="toc-create-dirt" class="nav-link" data-scroll-target="#create-dirt">Create dirt</a>
   <ul class="collapse">
   <li><a href="#messy-demographics" id="toc-messy-demographics" class="nav-link" data-scroll-target="#messy-demographics">Messy demographics</a></li>
-  <li><a href="#missingness" id="toc-missingness" class="nav-link" data-scroll-target="#missingness">Missingness</a></li>
-  <li><a href="#messy-missingness" id="toc-messy-missingness" class="nav-link" data-scroll-target="#messy-missingness">Messy missingness</a></li>
   <li><a href="#impossible-values-outliers" id="toc-impossible-values-outliers" class="nav-link" data-scroll-target="#impossible-values-outliers">Impossible values (‘outliers’)</a></li>
   <li><a href="#generate-reaction-times" id="toc-generate-reaction-times" class="nav-link" data-scroll-target="#generate-reaction-times">Generate reaction times</a></li>
   <li><a href="#messy-number-formatting" id="toc-messy-number-formatting" class="nav-link" data-scroll-target="#messy-number-formatting">Messy number formatting</a></li>
+  <li><a href="#missingness" id="toc-missingness" class="nav-link" data-scroll-target="#missingness">Missingness</a></li>
+  <li><a href="#messy-missingness" id="toc-messy-missingness" class="nav-link" data-scroll-target="#messy-missingness">Messy missingness</a></li>
   <li><a href="#add-block_trial" id="toc-add-block_trial" class="nav-link" data-scroll-target="#add-block_trial">Add block_trial</a></li>
   <li><a href="#messy-dates" id="toc-messy-dates" class="nav-link" data-scroll-target="#messy-dates">Messy dates</a></li>
   <li><a href="#messy-colnames" id="toc-messy-colnames" class="nav-link" data-scroll-target="#messy-colnames">Messy colnames</a></li>
   <li><a href="#duplicate-rows" id="toc-duplicate-rows" class="nav-link" data-scroll-target="#duplicate-rows">Duplicate rows</a></li>
   <li><a href="#messy-headers" id="toc-messy-headers" class="nav-link" data-scroll-target="#messy-headers">Messy headers</a></li>
   </ul></li>
+  <li><a href="#truffle-and-dirt---more-complicated" id="toc-truffle-and-dirt---more-complicated" class="nav-link" data-scroll-target="#truffle-and-dirt---more-complicated">Truffle and dirt - more complicated</a></li>
   </ul>
 </nav>
 </div>
@@ -129,7 +133,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">August 17, 2025</p>
+      <p class="date">August 18, 2025</p>
     </div>
   </div>
   
@@ -162,7 +166,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="co"># not needed by truffle but used in this script</span></span>
 <span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(janitor)</span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readr)</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(knitr)</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(kableExtra)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </section>
@@ -185,74 +191,148 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>dat_truffle <span class="ot">&lt;-</span> </span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">generate_data_likert_two_conditions</span>(<span class="at">n_per_condition =</span> <span class="dv">20</span>,</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">factors  =</span> <span class="fu">c</span>(<span class="st">"X1_latent"</span>, <span class="st">"X2_latent"</span>, <span class="st">"X3_latent"</span>),</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">prefixes =</span> <span class="fu">c</span>(<span class="st">"X1_item"</span>, <span class="st">"X2_item"</span>, <span class="st">"X3_item"</span>),</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">alpha =</span> <span class="fu">c</span>(.<span class="dv">70</span>, .<span class="dv">75</span>, .<span class="dv">80</span>),</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">n_items =</span> <span class="fu">c</span>(<span class="dv">10</span>, <span class="dv">7</span>, <span class="dv">15</span>),</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">factors  =</span> <span class="st">"X1_latent"</span>,</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">prefixes =</span> <span class="st">"X1_item"</span>,</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">alpha =</span> .<span class="dv">70</span>,</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">n_items =</span> <span class="dv">5</span>,</span>
 <span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">n_levels =</span> <span class="dv">7</span>,</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">r_among_outcomes =</span> <span class="fl">0.50</span>,</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">approx_d_between_groups =</span> <span class="fl">0.50</span>,</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">seed =</span> <span class="dv">42</span>) <span class="sc">|&gt;</span></span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_demographics</span>() </span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(dat_truffle, <span class="at">n =</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">approx_d_between_groups =</span> <span class="fl">0.50</span>,</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">seed =</span> <span class="dv">42</span>) <span class="sc">|&gt;</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_demographics</span>() </span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>dat_truffle <span class="sc">|&gt;</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(<span class="at">n =</span> <span class="dv">10</span>) <span class="sc">|&gt;</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>() <span class="sc">|&gt;</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_classic</span>(<span class="at">full_width =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
-<div class="cell-output cell-output-stdout">
-<pre><code>   id age    gender condition X1_item1 X1_item2 X1_item3 X1_item4 X1_item5
-1   1  33    female   control        3        2        3        1        2
-2   2  18      male   control        3        4        2        3        4
-3   3  20    female   control        4        5        3        3        4
-4   4  44    female   control        4        7        2        4        5
-5   5  30      male   control        6        4        6        5        3
-6   6  29 nonbinary   control        3        6        4        5        1
-7   7  32    female   control        2        3        4        2        4
-8   8  38    female   control        2        4        3        1        1
-9   9  23    female   control        2        5        2        3        2
-10 10  34    female   control        2        3        4        5        2
-   X1_item6 X1_item7 X1_item8 X1_item9 X1_item10 X2_item1 X2_item2 X2_item3
-1         5        2        2        6         4        4        3        4
-2         6        4        4        4         4        3        3        4
-3         2        5        3        2         2        6        3        6
-4         6        4        3        2         6        5        3        5
-5         5        5        7        6         5        6        4        3
-6         3        4        2        5         4        6        1        6
-7         4        3        5        4         3        2        5        1
-8         4        3        3        3         3        3        3        6
-9         4        4        2        5         4        2        3        3
-10        5        4        2        4         1        3        6        3
-   X2_item4 X2_item5 X2_item6 X2_item7 X3_item1 X3_item2 X3_item3 X3_item4
-1         1        4        2        2        3        3        4        6
-2         4        4        3        4        7        5        4        4
-3         4        3        4        3        6        2        3        4
-4         3        2        2        4        4        1        4        5
-5         1        3        7        3        1        3        3        3
-6         3        2        5        6        5        3        2        5
-7         3        2        2        3        2        5        1        5
-8         5        4        4        4        6        2        6        6
-9         2        2        3        3        4        1        6        1
-10        5        2        3        6        4        6        4        4
-   X3_item5 X3_item6 X3_item7 X3_item8 X3_item9 X3_item10 X3_item11 X3_item12
-1         5        3        2        2        3         1         3         1
-2         5        7        3        6        5         3         5         7
-3         5        4        4        3        5         3         3         4
-4         3        4        5        2        2         4         3         3
-5         2        1        3        4        6         2         4         2
-6         5        6        5        4        3         5         5         5
-7         2        2        3        4        3         4         1         4
-8         5        5        4        2        6         3         4         6
-9         3        1        6        1        2         4         3         1
-10        4        4        5        7        5         3         5         3
-   X3_item13 X3_item14 X3_item15
-1          6         3         3
-2          6         4         4
-3          5         4         3
-4          2         3         1
-5          2         3         3
-6          4         3         5
-7          4         1         5
-8          5         6         5
-9          2         3         1
-10         4         4         3</code></pre>
+<div class="cell-output-display">
+<table class="lightable-classic caption-top table table-sm table-striped small" data-quarto-postprocess="true">
+<thead>
+<tr class="header">
+<th style="text-align: right;" data-quarto-table-cell-role="th">id</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">age</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">gender</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">condition</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">X1_item1</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">X1_item2</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">X1_item3</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">X1_item4</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">X1_item5</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">33</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">2</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">21</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">3</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">41</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">38</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">4</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">41</td>
+<td style="text-align: left;">male</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">7</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">23</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">2</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">37</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">2</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">38</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">2</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">9</td>
+<td style="text-align: right;">37</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">10</td>
+<td style="text-align: right;">28</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">2</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 </section>
@@ -261,74 +341,190 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>dat_truffle_sumscores <span class="ot">&lt;-</span> dat_truffle <span class="sc">|&gt;</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_sum_scores_by_scale</span>() <span class="sc">|&gt;</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(condition, X1_sum, X2_sum, X3_sum)</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(dat_truffle_sumscores, <span class="at">n =</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>dat_truffle_sumscores <span class="ot">&lt;-</span> dat_truffle <span class="sc">|&gt;</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_sum_scores_by_scale</span>() <span class="sc">|&gt;</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(condition, X1_sum) <span class="co"># X2_sum, X3_sum</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>dat_truffle <span class="sc">|&gt;</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(<span class="at">n =</span> <span class="dv">10</span>) <span class="sc">|&gt;</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>() <span class="sc">|&gt;</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_classic</span>(<span class="at">full_width =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
-<div class="cell-output cell-output-stdout">
-<pre><code>   condition X1_sum X2_sum X3_sum
-1    control     30     20     48
-2    control     38     25     75
-3    control     33     29     58
-4    control     43     24     46
-5    control     52     27     42
-6    control     37     29     65
-7    control     34     18     46
-8    control     27     29     71
-9    control     33     18     39
-10   control     32     28     65</code></pre>
+<div class="cell-output-display">
+<table class="lightable-classic caption-top table table-sm table-striped small" data-quarto-postprocess="true">
+<thead>
+<tr class="header">
+<th style="text-align: right;" data-quarto-table-cell-role="th">id</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">age</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">gender</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">condition</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">X1_item1</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">X1_item2</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">X1_item3</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">X1_item4</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">X1_item5</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">33</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">2</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">21</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">3</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">41</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">38</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">4</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">41</td>
+<td style="text-align: left;">male</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">7</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">23</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">2</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">37</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">2</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">38</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">2</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">9</td>
+<td style="text-align: right;">37</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">10</td>
+<td style="text-align: right;">28</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">2</td>
+</tr>
+</tbody>
+</table>
 </div>
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># N, M, SD</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>dat_truffle_sumscores <span class="sc">|&gt;</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="fu">starts_with</span>(<span class="st">"X"</span>),</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>               <span class="at">names_to =</span> <span class="st">"scale"</span>,</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>               <span class="at">values_to =</span> <span class="st">"sum_score"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(scale, condition) <span class="sc">|&gt;</span></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">n =</span> <span class="fu">n</span>(),</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>            <span class="at">mean =</span> <span class="fu">mean</span>(sum_score, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>            <span class="at">sd =</span> <span class="fu">sd</span>(sum_score, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate_if</span>(is.numeric, round_half_up, <span class="at">digits =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># N, M, SD</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>dat_truffle_sumscores <span class="sc">|&gt;</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="fu">starts_with</span>(<span class="st">"X"</span>),</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>               <span class="at">names_to =</span> <span class="st">"scale"</span>,</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>               <span class="at">values_to =</span> <span class="st">"sum_score"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(scale, condition) <span class="sc">|&gt;</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">n =</span> <span class="fu">n</span>(),</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>            <span class="at">mean =</span> <span class="fu">mean</span>(sum_score, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>            <span class="at">sd =</span> <span class="fu">sd</span>(sum_score, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate_if</span>(is.numeric, round_half_up, <span class="at">digits =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 6 × 5
-# Groups:   scale [3]
+<pre><code># A tibble: 2 × 5
+# Groups:   scale [1]
   scale  condition     n  mean    sd
   &lt;chr&gt;  &lt;chr&gt;     &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
-1 X1_sum control      20  37.6  8.6 
-2 X1_sum treatment    20  47.4  7.19
-3 X2_sum control      20  26.2  7.2 
-4 X2_sum treatment    20  31.0  7.12
-5 X3_sum control      20  59.2 16.8 
-6 X3_sum treatment    20  68.2 12.7 </code></pre>
+1 X1_sum control      20  18.5  6.65
+2 X1_sum treatment    20  22.1  5.52</code></pre>
 </div>
 </div>
+</section>
+<section id="check-generated-data" class="level3">
+<h3 class="anchored" data-anchor-id="check-generated-data">Check generated data</h3>
 <p>Check that the sum scores conform to the predefined properties and that the item level data is approximately normal.</p>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">check_generated_data</span>(dat_truffle)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">check_generated_data</span>(dat_truffle)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>$cohens_d
-d_X1_sum d_X2_sum d_X3_sum 
-    1.24     0.66     0.60 
+  X1 
+0.59 
 
 $r
-       X1_sum X2_sum X3_sum
-X1_sum   1.00   0.54   0.53
-X2_sum   0.54   1.00   0.62
-X3_sum   0.53   0.62   1.00
+       X1_sum
+X1_sum      1
 
 $item_histograms</code></pre>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="vignette_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="1920"></p>
+<p><img src="vignette_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="960"></p>
 </figure>
 </div>
 </div>
@@ -343,76 +539,616 @@ $item_histograms</code></pre>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>dat_truffle_and_dirt <span class="ot">&lt;-</span> </span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">generate_data_likert_two_conditions</span>(<span class="at">n_per_condition =</span> <span class="dv">20</span>,</span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">factors  =</span> <span class="fu">c</span>(<span class="st">"X1_latent"</span>, <span class="st">"X2_latent"</span>, <span class="st">"X3_latent"</span>),</span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">prefixes =</span> <span class="fu">c</span>(<span class="st">"X1_item"</span>, <span class="st">"X2_item"</span>, <span class="st">"X3_item"</span>),</span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">alpha =</span> <span class="fu">c</span>(.<span class="dv">70</span>, .<span class="dv">75</span>, .<span class="dv">80</span>),</span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">n_items =</span> <span class="fu">c</span>(<span class="dv">10</span>, <span class="dv">7</span>, <span class="dv">15</span>),</span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">n_levels =</span> <span class="dv">7</span>,</span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">r_among_outcomes =</span> <span class="fl">0.50</span>,</span>
-<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">approx_d_between_groups =</span> <span class="fl">0.50</span>,</span>
-<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">seed =</span> <span class="dv">42</span>) <span class="sc">|&gt;</span></span>
-<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_demographics_messy</span>() </span>
-<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(dat_truffle_and_dirt, <span class="at">n =</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>dat_truffle_and_dirt <span class="ot">&lt;-</span> </span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">generate_data_likert_two_conditions</span>(<span class="at">n_per_condition =</span> <span class="dv">20</span>,</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">factors  =</span> <span class="st">"X1_latent"</span>,</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">prefixes =</span> <span class="st">"X1_item"</span>,</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">alpha =</span> .<span class="dv">70</span>,</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">n_items =</span> <span class="dv">5</span>,</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">n_levels =</span> <span class="dv">7</span>,</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">approx_d_between_groups =</span> <span class="fl">0.50</span>,</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">seed =</span> <span class="dv">42</span>) <span class="sc">|&gt;</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_demographics_messy</span>() </span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>dat_truffle_and_dirt <span class="sc">|&gt;</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(<span class="at">n =</span> <span class="dv">10</span>) <span class="sc">|&gt;</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>() <span class="sc">|&gt;</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_classic</span>(<span class="at">full_width =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
-<div class="cell-output cell-output-stdout">
-<pre><code>   id age    gender condition X1_item1 X1_item2 X1_item3 X1_item4 X1_item5
-1   1  32    female   control        3        2        3        1        2
-2   2  35    female   control        3        4        2        3        4
-3   3  45        29   control        4        5        3        3        4
-4   4  32      male   control        4        7        2        4        5
-5   5  31      male   control        6        4        6        5        3
-6   6  32 nonbinary   control        3        6        4        5        1
-7   7  27    female   control        2        3        4        2        4
-8   8  27     femle   control        2        4        3        1        1
-9   9  37      male   control        2        5        2        3        2
-10 10  41      male   control        2        3        4        5        2
-   X1_item6 X1_item7 X1_item8 X1_item9 X1_item10 X2_item1 X2_item2 X2_item3
-1         5        2        2        6         4        4        3        4
-2         6        4        4        4         4        3        3        4
-3         2        5        3        2         2        6        3        6
-4         6        4        3        2         6        5        3        5
-5         5        5        7        6         5        6        4        3
-6         3        4        2        5         4        6        1        6
-7         4        3        5        4         3        2        5        1
-8         4        3        3        3         3        3        3        6
-9         4        4        2        5         4        2        3        3
-10        5        4        2        4         1        3        6        3
-   X2_item4 X2_item5 X2_item6 X2_item7 X3_item1 X3_item2 X3_item3 X3_item4
-1         1        4        2        2        3        3        4        6
-2         4        4        3        4        7        5        4        4
-3         4        3        4        3        6        2        3        4
-4         3        2        2        4        4        1        4        5
-5         1        3        7        3        1        3        3        3
-6         3        2        5        6        5        3        2        5
-7         3        2        2        3        2        5        1        5
-8         5        4        4        4        6        2        6        6
-9         2        2        3        3        4        1        6        1
-10        5        2        3        6        4        6        4        4
-   X3_item5 X3_item6 X3_item7 X3_item8 X3_item9 X3_item10 X3_item11 X3_item12
-1         5        3        2        2        3         1         3         1
-2         5        7        3        6        5         3         5         7
-3         5        4        4        3        5         3         3         4
-4         3        4        5        2        2         4         3         3
-5         2        1        3        4        6         2         4         2
-6         5        6        5        4        3         5         5         5
-7         2        2        3        4        3         4         1         4
-8         5        5        4        2        6         3         4         6
-9         3        1        6        1        2         4         3         1
-10        4        4        5        7        5         3         5         3
-   X3_item13 X3_item14 X3_item15
-1          6         3         3
-2          6         4         4
-3          5         4         3
-4          2         3         1
-5          2         3         3
-6          4         3         5
-7          4         1         5
-8          5         6         5
-9          2         3         1
-10         4         4         3</code></pre>
+<div class="cell-output-display">
+<table class="lightable-classic caption-top table table-sm table-striped small" data-quarto-postprocess="true">
+<thead>
+<tr class="header">
+<th style="text-align: right;" data-quarto-table-cell-role="th">id</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">age</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">gender</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">condition</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">X1_item1</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">X1_item2</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">X1_item3</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">X1_item4</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">X1_item5</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">forty three</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">2</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">32</td>
+<td style="text-align: left;">male</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">3</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">37</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">4</td>
+<td style="text-align: left;">28</td>
+<td style="text-align: left;">33</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">4</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td style="text-align: left;">26</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">7</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">6</td>
+<td style="text-align: left;">39</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">2</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">7</td>
+<td style="text-align: left;">27</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">2</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">8</td>
+<td style="text-align: left;">24</td>
+<td style="text-align: left;">Non-binary</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">2</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">9</td>
+<td style="text-align: left;">36</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">10</td>
+<td style="text-align: left;">45</td>
+<td style="text-align: left;">male</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">2</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="impossible-values-outliers" class="level3">
+<h3 class="anchored" data-anchor-id="impossible-values-outliers">Impossible values (‘outliers’)</h3>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>dat_truffle_and_dirt <span class="ot">&lt;-</span> dat_truffle_and_dirt <span class="sc">|&gt;</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_impossible_values</span>(<span class="at">proportion_impossible =</span> .<span class="dv">04</span>, <span class="at">replacement_value =</span> <span class="dv">8</span>)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>dat_truffle_and_dirt <span class="sc">|&gt;</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(<span class="at">n =</span> <span class="dv">10</span>) <span class="sc">|&gt;</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>() <span class="sc">|&gt;</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_classic</span>(<span class="at">full_width =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<table class="lightable-classic caption-top table table-sm table-striped small" data-quarto-postprocess="true">
+<thead>
+<tr class="header">
+<th style="text-align: right;" data-quarto-table-cell-role="th">id</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">age</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">gender</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">condition</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">X1_item1</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">X1_item2</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">X1_item3</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">X1_item4</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">X1_item5</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">forty three</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">2</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">32</td>
+<td style="text-align: left;">male</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">3</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">37</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">4</td>
+<td style="text-align: left;">28</td>
+<td style="text-align: left;">33</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">4</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td style="text-align: left;">26</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">7</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">6</td>
+<td style="text-align: left;">39</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">8</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">7</td>
+<td style="text-align: left;">27</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">2</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">8</td>
+<td style="text-align: left;">24</td>
+<td style="text-align: left;">Non-binary</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">2</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">9</td>
+<td style="text-align: left;">36</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">10</td>
+<td style="text-align: left;">45</td>
+<td style="text-align: left;">male</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">2</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="generate-reaction-times" class="level3">
+<h3 class="anchored" data-anchor-id="generate-reaction-times">Generate reaction times</h3>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>dat_truffle_and_dirt <span class="ot">&lt;-</span> dat_truffle_and_dirt <span class="sc">|&gt;</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">completion_time =</span> <span class="fu">generate_reaction_times</span>(<span class="at">n =</span> <span class="fu">n</span>()))</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>dat_truffle_and_dirt <span class="sc">|&gt;</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(<span class="at">n =</span> <span class="dv">10</span>) <span class="sc">|&gt;</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>() <span class="sc">|&gt;</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_classic</span>(<span class="at">full_width =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<table class="lightable-classic caption-top table table-sm table-striped small" data-quarto-postprocess="true">
+<thead>
+<tr class="header">
+<th style="text-align: right;" data-quarto-table-cell-role="th">id</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">age</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">gender</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">condition</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">X1_item1</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">X1_item2</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">X1_item3</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">X1_item4</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">X1_item5</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">completion_time</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">forty three</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">1013</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">32</td>
+<td style="text-align: left;">male</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">1296</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">37</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">1535</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">4</td>
+<td style="text-align: left;">28</td>
+<td style="text-align: left;">33</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">1908</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td style="text-align: left;">26</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">818</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">6</td>
+<td style="text-align: left;">39</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">1088</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">7</td>
+<td style="text-align: left;">27</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">1199</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">8</td>
+<td style="text-align: left;">24</td>
+<td style="text-align: left;">Non-binary</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">866</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">9</td>
+<td style="text-align: left;">36</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1076</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">10</td>
+<td style="text-align: left;">45</td>
+<td style="text-align: left;">male</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">1069</td>
+</tr>
+</tbody>
+</table>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(dat_truffle_and_dirt, <span class="fu">aes</span>(completion_time)) <span class="sc">+</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="vignette_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="messy-number-formatting" class="level3">
+<h3 class="anchored" data-anchor-id="messy-number-formatting">Messy number formatting</h3>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>dat_truffle_and_dirt <span class="ot">&lt;-</span> dat_truffle_and_dirt <span class="sc">|&gt;</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">completion_time =</span> <span class="fu">messy_numbers</span>(completion_time))</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>dat_truffle_and_dirt <span class="sc">|&gt;</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(<span class="at">n =</span> <span class="dv">10</span>) <span class="sc">|&gt;</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>() <span class="sc">|&gt;</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_classic</span>(<span class="at">full_width =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<table class="lightable-classic caption-top table table-sm table-striped small" data-quarto-postprocess="true">
+<thead>
+<tr class="header">
+<th style="text-align: right;" data-quarto-table-cell-role="th">id</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">age</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">gender</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">condition</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">X1_item1</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">X1_item2</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">X1_item3</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">X1_item4</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">X1_item5</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">completion_time</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">forty three</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">1,013 ms</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">32</td>
+<td style="text-align: left;">male</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">1,296 ms</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">37</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">1,535 ms</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">4</td>
+<td style="text-align: left;">28</td>
+<td style="text-align: left;">33</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: left;">1,908 ms</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td style="text-align: left;">26</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: left;">818 ms</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">6</td>
+<td style="text-align: left;">39</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: left;">1,088 ms</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">7</td>
+<td style="text-align: left;">27</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">1,199 ms</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">8</td>
+<td style="text-align: left;">24</td>
+<td style="text-align: left;">Non-binary</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">866 ms</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">9</td>
+<td style="text-align: left;">36</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">1,076 ms</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">10</td>
+<td style="text-align: left;">45</td>
+<td style="text-align: left;">male</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">1,069 ms</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 </section>
@@ -421,67 +1157,153 @@ $item_histograms</code></pre>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>dat_truffle_and_dirt <span class="ot">&lt;-</span> dat_truffle_and_dirt <span class="sc">|&gt;</span></span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_missingness</span>(<span class="at">proportion_missing =</span> .<span class="dv">05</span>) </span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(dat_truffle_and_dirt, <span class="at">n =</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>dat_truffle_and_dirt <span class="ot">&lt;-</span> dat_truffle_and_dirt <span class="sc">|&gt;</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_missingness</span>(<span class="at">proportion_missing =</span> .<span class="dv">05</span>) </span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>dat_truffle_and_dirt <span class="sc">|&gt;</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(<span class="at">n =</span> <span class="dv">10</span>) <span class="sc">|&gt;</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>() <span class="sc">|&gt;</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_classic</span>(<span class="at">full_width =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
-<div class="cell-output cell-output-stdout">
-<pre><code>   id age    gender condition X1_item1 X1_item2 X1_item3 X1_item4 X1_item5
-1   1  32    female   control        3        2        3        1        2
-2   2  35    female   control        3        4        2        3        4
-3   3  45        29   control        4        5        3        3        4
-4   4  32      male   control        4        7        2        4        5
-5   5  31      male   control        6        4        6        5        3
-6   6  32 nonbinary   control        3        6        4        5        1
-7   7  27    female   control        2        3        4        2        4
-8   8  27     femle   control        2        4        3       NA        1
-9   9  37      male   control        2        5        2        3        2
-10 10  41      male   control        2       NA        4        5        2
-   X1_item6 X1_item7 X1_item8 X1_item9 X1_item10 X2_item1 X2_item2 X2_item3
-1         5        2        2        6         4        4        3        4
-2         6        4        4        4         4        3        3        4
-3         2        5        3        2         2        6        3        6
-4         6        4        3        2         6        5        3        5
-5         5        5        7       NA         5        6        4        3
-6         3        4        2        5         4        6        1        6
-7         4        3        5        4         3        2        5        1
-8         4        3        3        3         3        3        3        6
-9         4        4        2        5         4        2        3        3
-10        5        4        2        4         1        3        6        3
-   X2_item4 X2_item5 X2_item6 X2_item7 X3_item1 X3_item2 X3_item3 X3_item4
-1         1        4        2        2        3        3        4        6
-2         4        4        3        4        7        5        4        4
-3         4        3        4       NA        6        2        3        4
-4         3        2        2        4        4        1        4        5
-5         1        3        7        3        1        3        3        3
-6         3        2        5        6        5        3        2        5
-7         3        2        2        3        2        5        1        5
-8         5        4        4        4        6        2        6        6
-9         2        2        3        3        4        1        6        1
-10        5        2       NA        6        4        6        4        4
-   X3_item5 X3_item6 X3_item7 X3_item8 X3_item9 X3_item10 X3_item11 X3_item12
-1         5       NA        2        2        3         1         3         1
-2         5        7        3        6        5         3         5         7
-3         5        4        4        3        5         3         3         4
-4         3        4        5       NA        2         4         3         3
-5         2        1        3        4        6         2         4         2
-6         5        6        5        4        3         5         5         5
-7         2        2        3        4       NA         4         1         4
-8         5        5        4        2        6        NA         4         6
-9         3        1        6        1        2         4         3         1
-10        4        4        5        7        5         3         5         3
-   X3_item13 X3_item14 X3_item15
-1          6         3         3
-2          6         4         4
-3          5         4         3
-4          2         3         1
-5         NA         3         3
-6          4         3         5
-7          4         1         5
-8          5         6        NA
-9          2         3         1
-10         4         4         3</code></pre>
+<div class="cell-output-display">
+<table class="lightable-classic caption-top table table-sm table-striped small" data-quarto-postprocess="true">
+<thead>
+<tr class="header">
+<th style="text-align: right;" data-quarto-table-cell-role="th">id</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">age</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">gender</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">condition</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">X1_item1</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">X1_item2</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">X1_item3</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">X1_item4</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">X1_item5</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">completion_time</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">forty three</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">1,013 ms</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">32</td>
+<td style="text-align: left;">male</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">1,296 ms</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">37</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">1,535 ms</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">4</td>
+<td style="text-align: left;">28</td>
+<td style="text-align: left;">33</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: left;">1,908 ms</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td style="text-align: left;">26</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: left;">818 ms</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">6</td>
+<td style="text-align: left;">39</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: left;">1,088 ms</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">7</td>
+<td style="text-align: left;">27</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">1,199 ms</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">8</td>
+<td style="text-align: left;">24</td>
+<td style="text-align: left;">Non-binary</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">866 ms</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">9</td>
+<td style="text-align: left;">36</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">1,076 ms</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">10</td>
+<td style="text-align: left;">45</td>
+<td style="text-align: left;">male</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">1,069 ms</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 </section>
@@ -493,283 +1315,150 @@ $item_histograms</code></pre>
 <div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>dat_truffle_and_dirt <span class="ot">&lt;-</span> dat_truffle_and_dirt <span class="sc">|&gt;</span></span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_missingness_messy</span>(<span class="at">proportion_missing =</span> .<span class="dv">05</span>)</span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(dat_truffle_and_dirt, <span class="at">n =</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-<div class="cell-output cell-output-stdout">
-<pre><code>   id age    gender condition X1_item1 X1_item2 X1_item3 X1_item4 X1_item5
-1   1  32    female   control        3        2        3        1  missing
-2   2  35    female   control        3        4        2        3        4
-3   3  45        29   control        4        5        3        3        4
-4   4  32      male   control        4        7        2        4        5
-5   5  31      male   control        6        4        6        5        3
-6   6  32 nonbinary   control        3     &lt;NA&gt;        4        5        1
-7   7  27    female   control        2        3        4        2        4
-8   8  27     femle   control        2        4        3     &lt;NA&gt;        1
-9   9  37      male   control        2        5     -999        3        2
-10 10  41      male   control        2     &lt;NA&gt;  missing        5        2
-   X1_item6 X1_item7 X1_item8 X1_item9 X1_item10 X2_item1 X2_item2 X2_item3
-1         5        2        2        6         4        4        3        4
-2         6        4        4        4         4        3        3        4
-3         2        5     -999        2         2        6        3        6
-4         6        4        3        2         6        5        3        5
-5       -99        5        7     &lt;NA&gt;         5        6        4        3
-6         3        4        2        5         4        6        1        6
-7         4        3        5        4         3        2        5        1
-8         4        3       NA        3         3        3        3        6
-9         4        4        2        5         4        2        3        3
-10        5        4        2        4         1        3        6        3
-   X2_item4 X2_item5 X2_item6 X2_item7 X3_item1 X3_item2 X3_item3 X3_item4
-1        NA        4        2        2        3        3        4        6
-2         4        4        3        4        7        5        4        4
-3         4        3        4     &lt;NA&gt;        6        2        3        4
-4         3        2        2        4        4        1        4        5
-5         1       NA  missing        3     &lt;NA&gt;        3        3        3
-6         3                 5        6        5        3        2        5
-7         3        2        2        3        2        5        1        5
-8         5        4        4        4        6        2        6        6
-9         2        2        3        3        4        1        6        1
-10        5        2     &lt;NA&gt;        6        4        6        4        4
-   X3_item5 X3_item6 X3_item7 X3_item8 X3_item9 X3_item10 X3_item11 X3_item12
-1         5     &lt;NA&gt;        2        2        3         1         3         1
-2         5        7        3        6        5         3         5         7
-3         5        4        4     &lt;NA&gt;        5         3         3         4
-4         3        4        5     &lt;NA&gt;        2         4         3         3
-5         2        1        3        4        6         2      &lt;NA&gt;         2
-6         5        6        5        4        3         5         5         5
-7         2        2       NA        4     &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;         4
-8         5        5        4        2        6      &lt;NA&gt;         4         6
-9         3        1        6        1        2                   3         1
-10      -99        4        5        7        5         3         5         3
-   X3_item13 X3_item14 X3_item15
-1          6         3         3
-2          6         4         4
-3          5         4         3
-4          2         3         1
-5       &lt;NA&gt;         3         3
-6          4         3         5
-7          4         1         5
-8          5         6      &lt;NA&gt;
-9          2         3         1
-10         4         4         3</code></pre>
-</div>
-</div>
-</section>
-<section id="impossible-values-outliers" class="level3">
-<h3 class="anchored" data-anchor-id="impossible-values-outliers">Impossible values (‘outliers’)</h3>
-<div class="cell">
-<details open="" class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>dat_truffle_and_dirt <span class="ot">&lt;-</span> dat_truffle_and_dirt <span class="sc">|&gt;</span></span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_impossible_values</span>(<span class="at">proportion_impossible =</span> .<span class="dv">04</span>, <span class="at">replacement_value =</span> <span class="dv">8</span>)</span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(dat_truffle_and_dirt, <span class="at">n =</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-<div class="cell-output cell-output-stdout">
-<pre><code>   id age    gender condition X1_item1 X1_item2 X1_item3 X1_item4 X1_item5
-1   1  32    female   control        8        2        3        1  missing
-2   2  35    female   control        3        4        2        3        4
-3   3  45        29   control        4        8        3        3        4
-4   4  32      male   control        8        7        2        4        5
-5   5  31      male   control        6        4        6        5        3
-6   6  32 nonbinary   control        3     &lt;NA&gt;        4        5        1
-7   7  27    female   control        2        3        4        2        4
-8   8  27     femle   control        2        4        3     &lt;NA&gt;        1
-9   9  37      male   control        2        5     -999        3        2
-10 10  41      male   control        2     &lt;NA&gt;  missing        5        2
-   X1_item6 X1_item7 X1_item8 X1_item9 X1_item10 X2_item1 X2_item2 X2_item3
-1         5        2        8        6         4        4        3        4
-2         6        4        4        4         4        3        3        4
-3         2        5     -999        2         2        6        3        6
-4         8        4        3        2         6        5        3        5
-5       -99        5        7     &lt;NA&gt;         5        8        4        3
-6         3        4        2        5         4        6        1        6
-7         4        3        8        4         3        2        5        1
-8         4        3       NA        3         8        3        3        8
-9         4        4        2        5         4        2        3        8
-10        5        4        2        4         8        3        6        3
-   X2_item4 X2_item5 X2_item6 X2_item7 X3_item1 X3_item2 X3_item3 X3_item4
-1        NA        4        2        2        3        3        4        6
-2         4        4        3        4        7        5        4        4
-3         4        3        4     &lt;NA&gt;        6        2        3        4
-4         3        2        2        4        4        1        4        5
-5         1       NA  missing        3     &lt;NA&gt;        3        3        3
-6         3                 5        6        5        3        2        5
-7         3        2        2        3        2        5        8        5
-8         5        4        4        4        6        2        6        6
-9         2        2        3        3        4        1        6        1
-10        5        2     &lt;NA&gt;        6        4        6        4        4
-   X3_item5 X3_item6 X3_item7 X3_item8 X3_item9 X3_item10 X3_item11 X3_item12
-1         5     &lt;NA&gt;        2        2        3         1         3         1
-2         5        7        3        6        5         3         5         7
-3         5        4        4     &lt;NA&gt;        5         3         3         4
-4         3        4        5     &lt;NA&gt;        2         4         3         3
-5         2        1        3        4        6         2         8         2
-6         5        6        5        4        3         5         5         5
-7         2        2       NA        4     &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;         4
-8         5        5        4        2        8      &lt;NA&gt;         4         6
-9         3        1        6        1        2                   3         1
-10      -99        4        5        8        8         3         5         3
-   X3_item13 X3_item14 X3_item15
-1          6         3         3
-2          6         4         4
-3          5         4         3
-4          2         3         1
-5       &lt;NA&gt;         8         3
-6          4         3         5
-7          4         1         5
-8          5         6      &lt;NA&gt;
-9          2         3         1
-10         4         4         3</code></pre>
-</div>
-</div>
-</section>
-<section id="generate-reaction-times" class="level3">
-<h3 class="anchored" data-anchor-id="generate-reaction-times">Generate reaction times</h3>
-<div class="cell">
-<details open="" class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>dat_truffle_and_dirt <span class="ot">&lt;-</span> dat_truffle_and_dirt <span class="sc">|&gt;</span></span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">completion_time =</span> <span class="fu">generate_reaction_times</span>(<span class="at">n =</span> <span class="fu">n</span>()))</span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(dat_truffle_and_dirt, <span class="at">n =</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-<div class="cell-output cell-output-stdout">
-<pre><code>   id age    gender condition X1_item1 X1_item2 X1_item3 X1_item4 X1_item5
-1   1  32    female   control        8        2        3        1  missing
-2   2  35    female   control        3        4        2        3        4
-3   3  45        29   control        4        8        3        3        4
-4   4  32      male   control        8        7        2        4        5
-5   5  31      male   control        6        4        6        5        3
-6   6  32 nonbinary   control        3     &lt;NA&gt;        4        5        1
-7   7  27    female   control        2        3        4        2        4
-8   8  27     femle   control        2        4        3     &lt;NA&gt;        1
-9   9  37      male   control        2        5     -999        3        2
-10 10  41      male   control        2     &lt;NA&gt;  missing        5        2
-   X1_item6 X1_item7 X1_item8 X1_item9 X1_item10 X2_item1 X2_item2 X2_item3
-1         5        2        8        6         4        4        3        4
-2         6        4        4        4         4        3        3        4
-3         2        5     -999        2         2        6        3        6
-4         8        4        3        2         6        5        3        5
-5       -99        5        7     &lt;NA&gt;         5        8        4        3
-6         3        4        2        5         4        6        1        6
-7         4        3        8        4         3        2        5        1
-8         4        3       NA        3         8        3        3        8
-9         4        4        2        5         4        2        3        8
-10        5        4        2        4         8        3        6        3
-   X2_item4 X2_item5 X2_item6 X2_item7 X3_item1 X3_item2 X3_item3 X3_item4
-1        NA        4        2        2        3        3        4        6
-2         4        4        3        4        7        5        4        4
-3         4        3        4     &lt;NA&gt;        6        2        3        4
-4         3        2        2        4        4        1        4        5
-5         1       NA  missing        3     &lt;NA&gt;        3        3        3
-6         3                 5        6        5        3        2        5
-7         3        2        2        3        2        5        8        5
-8         5        4        4        4        6        2        6        6
-9         2        2        3        3        4        1        6        1
-10        5        2     &lt;NA&gt;        6        4        6        4        4
-   X3_item5 X3_item6 X3_item7 X3_item8 X3_item9 X3_item10 X3_item11 X3_item12
-1         5     &lt;NA&gt;        2        2        3         1         3         1
-2         5        7        3        6        5         3         5         7
-3         5        4        4     &lt;NA&gt;        5         3         3         4
-4         3        4        5     &lt;NA&gt;        2         4         3         3
-5         2        1        3        4        6         2         8         2
-6         5        6        5        4        3         5         5         5
-7         2        2       NA        4     &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;         4
-8         5        5        4        2        8      &lt;NA&gt;         4         6
-9         3        1        6        1        2                   3         1
-10      -99        4        5        8        8         3         5         3
-   X3_item13 X3_item14 X3_item15 completion_time
-1          6         3         3            1845
-2          6         4         4            1992
-3          5         4         3            1466
-4          2         3         1            1079
-5       &lt;NA&gt;         8         3            1121
-6          4         3         5            1113
-7          4         1         5            1514
-8          5         6      &lt;NA&gt;            1222
-9          2         3         1            2821
-10         4         4         3            1212</code></pre>
-</div>
-<details open="" class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(dat_truffle_and_dirt, <span class="fu">aes</span>(completion_time)) <span class="sc">+</span></span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>dat_truffle_and_dirt <span class="sc">|&gt;</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(<span class="at">n =</span> <span class="dv">10</span>) <span class="sc">|&gt;</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>() <span class="sc">|&gt;</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_classic</span>(<span class="at">full_width =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="vignette_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-</div>
-</section>
-<section id="messy-number-formatting" class="level3">
-<h3 class="anchored" data-anchor-id="messy-number-formatting">Messy number formatting</h3>
-<div class="cell">
-<details open="" class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>dat_truffle_and_dirt <span class="ot">&lt;-</span> dat_truffle_and_dirt <span class="sc">|&gt;</span></span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">completion_time =</span> <span class="fu">messy_numbers</span>(completion_time))</span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(dat_truffle_and_dirt, <span class="at">n =</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-<div class="cell-output cell-output-stdout">
-<pre><code>   id age    gender condition X1_item1 X1_item2 X1_item3 X1_item4 X1_item5
-1   1  32    female   control        8        2        3        1  missing
-2   2  35    female   control        3        4        2        3        4
-3   3  45        29   control        4        8        3        3        4
-4   4  32      male   control        8        7        2        4        5
-5   5  31      male   control        6        4        6        5        3
-6   6  32 nonbinary   control        3     &lt;NA&gt;        4        5        1
-7   7  27    female   control        2        3        4        2        4
-8   8  27     femle   control        2        4        3     &lt;NA&gt;        1
-9   9  37      male   control        2        5     -999        3        2
-10 10  41      male   control        2     &lt;NA&gt;  missing        5        2
-   X1_item6 X1_item7 X1_item8 X1_item9 X1_item10 X2_item1 X2_item2 X2_item3
-1         5        2        8        6         4        4        3        4
-2         6        4        4        4         4        3        3        4
-3         2        5     -999        2         2        6        3        6
-4         8        4        3        2         6        5        3        5
-5       -99        5        7     &lt;NA&gt;         5        8        4        3
-6         3        4        2        5         4        6        1        6
-7         4        3        8        4         3        2        5        1
-8         4        3       NA        3         8        3        3        8
-9         4        4        2        5         4        2        3        8
-10        5        4        2        4         8        3        6        3
-   X2_item4 X2_item5 X2_item6 X2_item7 X3_item1 X3_item2 X3_item3 X3_item4
-1        NA        4        2        2        3        3        4        6
-2         4        4        3        4        7        5        4        4
-3         4        3        4     &lt;NA&gt;        6        2        3        4
-4         3        2        2        4        4        1        4        5
-5         1       NA  missing        3     &lt;NA&gt;        3        3        3
-6         3                 5        6        5        3        2        5
-7         3        2        2        3        2        5        8        5
-8         5        4        4        4        6        2        6        6
-9         2        2        3        3        4        1        6        1
-10        5        2     &lt;NA&gt;        6        4        6        4        4
-   X3_item5 X3_item6 X3_item7 X3_item8 X3_item9 X3_item10 X3_item11 X3_item12
-1         5     &lt;NA&gt;        2        2        3         1         3         1
-2         5        7        3        6        5         3         5         7
-3         5        4        4     &lt;NA&gt;        5         3         3         4
-4         3        4        5     &lt;NA&gt;        2         4         3         3
-5         2        1        3        4        6         2         8         2
-6         5        6        5        4        3         5         5         5
-7         2        2       NA        4     &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;         4
-8         5        5        4        2        8      &lt;NA&gt;         4         6
-9         3        1        6        1        2                   3         1
-10      -99        4        5        8        8         3         5         3
-   X3_item13 X3_item14 X3_item15 completion_time
-1          6         3         3        1,845 ms
-2          6         4         4        1,992 ms
-3          5         4         3        1,466 ms
-4          2         3         1        1,079 ms
-5       &lt;NA&gt;         8         3        1,121 ms
-6          4         3         5        1,113 ms
-7          4         1         5        1,514 ms
-8          5         6      &lt;NA&gt;        1,222 ms
-9          2         3         1        2,821 ms
-10         4         4         3        1,212 ms</code></pre>
+<table class="lightable-classic caption-top table table-sm table-striped small" data-quarto-postprocess="true">
+<thead>
+<tr class="header">
+<th style="text-align: right;" data-quarto-table-cell-role="th">id</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">age</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">gender</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">condition</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">X1_item1</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">X1_item2</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">X1_item3</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">X1_item4</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">X1_item5</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">completion_time</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">forty three</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">4</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">1,013 ms</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">32</td>
+<td style="text-align: left;">male</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: left;">5</td>
+<td style="text-align: left;">4</td>
+<td style="text-align: left;">4</td>
+<td style="text-align: left;">7</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">1,296 ms</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">37</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: left;">4</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">4</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">1,535 ms</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">4</td>
+<td style="text-align: left;">28</td>
+<td style="text-align: left;">33</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: left;">5</td>
+<td style="text-align: left;">4</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">1,908 ms</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td style="text-align: left;">26</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">7</td>
+<td style="text-align: left;">818 ms</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">6</td>
+<td style="text-align: left;">39</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: left;">5</td>
+<td style="text-align: left;">5</td>
+<td style="text-align: left;">4</td>
+<td style="text-align: left;">4</td>
+<td style="text-align: left;">8</td>
+<td style="text-align: left;">1,088 ms</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">7</td>
+<td style="text-align: left;">27</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">1,199 ms</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">8</td>
+<td style="text-align: left;">24</td>
+<td style="text-align: left;">Non-binary</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: left;">5</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">5</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">866 ms</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">9</td>
+<td style="text-align: left;">36</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">1,076 ms</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">10</td>
+<td style="text-align: left;">45</td>
+<td style="text-align: left;">male</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: left;">4</td>
+<td style="text-align: left;">5</td>
+<td style="text-align: left;">5</td>
+<td style="text-align: left;">4</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">1,069 ms</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 </section>
@@ -778,67 +1467,164 @@ $item_histograms</code></pre>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>dat_truffle_and_dirt <span class="ot">&lt;-</span> dat_truffle_and_dirt <span class="sc">|&gt;</span></span>
-<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_non_tidy_column</span>(<span class="at">col =</span> <span class="st">"block_trial"</span>)</span>
-<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(dat_truffle_and_dirt, <span class="at">n =</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>dat_truffle_and_dirt <span class="ot">&lt;-</span> dat_truffle_and_dirt <span class="sc">|&gt;</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_non_tidy_column</span>(<span class="at">col =</span> <span class="st">"block_trial"</span>)</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>dat_truffle_and_dirt <span class="sc">|&gt;</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(<span class="at">n =</span> <span class="dv">10</span>) <span class="sc">|&gt;</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>() <span class="sc">|&gt;</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_classic</span>(<span class="at">full_width =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
-<div class="cell-output cell-output-stdout">
-<pre><code>   id age    gender condition X1_item1 X1_item2 X1_item3 X1_item4 X1_item5
-1   1  32    female   control        8        2        3        1  missing
-2   2  35    female   control        3        4        2        3        4
-3   3  45        29   control        4        8        3        3        4
-4   4  32      male   control        8        7        2        4        5
-5   5  31      male   control        6        4        6        5        3
-6   6  32 nonbinary   control        3     &lt;NA&gt;        4        5        1
-7   7  27    female   control        2        3        4        2        4
-8   8  27     femle   control        2        4        3     &lt;NA&gt;        1
-9   9  37      male   control        2        5     -999        3        2
-10 10  41      male   control        2     &lt;NA&gt;  missing        5        2
-   X1_item6 X1_item7 X1_item8 X1_item9 X1_item10 X2_item1 X2_item2 X2_item3
-1         5        2        8        6         4        4        3        4
-2         6        4        4        4         4        3        3        4
-3         2        5     -999        2         2        6        3        6
-4         8        4        3        2         6        5        3        5
-5       -99        5        7     &lt;NA&gt;         5        8        4        3
-6         3        4        2        5         4        6        1        6
-7         4        3        8        4         3        2        5        1
-8         4        3       NA        3         8        3        3        8
-9         4        4        2        5         4        2        3        8
-10        5        4        2        4         8        3        6        3
-   X2_item4 X2_item5 X2_item6 X2_item7 X3_item1 X3_item2 X3_item3 X3_item4
-1        NA        4        2        2        3        3        4        6
-2         4        4        3        4        7        5        4        4
-3         4        3        4     &lt;NA&gt;        6        2        3        4
-4         3        2        2        4        4        1        4        5
-5         1       NA  missing        3     &lt;NA&gt;        3        3        3
-6         3                 5        6        5        3        2        5
-7         3        2        2        3        2        5        8        5
-8         5        4        4        4        6        2        6        6
-9         2        2        3        3        4        1        6        1
-10        5        2     &lt;NA&gt;        6        4        6        4        4
-   X3_item5 X3_item6 X3_item7 X3_item8 X3_item9 X3_item10 X3_item11 X3_item12
-1         5     &lt;NA&gt;        2        2        3         1         3         1
-2         5        7        3        6        5         3         5         7
-3         5        4        4     &lt;NA&gt;        5         3         3         4
-4         3        4        5     &lt;NA&gt;        2         4         3         3
-5         2        1        3        4        6         2         8         2
-6         5        6        5        4        3         5         5         5
-7         2        2       NA        4     &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;         4
-8         5        5        4        2        8      &lt;NA&gt;         4         6
-9         3        1        6        1        2                   3         1
-10      -99        4        5        8        8         3         5         3
-   X3_item13 X3_item14 X3_item15 completion_time     block_trial
-1          6         3         3        1,845 ms block2_trial001
-2          6         4         4        1,992 ms block1_trial002
-3          5         4         3        1,466 ms block4_trial003
-4          2         3         1        1,079 ms block2_trial004
-5       &lt;NA&gt;         8         3        1,121 ms block5_trial005
-6          4         3         5        1,113 ms block3_trial006
-7          4         1         5        1,514 ms block5_trial007
-8          5         6      &lt;NA&gt;        1,222 ms block4_trial008
-9          2         3         1        2,821 ms block5_trial009
-10         4         4         3        1,212 ms block2_trial010</code></pre>
+<div class="cell-output-display">
+<table class="lightable-classic caption-top table table-sm table-striped small" data-quarto-postprocess="true">
+<thead>
+<tr class="header">
+<th style="text-align: right;" data-quarto-table-cell-role="th">id</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">age</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">gender</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">condition</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">X1_item1</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">X1_item2</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">X1_item3</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">X1_item4</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">X1_item5</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">completion_time</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">block_trial</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">forty three</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">4</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">1,013 ms</td>
+<td style="text-align: left;">block1_trial001</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">32</td>
+<td style="text-align: left;">male</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: left;">5</td>
+<td style="text-align: left;">4</td>
+<td style="text-align: left;">4</td>
+<td style="text-align: left;">7</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">1,296 ms</td>
+<td style="text-align: left;">block3_trial002</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">37</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: left;">4</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">4</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">1,535 ms</td>
+<td style="text-align: left;">block6_trial003</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">4</td>
+<td style="text-align: left;">28</td>
+<td style="text-align: left;">33</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: left;">5</td>
+<td style="text-align: left;">4</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">1,908 ms</td>
+<td style="text-align: left;">block4_trial004</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td style="text-align: left;">26</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">7</td>
+<td style="text-align: left;">818 ms</td>
+<td style="text-align: left;">block6_trial005</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">6</td>
+<td style="text-align: left;">39</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: left;">5</td>
+<td style="text-align: left;">5</td>
+<td style="text-align: left;">4</td>
+<td style="text-align: left;">4</td>
+<td style="text-align: left;">8</td>
+<td style="text-align: left;">1,088 ms</td>
+<td style="text-align: left;">block1_trial006</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">7</td>
+<td style="text-align: left;">27</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">1,199 ms</td>
+<td style="text-align: left;">block4_trial007</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">8</td>
+<td style="text-align: left;">24</td>
+<td style="text-align: left;">Non-binary</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: left;">5</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">5</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">866 ms</td>
+<td style="text-align: left;">block6_trial008</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">9</td>
+<td style="text-align: left;">36</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">1,076 ms</td>
+<td style="text-align: left;">block4_trial009</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">10</td>
+<td style="text-align: left;">45</td>
+<td style="text-align: left;">male</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: left;">4</td>
+<td style="text-align: left;">5</td>
+<td style="text-align: left;">5</td>
+<td style="text-align: left;">4</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">1,069 ms</td>
+<td style="text-align: left;">block6_trial010</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 </section>
@@ -847,78 +1633,175 @@ $item_histograms</code></pre>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>dat_truffle_and_dirt <span class="ot">&lt;-</span> dat_truffle_and_dirt <span class="sc">|&gt;</span></span>
-<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">date =</span> <span class="fu">add_dates_messy</span>(<span class="at">n =</span> <span class="fu">n</span>()))</span>
-<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(dat_truffle_and_dirt, <span class="at">n =</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>dat_truffle_and_dirt <span class="ot">&lt;-</span> dat_truffle_and_dirt <span class="sc">|&gt;</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">date =</span> <span class="fu">add_dates_messy</span>(<span class="at">n =</span> <span class="fu">n</span>()))</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>dat_truffle_and_dirt <span class="sc">|&gt;</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(<span class="at">n =</span> <span class="dv">10</span>) <span class="sc">|&gt;</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>() <span class="sc">|&gt;</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_classic</span>(<span class="at">full_width =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
-<div class="cell-output cell-output-stdout">
-<pre><code>   id age    gender condition X1_item1 X1_item2 X1_item3 X1_item4 X1_item5
-1   1  32    female   control        8        2        3        1  missing
-2   2  35    female   control        3        4        2        3        4
-3   3  45        29   control        4        8        3        3        4
-4   4  32      male   control        8        7        2        4        5
-5   5  31      male   control        6        4        6        5        3
-6   6  32 nonbinary   control        3     &lt;NA&gt;        4        5        1
-7   7  27    female   control        2        3        4        2        4
-8   8  27     femle   control        2        4        3     &lt;NA&gt;        1
-9   9  37      male   control        2        5     -999        3        2
-10 10  41      male   control        2     &lt;NA&gt;  missing        5        2
-   X1_item6 X1_item7 X1_item8 X1_item9 X1_item10 X2_item1 X2_item2 X2_item3
-1         5        2        8        6         4        4        3        4
-2         6        4        4        4         4        3        3        4
-3         2        5     -999        2         2        6        3        6
-4         8        4        3        2         6        5        3        5
-5       -99        5        7     &lt;NA&gt;         5        8        4        3
-6         3        4        2        5         4        6        1        6
-7         4        3        8        4         3        2        5        1
-8         4        3       NA        3         8        3        3        8
-9         4        4        2        5         4        2        3        8
-10        5        4        2        4         8        3        6        3
-   X2_item4 X2_item5 X2_item6 X2_item7 X3_item1 X3_item2 X3_item3 X3_item4
-1        NA        4        2        2        3        3        4        6
-2         4        4        3        4        7        5        4        4
-3         4        3        4     &lt;NA&gt;        6        2        3        4
-4         3        2        2        4        4        1        4        5
-5         1       NA  missing        3     &lt;NA&gt;        3        3        3
-6         3                 5        6        5        3        2        5
-7         3        2        2        3        2        5        8        5
-8         5        4        4        4        6        2        6        6
-9         2        2        3        3        4        1        6        1
-10        5        2     &lt;NA&gt;        6        4        6        4        4
-   X3_item5 X3_item6 X3_item7 X3_item8 X3_item9 X3_item10 X3_item11 X3_item12
-1         5     &lt;NA&gt;        2        2        3         1         3         1
-2         5        7        3        6        5         3         5         7
-3         5        4        4     &lt;NA&gt;        5         3         3         4
-4         3        4        5     &lt;NA&gt;        2         4         3         3
-5         2        1        3        4        6         2         8         2
-6         5        6        5        4        3         5         5         5
-7         2        2       NA        4     &lt;NA&gt;      &lt;NA&gt;      &lt;NA&gt;         4
-8         5        5        4        2        8      &lt;NA&gt;         4         6
-9         3        1        6        1        2                   3         1
-10      -99        4        5        8        8         3         5         3
-   X3_item13 X3_item14 X3_item15 completion_time     block_trial
-1          6         3         3        1,845 ms block2_trial001
-2          6         4         4        1,992 ms block1_trial002
-3          5         4         3        1,466 ms block4_trial003
-4          2         3         1        1,079 ms block2_trial004
-5       &lt;NA&gt;         8         3        1,121 ms block5_trial005
-6          4         3         5        1,113 ms block3_trial006
-7          4         1         5        1,514 ms block5_trial007
-8          5         6      &lt;NA&gt;        1,222 ms block4_trial008
-9          2         3         1        2,821 ms block5_trial009
-10         4         4         3        1,212 ms block2_trial010
-                        date
-1                 2025/05/15
-2                 2022/02/17
-3                 2025/03/25
-4                 2024/04/30
-5                 18/03/2024
-6                 07.06.2024
-7  2025-10-31T04:11:20-05:00
-8  2025-01-10T02:01:43+01:00
-9                 03/03/2022
-10              Oct 24, 2023</code></pre>
+<div class="cell-output-display">
+<table class="lightable-classic caption-top table table-sm table-striped small" data-quarto-postprocess="true">
+<thead>
+<tr class="header">
+<th style="text-align: right;" data-quarto-table-cell-role="th">id</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">age</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">gender</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">condition</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">X1_item1</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">X1_item2</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">X1_item3</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">X1_item4</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">X1_item5</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">completion_time</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">block_trial</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">date</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">forty three</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">4</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">1,013 ms</td>
+<td style="text-align: left;">block1_trial001</td>
+<td style="text-align: left;">02/28/2024</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">32</td>
+<td style="text-align: left;">male</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: left;">5</td>
+<td style="text-align: left;">4</td>
+<td style="text-align: left;">4</td>
+<td style="text-align: left;">7</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">1,296 ms</td>
+<td style="text-align: left;">block3_trial002</td>
+<td style="text-align: left;">03/04/2022</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">37</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: left;">4</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">4</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">1,535 ms</td>
+<td style="text-align: left;">block6_trial003</td>
+<td style="text-align: left;">Jun 19, 2025</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">4</td>
+<td style="text-align: left;">28</td>
+<td style="text-align: left;">33</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: left;">5</td>
+<td style="text-align: left;">4</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">1,908 ms</td>
+<td style="text-align: left;">block4_trial004</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td style="text-align: left;">26</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">7</td>
+<td style="text-align: left;">818 ms</td>
+<td style="text-align: left;">block6_trial005</td>
+<td style="text-align: left;">04/02/2022</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">6</td>
+<td style="text-align: left;">39</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: left;">5</td>
+<td style="text-align: left;">5</td>
+<td style="text-align: left;">4</td>
+<td style="text-align: left;">4</td>
+<td style="text-align: left;">8</td>
+<td style="text-align: left;">1,088 ms</td>
+<td style="text-align: left;">block1_trial006</td>
+<td style="text-align: left;">Sep 16, 2022</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">7</td>
+<td style="text-align: left;">27</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">1,199 ms</td>
+<td style="text-align: left;">block4_trial007</td>
+<td style="text-align: left;">2022-07-20T14:46:19+02:00</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">8</td>
+<td style="text-align: left;">24</td>
+<td style="text-align: left;">Non-binary</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: left;">5</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">5</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">866 ms</td>
+<td style="text-align: left;">block6_trial008</td>
+<td style="text-align: left;">2024-08-17</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">9</td>
+<td style="text-align: left;">36</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">1,076 ms</td>
+<td style="text-align: left;">block4_trial009</td>
+<td style="text-align: left;">2024/03/23</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">10</td>
+<td style="text-align: left;">45</td>
+<td style="text-align: left;">male</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: left;">4</td>
+<td style="text-align: left;">5</td>
+<td style="text-align: left;">5</td>
+<td style="text-align: left;">4</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">1,069 ms</td>
+<td style="text-align: left;">block6_trial010</td>
+<td style="text-align: left;">2025-01-19T12:18:01+01:00</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 </section>
@@ -927,85 +1810,182 @@ $item_histograms</code></pre>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co"># move some columns around before renaming makes it hard</span></span>
-<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>dat_truffle_and_dirt <span class="ot">&lt;-</span> dat_truffle_and_dirt <span class="sc">|&gt;</span></span>
-<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">relocate</span>(date, <span class="at">.after =</span> <span class="st">"id"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">relocate</span>(completion_time, <span class="at">.after =</span> <span class="st">"id"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">relocate</span>(block_trial, <span class="at">.after =</span> <span class="st">"id"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">write_lines</span>(<span class="st">"dat_truffle_and_dirt.csv"</span>)</span>
-<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>dat_truffle_and_dirt <span class="ot">&lt;-</span> dat_truffle_and_dirt <span class="sc">|&gt;</span></span>
-<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">messy_colnames</span>()</span>
-<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(dat_truffle_and_dirt, <span class="at">n =</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># move some columns around before renaming makes it hard</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>dat_truffle_and_dirt <span class="ot">&lt;-</span> dat_truffle_and_dirt <span class="sc">|&gt;</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">relocate</span>(date, <span class="at">.after =</span> <span class="st">"id"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">relocate</span>(completion_time, <span class="at">.after =</span> <span class="st">"id"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">relocate</span>(block_trial, <span class="at">.after =</span> <span class="st">"id"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">write_lines</span>(<span class="st">"dat_truffle_and_dirt.csv"</span>)</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>dat_truffle_and_dirt <span class="ot">&lt;-</span> dat_truffle_and_dirt <span class="sc">|&gt;</span></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">messy_colnames</span>()</span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>dat_truffle_and_dirt <span class="sc">|&gt;</span></span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(<span class="at">n =</span> <span class="dv">10</span>) <span class="sc">|&gt;</span></span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>() <span class="sc">|&gt;</span></span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_classic</span>(<span class="at">full_width =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
-<div class="cell-output cell-output-stdout">
-<pre><code>   id   blockTriaLOld completion_time                     Da te age    gender
-1   1 block2_trial001        1,845 ms                2025/05/15  32    female
-2   2 block1_trial002        1,992 ms                2022/02/17  35    female
-3   3 block4_trial003        1,466 ms                2025/03/25  45        29
-4   4 block2_trial004        1,079 ms                2024/04/30  32      male
-5   5 block5_trial005        1,121 ms                18/03/2024  31      male
-6   6 block3_trial006        1,113 ms                07.06.2024  32 nonbinary
-7   7 block5_trial007        1,514 ms 2025-10-31T04:11:20-05:00  27    female
-8   8 block4_trial008        1,222 ms 2025-01-10T02:01:43+01:00  27     femle
-9   9 block5_trial009        2,821 ms                03/03/2022  37      male
-10 10 block2_trial010        1,212 ms              Oct 24, 2023  41      male
-   condition X1_item1 X1_item2 X1 item3 * X1_item4 X1_item5 x1Item6 X1_item7
-1    control        8        2          3        1  missing       5        2
-2    control        3        4          2        3        4       6        4
-3    control        4        8          3        3        4       2        5
-4    control        8        7          2        4        5       8        4
-5    control        6        4          6        5        3     -99        5
-6    control        3     &lt;NA&gt;          4        5        1       3        4
-7    control        2        3          4        2        4       4        3
-8    control        2        4          3     &lt;NA&gt;        1       4        3
-9    control        2        5       -999        3        2       4        4
-10   control        2     &lt;NA&gt;    missing        5        2       5        4
-   X1_item8 X1_item9 X1_item10 X2_item1 X2_item2 X2_item3 X2_item4 X2_item5
-1         8        6         4        4        3        4       NA        4
-2         4        4         4        3        3        4        4        4
-3      -999        2         2        6        3        6        4        3
-4         3        2         6        5        3        5        3        2
-5         7     &lt;NA&gt;         5        8        4        3        1       NA
-6         2        5         4        6        1        6        3         
-7         8        4         3        2        5        1        3        2
-8        NA        3         8        3        3        8        5        4
-9         2        5         4        2        3        8        2        2
-10        2        4         8        3        6        3        5        2
-   X2Item6V2 X2_item7 X3_item1 x3 em2 X tem3 v2 X3_item4 X3_item5 X3_item6
-1          2        2        3      3         4        6        5     &lt;NA&gt;
-2          3        4        7      5         4        4        5        7
-3          4     &lt;NA&gt;        6      2         3        4        5        4
-4          2        4        4      1         4        5        3        4
-5    missing        3     &lt;NA&gt;      3         3        3        2        1
-6          5        6        5      3         2        5        5        6
-7          2        3        2      5         8        5        2        2
-8          4        4        6      2         6        6        5        5
-9          3        3        4      1         6        1        3        1
-10      &lt;NA&gt;        6        4      6         4        4      -99        4
-   X3_item7 X3_item8 X3_item9 X3  itm0 X3 itm11 X3_item12 X3_item13 X3_item14
-1         2        2        3        1        3         1         6         3
-2         3        6        5        3        5         7         6         4
-3         4     &lt;NA&gt;        5        3        3         4         5         4
-4         5     &lt;NA&gt;        2        4        3         3         2         3
-5         3        4        6        2        8         2      &lt;NA&gt;         8
-6         5        4        3        5        5         5         4         3
-7        NA        4     &lt;NA&gt;     &lt;NA&gt;     &lt;NA&gt;         4         4         1
-8         4        2        8     &lt;NA&gt;        4         6         5         6
-9         6        1        2                 3         1         2         3
-10        5        8        8        3        5         3         4         4
-   X3  item15
-1           3
-2           4
-3           3
-4           1
-5           3
-6           5
-7           5
-8        &lt;NA&gt;
-9           1
-10          3</code></pre>
+<div class="cell-output-display">
+<table class="lightable-classic caption-top table table-sm table-striped small" data-quarto-postprocess="true">
+<thead>
+<tr class="header">
+<th style="text-align: right;" data-quarto-table-cell-role="th">id</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">blo ck tial</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">compl etionime</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">date</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">#age</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">gender</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">condition</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">X1_item1</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">X1_item2</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">X1_item3</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">X1_item4</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">X1_item5</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">block1_trial001</td>
+<td style="text-align: left;">1,013 ms</td>
+<td style="text-align: left;">02/28/2024</td>
+<td style="text-align: left;">forty three</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">4</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">2</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">block3_trial002</td>
+<td style="text-align: left;">1,296 ms</td>
+<td style="text-align: left;">03/04/2022</td>
+<td style="text-align: left;">32</td>
+<td style="text-align: left;">male</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: left;">5</td>
+<td style="text-align: left;">4</td>
+<td style="text-align: left;">4</td>
+<td style="text-align: left;">7</td>
+<td style="text-align: left;">3</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">block6_trial003</td>
+<td style="text-align: left;">1,535 ms</td>
+<td style="text-align: left;">Jun 19, 2025</td>
+<td style="text-align: left;">37</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: left;">4</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">4</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">3</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">4</td>
+<td style="text-align: left;">block4_trial004</td>
+<td style="text-align: left;">1,908 ms</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">28</td>
+<td style="text-align: left;">33</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: left;">5</td>
+<td style="text-align: left;">4</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">NA</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td style="text-align: left;">block6_trial005</td>
+<td style="text-align: left;">818 ms</td>
+<td style="text-align: left;">04/02/2022</td>
+<td style="text-align: left;">26</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">7</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">6</td>
+<td style="text-align: left;">block1_trial006</td>
+<td style="text-align: left;">1,088 ms</td>
+<td style="text-align: left;">Sep 16, 2022</td>
+<td style="text-align: left;">39</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: left;">5</td>
+<td style="text-align: left;">5</td>
+<td style="text-align: left;">4</td>
+<td style="text-align: left;">4</td>
+<td style="text-align: left;">8</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">7</td>
+<td style="text-align: left;">block4_trial007</td>
+<td style="text-align: left;">1,199 ms</td>
+<td style="text-align: left;">2022-07-20T14:46:19+02:00</td>
+<td style="text-align: left;">27</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">2</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">8</td>
+<td style="text-align: left;">block6_trial008</td>
+<td style="text-align: left;">866 ms</td>
+<td style="text-align: left;">2024-08-17</td>
+<td style="text-align: left;">24</td>
+<td style="text-align: left;">Non-binary</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: left;">5</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">5</td>
+<td style="text-align: left;">2</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">9</td>
+<td style="text-align: left;">block4_trial009</td>
+<td style="text-align: left;">1,076 ms</td>
+<td style="text-align: left;">2024/03/23</td>
+<td style="text-align: left;">36</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">1</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">10</td>
+<td style="text-align: left;">block6_trial010</td>
+<td style="text-align: left;">1,069 ms</td>
+<td style="text-align: left;">2025-01-19T12:18:01+01:00</td>
+<td style="text-align: left;">45</td>
+<td style="text-align: left;">male</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: left;">4</td>
+<td style="text-align: left;">5</td>
+<td style="text-align: left;">5</td>
+<td style="text-align: left;">4</td>
+<td style="text-align: left;">2</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 </section>
@@ -1014,78 +1994,175 @@ $item_histograms</code></pre>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>dat_truffle_and_dirt <span class="ot">&lt;-</span> dat_truffle_and_dirt <span class="sc">|&gt;</span></span>
-<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_duplicates</span>(<span class="at">prop =</span> <span class="fl">0.05</span>)</span>
-<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(dat_truffle_and_dirt, <span class="at">n =</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>dat_truffle_and_dirt <span class="ot">&lt;-</span> dat_truffle_and_dirt <span class="sc">|&gt;</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_duplicates</span>(<span class="at">prop =</span> <span class="fl">0.05</span>)</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>dat_truffle_and_dirt <span class="sc">|&gt;</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(<span class="at">n =</span> <span class="dv">10</span>) <span class="sc">|&gt;</span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>() <span class="sc">|&gt;</span></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_classic</span>(<span class="at">full_width =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
-<div class="cell-output cell-output-stdout">
-<pre><code>   id   blockTriaLOld completion_time                     Da te age    gender
-1   1 block2_trial001        1,845 ms                2025/05/15  32    female
-2   2 block1_trial002        1,992 ms                2022/02/17  35    female
-3   3 block4_trial003        1,466 ms                2025/03/25  45        29
-4   4 block2_trial004        1,079 ms                2024/04/30  32      male
-5   5 block5_trial005        1,121 ms                18/03/2024  31      male
-6   6 block3_trial006        1,113 ms                07.06.2024  32 nonbinary
-7   7 block5_trial007        1,514 ms 2025-10-31T04:11:20-05:00  27    female
-8   8 block4_trial008        1,222 ms 2025-01-10T02:01:43+01:00  27     femle
-9   9 block5_trial009        2,821 ms                03/03/2022  37      male
-10 10 block2_trial010        1,212 ms              Oct 24, 2023  41      male
-   condition X1_item1 X1_item2 X1 item3 * X1_item4 X1_item5 x1Item6 X1_item7
-1    control        8        2          3        1  missing       5        2
-2    control        3        4          2        3        4       6        4
-3    control        4        8          3        3        4       2        5
-4    control        8        7          2        4        5       8        4
-5    control        6        4          6        5        3     -99        5
-6    control        3     &lt;NA&gt;          4        5        1       3        4
-7    control        2        3          4        2        4       4        3
-8    control        2        4          3     &lt;NA&gt;        1       4        3
-9    control        2        5       -999        3        2       4        4
-10   control        2     &lt;NA&gt;    missing        5        2       5        4
-   X1_item8 X1_item9 X1_item10 X2_item1 X2_item2 X2_item3 X2_item4 X2_item5
-1         8        6         4        4        3        4       NA        4
-2         4        4         4        3        3        4        4        4
-3      -999        2         2        6        3        6        4        3
-4         3        2         6        5        3        5        3        2
-5         7     &lt;NA&gt;         5        8        4        3        1       NA
-6         2        5         4        6        1        6        3         
-7         8        4         3        2        5        1        3        2
-8        NA        3         8        3        3        8        5        4
-9         2        5         4        2        3        8        2        2
-10        2        4         8        3        6        3        5        2
-   X2Item6V2 X2_item7 X3_item1 x3 em2 X tem3 v2 X3_item4 X3_item5 X3_item6
-1          2        2        3      3         4        6        5     &lt;NA&gt;
-2          3        4        7      5         4        4        5        7
-3          4     &lt;NA&gt;        6      2         3        4        5        4
-4          2        4        4      1         4        5        3        4
-5    missing        3     &lt;NA&gt;      3         3        3        2        1
-6          5        6        5      3         2        5        5        6
-7          2        3        2      5         8        5        2        2
-8          4        4        6      2         6        6        5        5
-9          3        3        4      1         6        1        3        1
-10      &lt;NA&gt;        6        4      6         4        4      -99        4
-   X3_item7 X3_item8 X3_item9 X3  itm0 X3 itm11 X3_item12 X3_item13 X3_item14
-1         2        2        3        1        3         1         6         3
-2         3        6        5        3        5         7         6         4
-3         4     &lt;NA&gt;        5        3        3         4         5         4
-4         5     &lt;NA&gt;        2        4        3         3         2         3
-5         3        4        6        2        8         2      &lt;NA&gt;         8
-6         5        4        3        5        5         5         4         3
-7        NA        4     &lt;NA&gt;     &lt;NA&gt;     &lt;NA&gt;         4         4         1
-8         4        2        8     &lt;NA&gt;        4         6         5         6
-9         6        1        2                 3         1         2         3
-10        5        8        8        3        5         3         4         4
-   X3  item15
-1           3
-2           4
-3           3
-4           1
-5           3
-6           5
-7           5
-8        &lt;NA&gt;
-9           1
-10          3</code></pre>
+<div class="cell-output-display">
+<table class="lightable-classic caption-top table table-sm table-striped small" data-quarto-postprocess="true">
+<thead>
+<tr class="header">
+<th style="text-align: right;" data-quarto-table-cell-role="th">id</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">blo ck tial</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">compl etionime</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">date</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">#age</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">gender</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">condition</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">X1_item1</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">X1_item2</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">X1_item3</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">X1_item4</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">X1_item5</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">block1_trial001</td>
+<td style="text-align: left;">1,013 ms</td>
+<td style="text-align: left;">02/28/2024</td>
+<td style="text-align: left;">forty three</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">4</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">2</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">block3_trial002</td>
+<td style="text-align: left;">1,296 ms</td>
+<td style="text-align: left;">03/04/2022</td>
+<td style="text-align: left;">32</td>
+<td style="text-align: left;">male</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: left;">5</td>
+<td style="text-align: left;">4</td>
+<td style="text-align: left;">4</td>
+<td style="text-align: left;">7</td>
+<td style="text-align: left;">3</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">block6_trial003</td>
+<td style="text-align: left;">1,535 ms</td>
+<td style="text-align: left;">Jun 19, 2025</td>
+<td style="text-align: left;">37</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: left;">4</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">4</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">3</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">4</td>
+<td style="text-align: left;">block4_trial004</td>
+<td style="text-align: left;">1,908 ms</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">28</td>
+<td style="text-align: left;">33</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: left;">5</td>
+<td style="text-align: left;">4</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">NA</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">4</td>
+<td style="text-align: left;">block4_trial004</td>
+<td style="text-align: left;">1,908 ms</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">28</td>
+<td style="text-align: left;">33</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: left;">5</td>
+<td style="text-align: left;">4</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">NA</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">5</td>
+<td style="text-align: left;">block6_trial005</td>
+<td style="text-align: left;">818 ms</td>
+<td style="text-align: left;">04/02/2022</td>
+<td style="text-align: left;">26</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">7</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">6</td>
+<td style="text-align: left;">block1_trial006</td>
+<td style="text-align: left;">1,088 ms</td>
+<td style="text-align: left;">Sep 16, 2022</td>
+<td style="text-align: left;">39</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: left;">5</td>
+<td style="text-align: left;">5</td>
+<td style="text-align: left;">4</td>
+<td style="text-align: left;">4</td>
+<td style="text-align: left;">8</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">7</td>
+<td style="text-align: left;">block4_trial007</td>
+<td style="text-align: left;">1,199 ms</td>
+<td style="text-align: left;">2022-07-20T14:46:19+02:00</td>
+<td style="text-align: left;">27</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">2</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">8</td>
+<td style="text-align: left;">block6_trial008</td>
+<td style="text-align: left;">866 ms</td>
+<td style="text-align: left;">2024-08-17</td>
+<td style="text-align: left;">24</td>
+<td style="text-align: left;">Non-binary</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: left;">5</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">5</td>
+<td style="text-align: left;">2</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">9</td>
+<td style="text-align: left;">block4_trial009</td>
+<td style="text-align: left;">1,076 ms</td>
+<td style="text-align: left;">2024/03/23</td>
+<td style="text-align: left;">36</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">1</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 </section>
@@ -1094,70 +2171,337 @@ $item_histograms</code></pre>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>dat_truffle_and_dirt_with_header <span class="ot">&lt;-</span> dat_truffle_and_dirt <span class="sc">|&gt;</span></span>
-<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_messy_header_rows</span>()</span>
-<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(dat_truffle_and_dirt_with_header, <span class="at">n =</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>dat_truffle_and_dirt_with_header <span class="ot">&lt;-</span> dat_truffle_and_dirt <span class="sc">|&gt;</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_messy_header_rows</span>()</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>dat_truffle_and_dirt_with_header <span class="sc">|&gt;</span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(<span class="at">n =</span> <span class="dv">10</span>) <span class="sc">|&gt;</span></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>() <span class="sc">|&gt;</span></span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_classic</span>(<span class="at">full_width =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
-<div class="cell-output cell-output-stdout">
-<pre><code> [1] "Study: depression RCT"                                                                                                                                                                                                                                                                                                                                             
- [2] "Data collected: 2025-08-17"                                                                                                                                                                                                                                                                                                                                        
- [3] "id,blockTriaLOld,completion_time,Da te,age,gender,condition,X1_item1,X1_item2,X1 item3 *,X1_item4,X1_item5,x1Item6,X1_item7,X1_item8,X1_item9,X1_item10,X2_item1,X2_item2,X2_item3,X2_item4,X2_item5,X2Item6V2,X2_item7,X3_item1,x3 em2,X tem3 v2,X3_item4,X3_item5,X3_item6,X3_item7,X3_item8,X3_item9,X3  itm0,X3 itm11,X3_item12,X3_item13,X3_item14,X3  item15"
- [4] "1,block2_trial001,\"1,845 ms\",2025/05/15,32,female,control,8,2,3,1,missing,5,2,8,6,4,4,3,4,NA,4,2,2,3,3,4,6,5,NA,2,2,3,1,3,1,6,3,3"                                                                                                                                                                                                                               
- [5] "2,block1_trial002,\"1,992 ms\",2022/02/17,35,female,control,3,4,2,3,4,6,4,4,4,4,3,3,4,4,4,3,4,7,5,4,4,5,7,3,6,5,3,5,7,6,4,4"                                                                                                                                                                                                                                       
- [6] "3,block4_trial003,\"1,466 ms\",2025/03/25,45,29,control,4,8,3,3,4,2,5,-999,2,2,6,3,6,4,3,4,NA,6,2,3,4,5,4,4,NA,5,3,3,4,5,4,3"                                                                                                                                                                                                                                      
- [7] "4,block2_trial004,\"1,079 ms\",2024/04/30,32,male,control,8,7,2,4,5,8,4,3,2,6,5,3,5,3,2,2,4,4,1,4,5,3,4,5,NA,2,4,3,3,2,3,1"                                                                                                                                                                                                                                        
- [8] "5,block5_trial005,\"1,121 ms\",18/03/2024,31,male,control,6,4,6,5,3,-99,5,7,NA,5,8,4,3,1,NA,missing,3,NA,3,3,3,2,1,3,4,6,2,8,2,NA,8,3"                                                                                                                                                                                                                             
- [9] "6,block3_trial006,\"1,113 ms\",07.06.2024,32,nonbinary,control,3,NA,4,5,1,3,4,2,5,4,6,1,6,3,,5,6,5,3,2,5,5,6,5,4,3,5,5,5,4,3,5"                                                                                                                                                                                                                                    
-[10] "7,block5_trial007,\"1,514 ms\",2025-10-31T04:11:20-05:00,27,female,control,2,3,4,2,4,4,3,8,4,3,2,5,1,3,2,2,3,2,5,8,5,2,2,NA,4,NA,NA,NA,4,4,1,5"                                                                                                                                                                                                                    </code></pre>
+<div class="cell-output-display">
+<table class="lightable-classic caption-top table table-sm table-striped small" data-quarto-postprocess="true">
+<thead>
+<tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">x</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Study: depression RCT</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Data collected: 2025-08-17</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">id,blo ck tial,compl etionime,date,#age,gender,condition,X1_item1,X1_item2,X1_item3,X1_item4,X1_item5</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">1,block1_trial001,"1,013 ms",02/28/2024,forty three,female,control,1,4,3,3,2</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">2,block3_trial002,"1,296 ms",03/04/2022,32,male,control,5,4,4,7,3</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">3,block6_trial003,"1,535 ms","Jun 19, 2025",37,female,control,4,3,4,3,3</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">4,block4_trial004,"1,908 ms",,28,33,control,5,4,2,2,NA</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">4,block4_trial004,"1,908 ms",,28,33,control,5,4,2,2,NA</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">5,block6_trial005,818 ms,04/02/2022,26,female,control,3,3,2,2,7</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">6,block1_trial006,"1,088 ms","Sep 16, 2022",39,female,control,5,5,4,4,8</td>
+</tr>
+</tbody>
+</table>
 </div>
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="co"># write to desk</span></span>
-<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>readr<span class="sc">::</span><span class="fu">write_lines</span>(dat_truffle_and_dirt_with_header, <span class="st">"dat_truffle_and_dirt_with_header.csv"</span>)</span>
-<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a><span class="co"># re-import later</span></span>
-<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>messy <span class="ot">&lt;-</span> readr<span class="sc">::</span><span class="fu">read_csv</span>(<span class="st">"dat_truffle_and_dirt_with_header.csv"</span>)</span>
-<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(messy)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># write to desk</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>dat_truffle_and_dirt_with_header <span class="sc">|&gt;</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  readr<span class="sc">::</span><span class="fu">write_lines</span>(<span class="st">"dat_truffle_and_dirt_with_header.csv"</span>)</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a><span class="co"># re-import later</span></span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>messy <span class="ot">&lt;-</span> readr<span class="sc">::</span><span class="fu">read_csv</span>(<span class="st">"dat_truffle_and_dirt_with_header.csv"</span>)</span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>messy <span class="sc">|&gt;</span></span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(<span class="at">n =</span> <span class="dv">10</span>) <span class="sc">|&gt;</span></span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>() <span class="sc">|&gt;</span></span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_classic</span>(<span class="at">full_width =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 6 × 1
-  `Study: depression RCT`                                                       
-  &lt;chr&gt;                                                                         
-1 "Data collected: 2025-08-17"                                                  
-2 "id,blockTriaLOld,completion_time,Da te,age,gender,condition,X1_item1,X1_item…
-3 "1,block2_trial001,\"1,845 ms\",2025/05/15,32,female,control,8,2,3,1,missing,…
-4 "2,block1_trial002,\"1,992 ms\",2022/02/17,35,female,control,3,4,2,3,4,6,4,4,…
-5 "3,block4_trial003,\"1,466 ms\",2025/03/25,45,29,control,4,8,3,3,4,2,5,-999,2…
-6 "4,block2_trial004,\"1,079 ms\",2024/04/30,32,male,control,8,7,2,4,5,8,4,3,2,…</code></pre>
+<div class="cell-output-display">
+<table class="lightable-classic caption-top table table-sm table-striped small" data-quarto-postprocess="true">
+<thead>
+<tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">Study: depression RCT</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Data collected: 2025-08-17</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">id,blo ck tial,compl etionime,date,#age,gender,condition,X1_item1,X1_item2,X1_item3,X1_item4,X1_item5</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">1,block1_trial001,"1,013 ms",02/28/2024,forty three,female,control,1,4,3,3,2</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">2,block3_trial002,"1,296 ms",03/04/2022,32,male,control,5,4,4,7,3</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">3,block6_trial003,"1,535 ms","Jun 19, 2025",37,female,control,4,3,4,3,3</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">4,block4_trial004,"1,908 ms",,28,33,control,5,4,2,2,NA</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">4,block4_trial004,"1,908 ms",,28,33,control,5,4,2,2,NA</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">5,block6_trial005,818 ms,04/02/2022,26,female,control,3,3,2,2,7</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">6,block1_trial006,"1,088 ms","Sep 16, 2022",39,female,control,5,5,4,4,8</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">7,block4_trial007,"1,199 ms",2022-07-20T14:46:19+02:00,27,female,control,3,2,1,3,2</td>
+</tr>
+</tbody>
+</table>
 </div>
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>clean <span class="ot">&lt;-</span> readr<span class="sc">::</span><span class="fu">read_csv</span>(<span class="st">"dat_truffle_and_dirt_with_header.csv"</span>, <span class="at">skip =</span> <span class="dv">2</span>)</span>
-<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(clean)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>clean <span class="ot">&lt;-</span> readr<span class="sc">::</span><span class="fu">read_csv</span>(<span class="st">"dat_truffle_and_dirt_with_header.csv"</span>, <span class="at">skip =</span> <span class="dv">2</span>)</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>clean <span class="sc">|&gt;</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(<span class="at">n =</span> <span class="dv">10</span>) <span class="sc">|&gt;</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>() <span class="sc">|&gt;</span></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_classic</span>(<span class="at">full_width =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 6 × 39
-     id blockTriaLOld   completion_time `Da te`  age   gender condition X1_item1
-  &lt;dbl&gt; &lt;chr&gt;           &lt;chr&gt;           &lt;chr&gt;    &lt;chr&gt; &lt;chr&gt;  &lt;chr&gt;     &lt;chr&gt;   
-1     1 block2_trial001 1,845 ms        2025/05… 32    female control   8       
-2     2 block1_trial002 1,992 ms        2022/02… 35    female control   3       
-3     3 block4_trial003 1,466 ms        2025/03… 45    29     control   4       
-4     4 block2_trial004 1,079 ms        2024/04… 32    male   control   8       
-5     5 block5_trial005 1,121 ms        18/03/2… 31    male   control   6       
-6     6 block3_trial006 1,113 ms        07.06.2… 32    nonbi… control   3       
-# ℹ 31 more variables: X1_item2 &lt;dbl&gt;, `X1 item3 *` &lt;chr&gt;, X1_item4 &lt;dbl&gt;,
-#   X1_item5 &lt;chr&gt;, x1Item6 &lt;dbl&gt;, X1_item7 &lt;chr&gt;, X1_item8 &lt;dbl&gt;,
-#   X1_item9 &lt;dbl&gt;, X1_item10 &lt;dbl&gt;, X2_item1 &lt;dbl&gt;, X2_item2 &lt;dbl&gt;,
-#   X2_item3 &lt;dbl&gt;, X2_item4 &lt;chr&gt;, X2_item5 &lt;dbl&gt;, X2Item6V2 &lt;chr&gt;,
-#   X2_item7 &lt;dbl&gt;, X3_item1 &lt;chr&gt;, `x3 em2` &lt;dbl&gt;, `X tem3 v2` &lt;dbl&gt;,
-#   X3_item4 &lt;dbl&gt;, X3_item5 &lt;dbl&gt;, X3_item6 &lt;chr&gt;, X3_item7 &lt;dbl&gt;,
-#   X3_item8 &lt;dbl&gt;, X3_item9 &lt;chr&gt;, `X3  itm0` &lt;dbl&gt;, `X3 itm11` &lt;dbl&gt;, …</code></pre>
+<div class="cell-output-display">
+<table class="lightable-classic caption-top table table-sm table-striped small" data-quarto-postprocess="true">
+<thead>
+<tr class="header">
+<th style="text-align: right;" data-quarto-table-cell-role="th">id</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">blo ck tial</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">compl etionime</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">date</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">#age</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">gender</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">condition</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">X1_item1</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">X1_item2</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">X1_item3</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">X1_item4</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">X1_item5</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">block1_trial001</td>
+<td style="text-align: left;">1,013 ms</td>
+<td style="text-align: left;">02/28/2024</td>
+<td style="text-align: left;">forty three</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">2</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">block3_trial002</td>
+<td style="text-align: left;">1,296 ms</td>
+<td style="text-align: left;">03/04/2022</td>
+<td style="text-align: left;">32</td>
+<td style="text-align: left;">male</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">3</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">block6_trial003</td>
+<td style="text-align: left;">1,535 ms</td>
+<td style="text-align: left;">Jun 19, 2025</td>
+<td style="text-align: left;">37</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">4</td>
+<td style="text-align: left;">block4_trial004</td>
+<td style="text-align: left;">1,908 ms</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">28</td>
+<td style="text-align: left;">33</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">NA</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">4</td>
+<td style="text-align: left;">block4_trial004</td>
+<td style="text-align: left;">1,908 ms</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">28</td>
+<td style="text-align: left;">33</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">NA</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">5</td>
+<td style="text-align: left;">block6_trial005</td>
+<td style="text-align: left;">818 ms</td>
+<td style="text-align: left;">04/02/2022</td>
+<td style="text-align: left;">26</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">7</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">6</td>
+<td style="text-align: left;">block1_trial006</td>
+<td style="text-align: left;">1,088 ms</td>
+<td style="text-align: left;">Sep 16, 2022</td>
+<td style="text-align: left;">39</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">8</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">7</td>
+<td style="text-align: left;">block4_trial007</td>
+<td style="text-align: left;">1,199 ms</td>
+<td style="text-align: left;">2022-07-20T14:46:19+02:00</td>
+<td style="text-align: left;">27</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">2</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">8</td>
+<td style="text-align: left;">block6_trial008</td>
+<td style="text-align: left;">866 ms</td>
+<td style="text-align: left;">2024-08-17</td>
+<td style="text-align: left;">24</td>
+<td style="text-align: left;">Non-binary</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">2</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">9</td>
+<td style="text-align: left;">block4_trial009</td>
+<td style="text-align: left;">1,076 ms</td>
+<td style="text-align: left;">2024/03/23</td>
+<td style="text-align: left;">36</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 </section>
+</section>
+<section id="truffle-and-dirt---more-complicated" class="level2">
+<h2 class="anchored" data-anchor-id="truffle-and-dirt---more-complicated">Truffle and dirt - more complicated</h2>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>dat_truffle_complex <span class="ot">&lt;-</span> </span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">generate_data_likert_two_conditions</span>(<span class="at">n_per_condition =</span> <span class="dv">200</span>,</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">factors  =</span> <span class="fu">c</span>(<span class="st">"X1_latent"</span>, <span class="st">"X2_latent"</span>, <span class="st">"X3_latent"</span>),</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">prefixes =</span> <span class="fu">c</span>(<span class="st">"X1_item"</span>, <span class="st">"X2_item"</span>, <span class="st">"X3_item"</span>),</span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">alpha =</span> <span class="fu">c</span>(.<span class="dv">70</span>, .<span class="dv">75</span>, .<span class="dv">80</span>),</span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">n_items =</span> <span class="fu">c</span>(<span class="dv">10</span>, <span class="dv">7</span>, <span class="dv">15</span>),</span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">n_levels =</span> <span class="dv">7</span>,</span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">r_among_outcomes =</span> <span class="fl">0.50</span>,</span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">approx_d_between_groups =</span> <span class="fu">c</span>(<span class="fl">0.50</span>, <span class="fl">0.20</span>, <span class="fl">1.00</span>),</span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">seed =</span> <span class="dv">42</span>) </span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a>dat_truffle_complex <span class="sc">|&gt;</span></span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">check_generated_data</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>$cohens_d
+  X1   X2   X3 
+0.32 0.17 0.94 
+
+$r
+       X1_sum X2_sum X3_sum
+X1_sum   1.00   0.33   0.38
+X2_sum   0.33   1.00   0.39
+X3_sum   0.38   0.39   1.00
+
+$item_histograms</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="vignette_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid figure-img" width="1920"></p>
+</figure>
+</div>
+</div>
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>dat_truffle_and_dirt_complex <span class="ot">&lt;-</span> dat_truffle_complex <span class="sc">|&gt;</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_demographics_messy</span>() <span class="sc">|&gt;</span></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">completion_time =</span> <span class="fu">generate_reaction_times</span>(<span class="at">n =</span> <span class="fu">n</span>())) <span class="sc">|&gt;</span></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_missingness_messy</span>(<span class="at">proportion_missing =</span> .<span class="dv">05</span>) <span class="sc">|&gt;</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_impossible_values</span>(<span class="at">proportion_impossible =</span> .<span class="dv">04</span>, <span class="at">replacement_value =</span> <span class="dv">8</span>) <span class="sc">|&gt;</span></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_non_tidy_column</span>(<span class="at">col =</span> <span class="st">"block_trial"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_messy_header_rows</span>()</span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>dat_truffle_and_dirt_complex <span class="sc">|&gt;</span></span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>  readr<span class="sc">::</span><span class="fu">write_lines</span>(<span class="st">"dat_truffle_and_dirt_complex.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
 </section>
 
 </main>
