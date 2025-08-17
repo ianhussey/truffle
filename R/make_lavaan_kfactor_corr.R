@@ -39,7 +39,6 @@
 #' cat(mod)
 #' }
 #'
-#' @export
 #' @importFrom stats setNames
 .make_lavaan_kfactor_corr <- function(
     n_items,                  # integer vector length K
