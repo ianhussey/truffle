@@ -39,7 +39,9 @@ library(janitor)
 
 ```
 
-## Generate data
+## Create truffle
+
+### Generate clean data
 
 - Item level Likert data (no choice)
 - Between subjects experiment (control vs intervention) (2 conditions only, but can be renamed)
@@ -52,8 +54,8 @@ library(janitor)
 
 ```{r}
 
-dat_clean <- 
-  generate_data_likert_two_conditions(n_per_condition = 50,
+dat_truffle <- 
+  generate_data_likert_two_conditions(n_per_condition = 20,
                                       factors  = c("X1_latent", "X2_latent", "X3_latent"),
                                       prefixes = c("X1_item", "X2_item", "X3_item"),
                                       alpha = c(.70, .75, .80),
@@ -64,22 +66,22 @@ dat_clean <-
                                       seed = 42) |>
   add_demographics() 
 
-head(dat_clean, n = 10)
+head(dat_truffle, n = 10)
 
 ```
 
-Sum scores by scale
+### Sum scores by scale
 
 ```{r}
 
-dat_clean_sumscores <- dat_clean |>
+dat_truffle_sumscores <- dat_truffle |>
   add_sum_scores_by_scale() |>
   select(condition, X1_sum, X2_sum, X3_sum)
 
-head(dat_clean_sumscores, n = 10)
+head(dat_truffle_sumscores, n = 10)
 
 # N, M, SD
-dat_clean_sumscores |>
+dat_truffle_sumscores |>
   pivot_longer(cols = starts_with("X"),
                names_to = "scale",
                values_to = "sum_score") |>
@@ -97,15 +99,19 @@ Check that the sum scores conform to the predefined properties and that the item
 #| fig-height: 20
 #| fig-width: 20
 
-check_generated_data(dat_clean)
+check_generated_data(dat_truffle)
 
 ```
+
+## Create dirt
+
+### Messy demographics
 
 Generate data for the same study but make the demographics data mess, add missingness, and add impossible values to the item level data.
 
 ```{r}
 
-dat_messy_missing <- 
+dat_truffle_and_dirt <- 
   generate_data_likert_two_conditions(n_per_condition = 20,
                                       factors  = c("X1_latent", "X2_latent", "X3_latent"),
                                       prefixes = c("X1_item", "X2_item", "X3_item"),
@@ -115,12 +121,133 @@ dat_messy_missing <-
                                       r_among_outcomes = 0.50,
                                       approx_d_between_groups = 0.50,
                                       seed = 42) |>
-  add_demographics_messy() |>
-  add_missingness(proportion_missing = .05) |>
-  add_impossible_values(proportion_impossible = .04, replacement_value = 8)
+  add_demographics_messy() 
 
-head(dat_messy_missing, n = 10)
+head(dat_truffle_and_dirt, n = 10)
 
 ```
 
+### Missingness
 
+```{r}
+
+dat_truffle_and_dirt <- dat_truffle_and_dirt |>
+  add_missingness(proportion_missing = .05) 
+
+head(dat_truffle_and_dirt, n = 10)
+
+```
+
+## Messy missingness
+
+```{r}
+
+dat_truffle_and_dirt <- dat_truffle_and_dirt |>
+  add_missingness_messy(proportion_missing = .05)
+
+head(dat_truffle_and_dirt, n = 10)
+
+```
+
+### Impossible values ('outliers')
+
+```{r}
+
+dat_truffle_and_dirt <- dat_truffle_and_dirt |>
+  add_impossible_values(proportion_impossible = .04, replacement_value = 8)
+
+head(dat_truffle_and_dirt, n = 10)
+
+```
+
+## Duplicate rows
+
+```{r}
+
+dat_truffle_and_dirt <- dat_truffle_and_dirt |>
+  add_duplicates(prop = 0.05)
+
+head(dat_truffle_and_dirt, n = 10)
+
+```
+
+## Generate reaction times
+
+```{r}
+
+dat_truffle_and_dirt <- dat_truffle_and_dirt |>
+  mutate(completion_time = generate_reaction_times(n = n()))
+
+head(dat_truffle_and_dirt, n = 10)
+
+ggplot(dat_truffle_and_dirt, aes(completion_time)) +
+  geom_histogram()
+
+```
+
+## Messy number formatting
+
+```{r}
+
+dat_truffle_and_dirt <- dat_truffle_and_dirt |>
+  mutate(completion_time = messy_numbers(completion_time))
+
+head(dat_truffle_and_dirt, n = 10)
+
+```
+
+## Messy dates
+
+```{r}
+
+dat_truffle_and_dirt <- dat_truffle_and_dirt |>
+  mutate(date = add_dates_messy(n = n()))
+
+head(dat_truffle_and_dirt, n = 10)
+
+```
+
+## Add block_trial
+
+```{r}
+
+dat_truffle_and_dirt <- dat_truffle_and_dirt |>
+  add_non_tidy_column(col = "block_trial")
+
+head(dat_truffle_and_dirt, n = 10)
+
+```
+
+## Messy colnames
+
+```{r}
+
+dat_truffle_and_dirt <- dat_truffle_and_dirt |>
+  messy_colnames()
+
+head(dat_truffle_and_dirt, n = 10)
+
+```
+
+## Messy headers
+
+```{r}
+
+dat_truffle_and_dirt <- dat_truffle_and_dirt |>
+  add_messy_header_row()
+
+head(dat_truffle_and_dirt, n = 10)
+
+# write to desk
+readr::write_lines(dat_truffle_and_dirt, "dat_truffle_and_dirt.csv")
+
+# re-import later
+messy <- readr::read_csv("dat_truffle_and_dirt.csv")
+
+head(messy)
+
+clean <- readr::read_csv("dat_truffle_and_dirt.csv", skip = 2)
+
+head(clean)
+
+```

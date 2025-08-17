@@ -7,7 +7,7 @@
 add_demographics_messy(
   dat,
   p_messy_age = 0.05,
-  gender_probs = c(male = 0.3, female = 0.7),
+  gender_probs = c(male = 0.29, female = 0.68, nonbinary = 0.03),
   p_age_in_gender = 0.05,
   p_fmt_misspell = 0.1
 )
@@ -26,8 +26,8 @@ gender categories (default: \code{c(male = 0.30, female = 0.70)}). Must sum to 1
 entries are replaced by numeric ages instead of text genders. Defaults to 0.05.}
 
 \item{p_fmt_misspell}{Numeric scalar in \link{0,1}. Probability that otherwise
-correct genders are altered with case formatting or misspellings
-(e.g., \code{"FEMALE"}, \code{"femail"}). Defaults to 0.10.}
+correct genders are altered with case formatting, misspellings, or replaced
+with \code{"man"}/\code{"woman"}. Defaults to 0.10.}
 }
 \value{
 A data frame containing all original columns of \code{dat}, plus two new
@@ -36,7 +36,7 @@ columns:
 \item{age}{Character vector of ages as numbers, spelled-out words, or
 gender labels (depending on simulation).}
 \item{gender}{Character vector of gender labels, sometimes replaced with
-numbers, case variations, or misspellings.}
+numbers, case variations, misspellings, or \code{"man"}/\code{"woman"}.}
 }
 Columns are ordered with \code{id} first, followed by \code{age}, \code{gender}, then the
 remaining columns of \code{dat}.

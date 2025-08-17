@@ -6,39 +6,42 @@
 \usage{
 add_demographics(
   dat,
-  gender_probs = c(male = 0.3, female = 0.7),
+  gender_probs = c(male = 0.29, female = 0.68, nonbinary = 0.03),
   age_min = 18L,
   age_max = 45L
 )
 }
 \arguments{
-\item{dat}{A data frame. Must contain at least one column (e.g., \code{id}).}
+\item{dat}{A data frame. Should contain an \code{id} column if you want \code{age} and
+\code{gender} placed after it.}
 
-\item{gender_probs}{A named numeric vector giving probabilities for the base
-gender categories (default: \code{c(male = 0.30, female = 0.70)}). Must sum to 1.}
+\item{gender_probs}{A \strong{named} numeric vector giving probabilities for gender
+categories (e.g., \code{c(male = 0.30, female = 0.70)} or
+\code{c(male = .29, female = .68, nonbinary = .03)}). Will be normalized to sum to 1.}
+
+\item{age_min, age_max}{Integer bounds for the uniform age draw (default 18–45).}
 }
 \value{
 A data frame containing all original columns of \code{dat}, plus two new
 columns:
 \describe{
-\item{age}{Integer values sampled uniformly between 18 and 45.}
-\item{gender}{Character values \code{"male"} or \code{"female"} drawn from the
-provided probabilities.}
+\item{age}{Integer values sampled uniformly between \code{age_min} and \code{age_max}.}
+\item{gender}{Character values drawn from the names of \code{gender_probs}.}
 }
-Columns are ordered with \code{id} first, followed by \code{age}, \code{gender}, then the
-remaining columns of \code{dat}.
+If \code{id} exists, columns are ordered \code{id}, \code{age}, \code{gender}, then the remaining columns.
+If \code{id} is absent, \code{age} and \code{gender} are moved to the front.
 }
 \description{
 This function augments a data frame with simulated demographic variables
 (\code{age}, \code{gender}) using only clean entries. Ages are numeric values sampled
-uniformly from 18 to 45. Genders are sampled from \code{"male"} and \code{"female"}
-according to specified probabilities.
+uniformly from \code{age_min} to \code{age_max}. Genders are sampled from the names of
+\code{gender_probs} according to their probabilities.
 }
 \examples{
 \dontrun{
 set.seed(123)
 df <- data.frame(id = 1:5)
-add_demographics(df)
+add_demographics(df, gender_probs = c(male = .4, female = .6))
 }
 
 }

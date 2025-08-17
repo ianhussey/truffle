@@ -2,36 +2,37 @@
 #'
 #' This function augments a data frame with simulated demographic variables
 #' (`age`, `gender`) using only clean entries. Ages are numeric values sampled
-#' uniformly from 18 to 45. Genders are sampled from `"male"` and `"female"`
-#' according to specified probabilities.
+#' uniformly from `age_min` to `age_max`. Genders are sampled from the names of
+#' `gender_probs` according to their probabilities.
 #'
-#' @param dat A data frame. Must contain at least one column (e.g., `id`).
-#' @param gender_probs A named numeric vector giving probabilities for the base
-#'   gender categories (default: `c(male = 0.30, female = 0.70)`). Must sum to 1.
+#' @param dat A data frame. Should contain an `id` column if you want `age` and
+#'   `gender` placed after it.
+#' @param gender_probs A **named** numeric vector giving probabilities for gender
+#'   categories (e.g., `c(male = 0.30, female = 0.70)` or
+#'   `c(male = .29, female = .68, nonbinary = .03)`). Will be normalized to sum to 1.
+#' @param age_min,age_max Integer bounds for the uniform age draw (default 18–45).
 #'
 #' @return A data frame containing all original columns of `dat`, plus two new
 #'   columns:
 #'   \describe{
-#'     \item{age}{Integer values sampled uniformly between 18 and 45.}
-#'     \item{gender}{Character values `"male"` or `"female"` drawn from the
-#'       provided probabilities.}
+#'     \item{age}{Integer values sampled uniformly between \code{age_min} and \code{age_max}.}
+#'     \item{gender}{Character values drawn from the names of \code{gender_probs}.}
 #'   }
-#'   Columns are ordered with `id` first, followed by `age`, `gender`, then the
-#'   remaining columns of `dat`.
+#'   If `id` exists, columns are ordered `id`, `age`, `gender`, then the remaining columns.
+#'   If `id` is absent, `age` and `gender` are moved to the front.
 #'
 #' @examples
 #' \dontrun{
 #' set.seed(123)
 #' df <- data.frame(id = 1:5)
-#' add_demographics(df)
+#' add_demographics(df, gender_probs = c(male = .4, female = .6))
 #' }
 #'
 #' @export
 #' @importFrom dplyr mutate relocate
-#' @importFrom stats runif
 add_demographics <- function(
     dat,
-    gender_probs = c(male = 0.30, female = 0.70),
+    gender_probs = c(male = 0.29, female = 0.68, nonbinary = 0.03),
     age_min = 18L,
     age_max = 45L
 ) {
@@ -43,27 +44,29 @@ add_demographics <- function(
   rng <- as.integer(seq(from = age_min, to = age_max))
   
   # ---- checks for gender_probs ----
-  # allow unnamed c(0.3, 0.7) (assumed c(male, female)) or named with any order
-  if (is.null(names(gender_probs))) {
-    if (length(gender_probs) != 2L) stop("gender_probs must have length 2 (male, female).")
-    names(gender_probs) <- c("male", "female")
+  if (is.null(names(gender_probs)) || any(names(gender_probs) == "")) {
+    stop("`gender_probs` must be a *named* numeric vector (e.g., c(male=.3, female=.7)).")
   }
-  # keep only male/female (warn if others) and normalise to sum 1
-  gp <- gender_probs[c("male", "female")]
-  if (any(is.na(gp))) stop("gender_probs must include names 'male' and 'female'.")
-  if (any(gp < 0))    stop("gender_probs must be non-negative.")
-  if (sum(gp) == 0)   stop("gender_probs must not sum to 0.")
-  gp <- gp / sum(gp)
+  if (any(gender_probs < 0)) stop("`gender_probs` must be non-negative.")
+  if (sum(gender_probs) == 0) stop("`gender_probs` must not sum to 0.")
+  gp <- gender_probs / sum(gender_probs)
   
   # ---- generate variables ----
-  age_vec    <- sample(rng, size = n, replace = TRUE)              # integer ages
+  age_vec    <- sample(rng, size = n, replace = TRUE)
   gender_vec <- sample(names(gp), size = n, replace = TRUE, prob = gp)
   
   # ---- assemble & order ----
-  dplyr::mutate(dat,
-                age = age_vec,
-                gender = gender_vec) |>
-    dplyr::relocate(id, .before = 1) |>
-    dplyr::relocate(age, .after = id) |>
-    dplyr::relocate(gender, .after = age)
+  out <- dplyr::mutate(dat, age = age_vec, gender = gender_vec)
+  
+  if ("id" %in% names(out)) {
+    out <- dplyr::relocate(out, id, .before = 1)
+    out <- dplyr::relocate(out, age, .after = id)
+    out <- dplyr::relocate(out, gender, .after = age)
+  } else {
+    # no id; place age then gender at the front
+    out <- dplyr::relocate(out, age, .before = 1)
+    out <- dplyr::relocate(out, gender, .after = age)
+  }
+  
+  out
 }

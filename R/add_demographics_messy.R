@@ -13,8 +13,8 @@
 #' @param p_age_in_gender Numeric scalar in [0,1]. Probability that `gender`
 #'   entries are replaced by numeric ages instead of text genders. Defaults to 0.05.
 #' @param p_fmt_misspell Numeric scalar in [0,1]. Probability that otherwise
-#'   correct genders are altered with case formatting or misspellings
-#'   (e.g., `"FEMALE"`, `"femail"`). Defaults to 0.10.
+#'   correct genders are altered with case formatting, misspellings, or replaced
+#'   with `"man"`/`"woman"`. Defaults to 0.10.
 #'
 #' @return A data frame containing all original columns of `dat`, plus two new
 #'   columns:
@@ -22,7 +22,7 @@
 #'     \item{age}{Character vector of ages as numbers, spelled-out words, or
 #'       gender labels (depending on simulation).}
 #'     \item{gender}{Character vector of gender labels, sometimes replaced with
-#'       numbers, case variations, or misspellings.}
+#'       numbers, case variations, misspellings, or `"man"`/`"woman"`.}
 #'   }
 #'   Columns are ordered with `id` first, followed by `age`, `gender`, then the
 #'   remaining columns of `dat`.
@@ -40,9 +40,9 @@
 add_demographics_messy <- function(
     dat,
     p_messy_age      = 0.05,                  # age column: prob of messy entries
-    gender_probs     = c(male = .30, female = .70),
+    gender_probs     = c(male = .29, female = .68, nonbinary = .03),
     p_age_in_gender  = 0.05,                  # gender column: prob replaced by a number age
-    p_fmt_misspell   = 0.10                   # among correct genders, prob of case/misspell tweaks
+    p_fmt_misspell   = 0.10                   # among correct genders, prob of tweaks
 ) {
   stopifnot(is.data.frame(dat))
   n <- nrow(dat)
@@ -68,23 +68,26 @@ add_demographics_messy <- function(
   g_probs <- as.numeric(gender_probs)
   gender_chr <- sample(g_names, size = n, replace = TRUE, prob = g_probs)
   
-  # (A) 5%: replace gender with a numeric age
+  # (A) some %: replace gender with a numeric age
   idx_age_in_gender <- runif(n) < p_age_in_gender
   gender_chr[idx_age_in_gender] <- as.character(sample(18:45, sum(idx_age_in_gender), replace = TRUE))
   
-  # (B) among the remaining “correct” genders, 10%: case/misspell tweaks
+  # (B) among the remaining “correct” genders, some %: case/misspell tweaks
   idx_correct <- !idx_age_in_gender
   idx_tweak   <- idx_correct & (runif(n) < p_fmt_misspell)
   
-  # tweak function: case variants + misspellings
+  # tweak function: case variants, misspellings, man/woman
   tweak_gender <- function(g) {
     # pools: mostly case variants, some misspellings
     if (g == "male") {
       pool <- c("Male","MALE","male","MalE",           # case variants / “title”
                 "mal","malee","ma le","mle")           # misspellings
-    } else {
+    } else if (g == "female") {
       pool <- c("Female","FEMALE","female","FeMale",   # case variants / “title”
                 "femail","femlae","femle","fem ale")   # misspellings
+    } else {
+      pool <- c("nb","trans","transfemme",   # case variants / “title”
+                "Non-binary","non binary","nobinary")   # misspellings
     }
     sample(pool, 1)
   }

@@ -8,7 +8,7 @@ devtools::document()
 
 devtools::check(vignettes = FALSE)
 
-#devtools::install()
+# devtools::install()
 # or from github, after push
 devtools::install_github("ianhussey/truffle")
 
