@@ -2,7 +2,7 @@
 
 # truffle
 
-{truffle} creates datasets with various known effects to be rediscovered, for teaching purposes. 
+{truffle} is an R package for teaching purposes. It allows you to create datasets with various known effects to be rediscovered (truffles), and then create data processing headaches that have to be solved (dirt). Users must then search for truffles among the dirt. 
 
 Datasets contain demographics data and item-level Likert responses. Known effects (truffles) can be buried in the data including differences in sum-score means between conditions, known correlations between the different outcomes' sum-scores, known Cronbach's alpha values for each scale, etc. Data can also be made messy, contain impossible values, or contain missingness, to create data processing challenges.
 
@@ -80,6 +80,8 @@ Output:
 
 
 ## TODO
+
+- Document dirt functions better
 
 Possible extensions:
 
