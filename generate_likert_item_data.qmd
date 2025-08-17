@@ -1,0 +1,1280 @@
+# faux solution
+
+the problem here is that the correlation between the items and the scales sum scores is the same (not solvable with faux), and it generates a fixed number of scales (fixable)
+
+```{r}
+
+generate_data_multiitem_likert_experiment <- function(n_per_condition, 
+                                                      approx_pop_cohens_d = 0.5,
+                                                      proportion_missing = 0) {
+  require(dplyr)
+  require(faux)
+  require(missMethods)
+  require(tidyselect)
+  
+  # latent mean shift to target d before discretisation
+  shift <- approx_pop_cohens_d / 2  # control = -shift, intervention = +shift
+  
+  make_block <- function(n, latent_mu) {
+    rnorm_multi(n = n_per_condition, vars = 10, mu = latent_mu, sd = 1, r = 0.30) |>
+      rename(likert_scale1_item1 = X01,
+             likert_scale1_item2 = X02,
+             likert_scale1_item3 = X03, 
+             likert_scale1_item4 = X04,  
+             likert_scale1_item5 = X05,  
+             likert_scale2_item1 = X06, 
+             likert_scale2_item2 = X07, 
+             likert_scale2_item3 = X08, 
+             likert_scale2_item4 = X09,
+             likert_scale2_item5 = X10) |>
+      # map with a COMMON reference (mu = 0, sd = 1) so the latent shift survives
+      mutate(across(everything(),
+                    ~ norm2likert(.,
+                                  prob = c("1" = 0.05, 
+                                           "2" = 0.10, 
+                                           "3" = 0.20,
+                                           "4" = 0.30, 
+                                           "5" = 0.20, 
+                                           "6" = 0.10,
+                                           "7" = 0.05),
+                                  mu = 0, sd = 1))) |>
+      mutate(across(everything(), ~ as.integer(as.character(.))))
+  }
+  
+  dat_complete <-
+    bind_rows(
+      make_block(n_per_condition, latent_mu = -shift) |> mutate(condition = "control"),
+      make_block(n_per_condition, latent_mu = +shift) |> mutate(condition = "intervention")
+    ) |>
+    mutate(id = as.factor(row_number()),
+           age = sample(18:65, 
+                        size = n_per_condition * 2, 
+                        replace = TRUE),
+           gender = sample(c("male", "female"), 
+                           size = n_per_condition * 2, 
+                           replace = TRUE,
+                           prob = c(.30, .70))) |>
+    select(id, age, gender, condition, starts_with("likert"))
+  
+  dat_missing <- delete_MCAR(
+    dat_complete,
+    p = proportion_missing,
+    cols_mis = vars_select(colnames(dat_complete), starts_with("likert"))
+  )
+  
+  return(dat_missing)
+}
+
+set.seed(42)
+
+dat <- generate_data_multiitem_likert_experiment(n_per_condition = 20,
+                                                 approx_pop_cohens_d = 0.50,
+                                                 proportion_missing = 0)
+
+dat
+
+dat |>
+  pivot_longer(cols = starts_with("likert"),
+               names_to = "item",
+               values_to = "score") %>%
+  group_by(condition) |>
+  summarize(mean = mean(score, na.rm = TRUE),
+            sd = sd(score, na.rm = TRUE))
+
+
+dat |>
+  select(starts_with("likert")) |>
+  cor(use = "pairwise.complete.obs") |>
+  round(2)
+
+dat |>
+  pivot_longer(cols = starts_with("likert"),
+               names_to = "item",
+               values_to = "score") |>
+  ggplot(aes(score)) +
+  geom_histogram(binwidth = 1) +
+  facet_grid(item ~ condition)
+
+```
+
+# lavaan solution
+
+## cronbach's alpha from factor loading and k items
+
+Cronbach’s $\alpha$ for $k$ items with equal inter-item correlation $\rho$ is
+
+$$
+\alpha = \frac{k \rho}{1 + (k-1)\rho}.
+$$
+
+Solving for $\rho$ gives
+
+$$
+\rho = \frac{\alpha}{k - (k-1)\alpha}.
+$$
+
+Under tau-equivalence, the inter-item correlation equals the squared loading, $\rho = \lambda^2$, so the loading is
+
+$$
+\lambda = \sqrt{\rho}.
+$$
+
+## one factor
+
+```{r}
+
+library(lavaan)
+
+make_lavaan_onefactor <- function(n_items,
+                                  alpha = 0.70,
+                                  lv_var = 1,   # Var(latent)
+                                  x_var = 1,   # total Var(Xi) for all i
+                                  factor = "F",
+                                  prefix = "X") {
+  stopifnot(n_items >= 2)
+  if (lv_var <= 0 || x_var <= 0) stop("lv_var and x_var must be > 0.")
+  
+  # solve for average inter-item correlation ρ
+  rho <- alpha / (n_items - (n_items - 1) * alpha)
+  
+  # implied common loading under tau-equivalence
+  loading <- sqrt(rho)
+  
+  # residual variance so Var(Xi) = loading^2 * Var(F) + Var(ei) = x_var
+  resid_var <- x_var - loading^2 * lv_var
+  if (resid_var <= 0)
+    stop("Residual variance would be non-positive. ",
+         "Choose higher alpha, larger n_items, or adjust lv_var/x_var.")
+  
+  # indicator names
+  ind_names <- paste0(prefix, seq_len(n_items))
+  
+  # measurement line
+  meas_line <- paste0(
+    factor, " =~ ",
+    paste(paste0(round(loading, 3), "*", ind_names), collapse = " + ")
+  )
+  
+  # latent variance
+  lv_line <- paste0(factor, " ~~ ", lv_var, "*", factor)
+  
+  # residual variances
+  resid_lines <- paste0(ind_names, " ~~ ", signif(resid_var, 6), "*", ind_names)
+  
+  paste(c(meas_line, lv_line, resid_lines), collapse = "\n")
+}
+
+
+set.seed(123)
+modX1 <- make_lavaan_onefactor(n_items = 6, 
+                               alpha = .70, 
+                               factor = "X1_latent", 
+                               prefix = "X1_item")
+modX2 <- make_lavaan_onefactor(n_items = 6, 
+                               alpha = .70, 
+                               factor = "X2_latent", 
+                               prefix = "X2_item")
+cat(modX1, modX2)
+
+```
+
+## 2 correlated scales
+
+```{r}
+
+# Builds a correlated two-factor lavaan model
+make_lavaan_twofactor_correlated <- function(
+    n_items1, n_items2,
+    alpha1 = 0.70, alpha2 = 0.70,
+    lv_var1 = 1, lv_var2 = 1,     # Var(latent1), Var(latent2)
+    x_var1  = 1, x_var2  = 1,     # Var of each indicator block
+    factor1 = "X1_latent", factor2 = "X2_latent",
+    prefix1 = "X1_item",  prefix2 = "X2_item",
+    r_latent = 0.40               # desired latent correlation
+) {
+  stopifnot(n_items1 >= 2, n_items2 >= 2)
+  if (any(c(lv_var1, lv_var2, x_var1, x_var2) <= 0)) {
+    stop("All variances must be > 0.")
+  }
+  if (abs(r_latent) >= 1) stop("r_latent must be strictly between -1 and 1.")
+  
+  # helper: build one factor block from alpha
+  .one_block <- function(n_items, alpha, lv_var, x_var, factor, prefix) {
+    rho     <- alpha / (n_items - (n_items - 1) * alpha)   # avg inter-item corr
+    loading <- sqrt(rho)
+    resid   <- x_var - loading^2 * lv_var
+    if (resid <= 0) stop("Non-positive residual variance. Adjust alpha/n_items/lv_var/x_var.")
+    
+    inds <- paste0(prefix, seq_len(n_items))
+    meas <- paste0(factor, " =~ ",
+                   paste(paste0(round(loading, 3), "*", inds), collapse = " + "))
+    lvar <- paste0(factor, " ~~ ", lv_var, "*", factor)
+    rvec <- paste0(inds, " ~~ ", signif(resid, 6), "*", inds)
+    
+    list(block = paste(c(meas, lvar, rvec), collapse = "\n"), inds = inds)
+  }
+  
+  b1 <- .one_block(n_items1, alpha1, lv_var1, x_var1, factor1, prefix1)
+  b2 <- .one_block(n_items2, alpha2, lv_var2, x_var2, factor2, prefix2)
+  
+  # convert requested correlation to covariance if needed
+  cov12 <- r_latent * sqrt(lv_var1 * lv_var2)
+  link  <- paste0(factor1, " ~~ ", signif(cov12, 6), "*", factor2)
+  
+  paste(b1$block, b2$block, link, sep = "\n")
+}
+
+
+library(lavaan)
+
+set.seed(123)
+
+mod <- make_lavaan_twofactor_correlated(
+  n_items1 = 6, 
+  n_items2 = 5,
+  alpha1 = .70, 
+  alpha2 = .70,
+  factor1 = "X1_latent", 
+  prefix1 = "X1_item",
+  factor2 = "X2_latent", 
+  prefix2 = "X2_item",
+  r_latent = .30    # latent correlation
+)
+cat(mod)
+
+# Simulate to sanity-check
+dat <- simulateData(mod, sample.nobs = 1000)
+# estimated latent correlation should be ~ .30 (sampling error aside)
+fit <- cfa("X1_latent =~ X1_item1 + X1_item2 + X1_item3 + X1_item4 + X1_item5 + X1_item6
+            X2_latent =~ X2_item1 + X2_item2 + X2_item3 + X2_item4 + X2_item5",
+           data = dat, std.lv = TRUE)
+inspect(fit, "std")$psi["X1_latent", "X2_latent"]
+
+```
+
+## k correlated scales, single correlation between them
+
+```{r}
+
+# Builds a K-factor lavaan model with equicorrelated latents
+make_lavaan_kfactor_equicorrelated <- function(
+    n_items,                  # integer vector length K
+    alpha    = 0.70,          # scalar or length-K
+    lv_var   = 1,             # scalar or length-K (latent variances)
+    x_var    = 1,             # scalar or length-K (indicator variances)
+    factors  = NULL,          # optional names length-K (defaults: F1, F2, ...)
+    prefixes = NULL,          # optional prefixes length-K (defaults: X1_item, ...)
+    r_latent = 0.40,          # common latent correlation (|r| < 1)
+    round_loading = 3,
+    signif_resid  = 6,
+    signif_cov    = 6
+) {
+  # --- checks ---
+  K <- length(n_items)
+  stopifnot(K >= 2, all(n_items >= 2))
+  if (abs(r_latent) >= 1) stop("r_latent must be strictly between -1 and 1.")
+  # recycle scalars to length-K
+  as_lenK <- function(x) if (length(x) == 1) rep(x, K) else x
+  alpha  <- as_lenK(alpha)
+  lv_var <- as_lenK(lv_var)
+  x_var  <- as_lenK(x_var)
+  if (any(c(lv_var, x_var) <= 0)) stop("All variances must be > 0.")
+  if (length(alpha) != K)  stop("alpha must be scalar or length K.")
+  if (length(lv_var) != K) stop("lv_var must be scalar or length K.")
+  if (length(x_var)  != K) stop("x_var must be scalar or length K.")
+  
+  if (is.null(factors))  factors  <- paste0("F", seq_len(K))
+  if (is.null(prefixes)) prefixes <- paste0("X", seq_len(K), "_item")
+  if (length(factors) != K || length(prefixes) != K)
+    stop("factors and prefixes (if provided) must be length K.")
+  
+  # --- helper to build a single factor block from alpha ---
+  .one_block <- function(n_i, alpha_i, lv_var_i, x_var_i, factor_i, prefix_i) {
+    # average inter-item correlation under tau-equivalence
+    rho     <- alpha_i / (n_i - (n_i - 1) * alpha_i)
+    loading <- sqrt(rho)
+    resid   <- x_var_i - loading^2 * lv_var_i
+    if (resid <= 0)
+      stop("Non-positive residual variance for ", factor_i,
+           ". Adjust alpha / n_items / lv_var / x_var.")
+    
+    inds <- paste0(prefix_i, seq_len(n_i))
+    meas <- paste0(factor_i, " =~ ",
+                   paste(paste0(round(loading, round_loading), "*", inds), collapse = " + "))
+    lvar <- paste0(factor_i, " ~~ ", lv_var_i, "*", factor_i)
+    rvec <- paste0(inds, " ~~ ", signif(resid, signif_resid), "*", inds)
+    
+    list(block = paste(c(meas, lvar, rvec), collapse = "\n"),
+         inds  = inds)
+  }
+  
+  # --- build blocks ---
+  blocks <- vector("list", K)
+  for (k in seq_len(K)) {
+    blocks[[k]] <- .one_block(n_items[k], alpha[k], lv_var[k], x_var[k],
+                              factors[k], prefixes[k])
+  }
+  
+  # --- link all latent pairs with common correlation r_latent (convert to covariances) ---
+  link_lines <- c()
+  if (K >= 2) {
+    for (i in 1:(K-1)) for (j in (i+1):K) {
+      cov_ij <- r_latent * sqrt(lv_var[i] * lv_var[j])
+      link_lines <- c(link_lines,
+                      paste0(factors[i], " ~~ ",
+                             signif(cov_ij, signif_cov), "*", factors[j]))
+    }
+  }
+  
+  # --- combine ---
+  paste(c(vapply(blocks, `[[`, "", "block"), link_lines), collapse = "\n")
+}
+
+
+
+library(lavaan)
+
+set.seed(1)
+modK <- make_lavaan_kfactor_equicorrelated(
+  n_items  = c(6, 6, 5),     # K = 3 factors
+  alpha    = c(.70, .75, .80),
+  lv_var   = 1,              # standardized latents
+  x_var    = 1,              # standardized indicators
+  factors  = c("X1_latent", "X2_latent", "X3_latent"),
+  prefixes = c("X1_item", "X2_item", "X3_item"),
+  r_latent = .30             # all pairwise latent correlations = .30
+)
+cat(modK)
+
+# Sanity check via simulation
+dat <- simulateData(modK, sample.nobs = 50000)
+fit <- cfa("
+  X1_latent =~ X1_item1 + X1_item2 + X1_item3 + X1_item4 + X1_item5 + X1_item6
+  X2_latent =~ X2_item1 + X2_item2 + X2_item3 + X2_item4 + X2_item5 + X2_item6
+  X3_latent =~ X3_item1 + X3_item2 + X3_item3 + X3_item4 + X3_item5
+", data = dat, std.lv = TRUE)
+inspect(fit, "std")$psi  # off-diagonals ~ .30 (sampling error aside)
+
+```
+
+## k correlated scales, either matrix of correlations between them or 1 for all
+
+```{r}
+
+# K-factor lavaan model with user-specified latent correlations
+make_lavaan_kfactor_corr <- function(
+    n_items,                  # integer vector length K
+    alpha    = 0.70,          # scalar or length-K
+    lv_var   = 1,             # scalar or length-K (latent variances)
+    x_var    = 1,             # scalar or length-K (indicator variances)
+    factors  = NULL,          # optional names length-K (defaults: F1, F2, ...)
+    prefixes = NULL,          # optional prefixes length-K (defaults: X1_item, ...)
+    corr_latent = 0.30,       # either scalar r in (-1,1) OR KxK correlation matrix
+    round_loading = 3,
+    signif_resid  = 6,
+    signif_cov    = 6
+) {
+  K <- length(n_items)
+  stopifnot(K >= 2, all(n_items >= 2))
+  
+  # recycle scalars to length-K
+  as_lenK <- function(x) if (length(x) == 1) rep(x, K) else x
+  alpha  <- as_lenK(alpha)
+  lv_var <- as_lenK(lv_var)
+  x_var  <- as_lenK(x_var)
+  if (any(c(lv_var, x_var) <= 0)) stop("All variances must be > 0.")
+  if (length(alpha) != K || length(lv_var) != K || length(x_var) != K)
+    stop("alpha, lv_var, x_var must be scalar or length K.")
+  
+  if (is.null(factors))  factors  <- paste0("F", seq_len(K))
+  if (is.null(prefixes)) prefixes <- paste0("X", seq_len(K), "_item")
+  if (length(factors) != K || length(prefixes) != K)
+    stop("factors and prefixes (if provided) must be length K.")
+  
+  # --- Build latent correlation matrix R ---
+  if (is.matrix(corr_latent)) {
+    if (!all(dim(corr_latent) == c(K, K)))
+      stop("corr_latent matrix must be K x K.")
+    if (!isTRUE(all.equal(corr_latent, t(corr_latent))))
+      stop("corr_latent must be symmetric.")
+    if (!all(diag(corr_latent) == 1))
+      stop("Diagonal of corr_latent must be 1.")
+    if (any(abs(corr_latent) > 1))
+      stop("Correlations must be in [-1, 1].")
+    R <- corr_latent
+  } else {
+    # scalar equicorrelation, check feasibility r > -1/(K-1)
+    r <- as.numeric(corr_latent)
+    if (length(r) != 1 || !is.finite(r) || abs(r) >= 1)
+      stop("Scalar corr_latent must be a finite value strictly between -1 and 1.")
+    if (r <= -1/(K - 1))
+      stop(sprintf("For equicorrelation, r must be > -1/(K-1) = %.3f.", -1/(K - 1)))
+    R <- matrix(r, K, K); diag(R) <- 1
+  }
+  
+  # --- Convert correlations to covariances for lavaan ---
+  sd_lat <- sqrt(lv_var)
+  Dhalf  <- diag(sd_lat, nrow = K)
+  Psi    <- Dhalf %*% R %*% Dhalf  # latent covariance matrix
+  
+  # --- helper to build a single factor block from alpha ---
+  .one_block <- function(n_i, alpha_i, lv_var_i, x_var_i, factor_i, prefix_i) {
+    # avg inter-item correlation under tau-equivalence
+    rho     <- alpha_i / (n_i - (n_i - 1) * alpha_i)
+    loading <- sqrt(rho)
+    resid   <- x_var_i - loading^2 * lv_var_i
+    if (resid <= 0)
+      stop("Non-positive residual variance for ", factor_i,
+           ". Adjust alpha / n_items / lv_var / x_var.")
+    
+    inds <- paste0(prefix_i, seq_len(n_i))
+    meas <- paste0(factor_i, " =~ ",
+                   paste(paste0(round(loading, round_loading), "*", inds), collapse = " + "))
+    lvar <- paste0(factor_i, " ~~ ", lv_var_i, "*", factor_i)
+    rvec <- paste0(inds, " ~~ ", signif(resid, signif_resid), "*", inds)
+    
+    paste(c(meas, lvar, rvec), collapse = "\n")
+  }
+  
+  # --- build all factor blocks ---
+  blocks <- vapply(seq_len(K), function(k) {
+    .one_block(n_items[k], alpha[k], lv_var[k], x_var[k], factors[k], prefixes[k])
+  }, character(1))
+  
+  # --- link latents using Psi (covariances) ---
+  links <- character()
+  if (K >= 2) {
+    for (i in 1:(K - 1)) for (j in (i + 1):K) {
+      links <- c(links, paste0(factors[i], " ~~ ",
+                               signif(Psi[i, j], signif_cov), "*", factors[j]))
+    }
+  }
+  
+  paste(c(blocks, links), collapse = "\n")
+}
+
+```
+
+1 correlation value supplied for all latent cors
+
+```{r}
+mod_eq <- make_lavaan_kfactor_corr(
+  n_items = c(  6,   6,   5),
+  alpha   = c(.70, .75, .80),
+  factors = c("X1_latent", "X2_latent", "X3_latent"),
+  prefixes= c("X1_item", "X2_item", "X3_item"),
+  corr_latent = 0.30      # same r for all pairs
+)
+cat(mod_eq)
+```
+
+correlation matrix supplied for all latent cors
+
+```{r}
+R <- matrix(c(
+  1.00, 0.20, 0.35,
+  0.20, 1.00, 0.10,
+  0.35, 0.10, 1.00
+), 3, 3, byrow = TRUE)
+
+mod_mat <- make_lavaan_kfactor_corr(
+  n_items = c(6,6,5),
+  alpha   = .70,
+  factors = c("X1_latent","X2_latent","X3_latent"),
+  prefixes= c("X1_item","X2_item","X3_item"),
+  corr_latent = R
+)
+cat(mod_mat)
+```
+
+## latent to likert
+
+### example
+
+```{r}
+
+library(latent2likert)
+
+# A simple 1-factor lavaan model
+mod <- '
+  F =~ 0.7*X1 + 0.7*X2 + 0.7*X3
+  F ~~ 1*F
+  X1 ~~ 0.51*X1
+  X2 ~~ 0.51*X2
+  X3 ~~ 0.51*X3
+'
+
+# 1) simulate continuous indicators
+set.seed(123)
+dat_cont <- simulateData(mod, sample.nobs = 10)  # just 10 rows to peek
+head(dat_cont)
+
+
+# 2) discretize one variable to 5 Likert levels
+endp <- discretize_density(density_fn = dnorm, n_levels = 7)$endp
+endp
+# endpoints on a standard normal scale, e.g. -Inf, -0.84, -0.25, 0.25, 0.84, Inf
+
+# take column X1, standardize, and cut at those points
+z <- scale(dat_cont$X1)[,1]
+X1_likert <- cut(z, breaks = endp, labels = 1:7, include.lowest = TRUE)
+X1_likert
+
+# 3) convert all three columns
+dat_lik <- as.data.frame(lapply(dat_cont, function(x) {
+  z <- scale(x)[,1]
+  cut(z, breaks = endp, labels = 1:7, include.lowest = TRUE, ordered_result = TRUE)
+}))
+head(dat_lik)
+
+```
+
+### function
+
+```{r}
+
+#' Convert continuous indicators to Likert categories using latent2likert
+#'
+#' @param data  data.frame or matrix of continuous scores (columns = items)
+#' @param n_levels integer or length-p vector of category counts (default 5)
+#' @param labels  NULL (default) or list of length p with character labels per item;
+#'                if a single character vector is supplied and length == n_levels,
+#'                it is recycled to all items
+#' @param ordered return ordered factors (default TRUE); set FALSE to return integers
+#'
+#' @return data.frame of Likert-coded items
+#'
+#' @details Endpoints are computed by latent2likert::discretize_density()
+#'          for a standard normal, then applied after columnwise standardization.
+continuous_to_likert <- function(data,
+                                 n_levels = 7,
+                                 labels   = NULL,
+                                 ordered  = FALSE) {
+  stopifnot(is.matrix(data) || is.data.frame(data))
+  X <- as.data.frame(data)
+  p <- ncol(X)
+  
+  # recycle n_levels if scalar
+  if (length(n_levels) == 1) n_levels <- rep(n_levels, p)
+  stopifnot(length(n_levels) == p)
+  
+  # precompute endpoints per unique K to avoid repeated calls
+  Ks <- unique(n_levels)
+  endp_list <- lapply(Ks, function(K) {
+    latent2likert::discretize_density(density_fn = stats::dnorm, n_levels = K)$endp
+  })
+  names(endp_list) <- as.character(Ks)
+  
+  # normalise labels input
+  lab_list <- vector("list", p)
+  if (!is.null(labels)) {
+    if (is.list(labels)) {
+      stopifnot(length(labels) == p)
+      lab_list <- labels
+    } else if (is.character(labels)) {
+      # single vector recycled to all items
+      for (j in seq_len(p)) {
+        stopifnot(length(labels) == n_levels[j])
+        lab_list[[j]] <- labels
+      }
+    } else {
+      stop("labels must be NULL, a list (length = ncol(data)), or a character vector of length n_levels.")
+    }
+  }
+  
+  out <- X
+  for (j in seq_len(p)) {
+    xj <- X[[j]]
+    # standardize (robust to NAs)
+    mu <- mean(xj, na.rm = TRUE)
+    sdj <- stats::sd(xj, na.rm = TRUE)
+    if (!is.finite(sdj) || sdj <= 0) stop("Column ", j, " has non-positive SD.")
+    
+    zj   <- (xj - mu) / sdj
+    endp <- endp_list[[as.character(n_levels[j])]]  # vector from -Inf to +Inf
+    
+    # bin
+    labs_j <- if (length(lab_list[[j]]) == 0) as.character(seq_len(n_levels[j])) else lab_list[[j]]
+    yj <- cut(zj, breaks = endp, labels = labs_j, include.lowest = TRUE, right = TRUE, ordered_result = ordered)
+    
+    # if ordered == FALSE, return integers 1..K
+    if (!ordered) yj <- as.integer(yj)
+    
+    out[[j]] <- yj
+  }
+  out
+}
+
+
+# 1) Build lavaan model with your helper (K latent factors)
+mod <- make_lavaan_kfactor_corr(
+  n_items     = c(6,6,5),
+  alpha       = c(.70,.75,.80),
+  factors     = c("X1_latent","X2_latent","X3_latent"),
+  prefixes    = c("X1_item","X2_item","X3_item"),
+  corr_latent = 0.30
+)
+
+# 2) Simulate continuous indicators
+set.seed(1)
+dat_cont <- lavaan::simulateData(mod, sample.nobs = 2000)
+
+# 3) Discretize to Likert (e.g., all 5-point, ordered factors)
+dat_lik  <- continuous_to_likert(dat_cont, n_levels = 5, labels = c("1","2","3","4","5"))
+
+colnames(dat_lik)
+
+```
+
+## Calculate sum scores
+
+```{r}
+
+# Sum-score per scale (X1, X2, …) from item columns like
+sum_scores_by_scale <- function(
+    data,
+    id_regex = "^(X\\d+)",   # captures scale IDs like X1, X2, ...
+    suffix   = "_sum",
+    na_rm    = TRUE,         # ignore NAs when summing
+    min_non_missing = 1,     # require this many non-missing items per scale
+    prorate  = FALSE,        # prorate partial sums to full length
+    add_counts = FALSE,      # also return counts of non-missing items
+    count_suffix = "_n"
+) {
+  stopifnot(is.data.frame(data))
+  nms <- colnames(data)
+  
+  # extract scale ID per column (e.g., "X1", "X2")
+  id <- regmatches(nms, regexpr(id_regex, nms, perl = TRUE))
+  if (anyNA(id) || any(id == "")) {
+    stop("Some column names don't match id_regex = ", id_regex,
+         ". Example names: ", paste(head(nms, 5), collapse = ", "))
+  }
+  
+  # group column indices by scale ID
+  idx <- split(seq_along(nms), id)
+  
+  # coerce Likert factors/ordered/characters to numeric before summing
+  to_num <- function(x) {
+    if (is.ordered(x) || is.factor(x)) return(as.integer(x))
+    if (is.character(x)) return(suppressWarnings(as.numeric(x)))
+    as.numeric(x)
+  }
+  
+  sums_list <- list()
+  counts_list <- list()
+  
+  for (nm in names(idx)) {
+    cols <- idx[[nm]]
+    X <- as.data.frame(lapply(data[ , cols, drop = FALSE], to_num))
+    k <- ncol(X)
+    
+    # counts of non-missing per row
+    n_nonmiss <- rowSums(!is.na(X))
+    
+    # raw sum (optionally ignoring NAs)
+    s <- rowSums(X, na.rm = na_rm)
+    
+    # apply min_non_missing rule
+    s[n_nonmiss < min_non_missing] <- NA_real_
+    
+    # prorate if requested: sum * (k / answered)
+    if (prorate) {
+      scale_factor <- ifelse(n_nonmiss > 0, k / n_nonmiss, NA_real_)
+      s <- s * scale_factor
+    }
+    
+    sums_list[[nm]] <- s
+    counts_list[[nm]] <- n_nonmiss
+  }
+  
+  # assemble data frame
+  sums <- as.data.frame(sums_list)
+  
+  # order columns by numeric part of the ID (X1, X2, …)
+  ord <- order(as.integer(sub("^X(\\d+)$", "\\1", names(sums))))
+  sums <- sums[ord]
+  names(sums) <- paste0(names(sums), suffix)
+  
+  if (add_counts) {
+    counts <- as.data.frame(counts_list)[ord]
+    names(counts) <- sub(paste0(suffix, "$"), "", names(sums))
+    names(counts) <- paste0(names(counts), count_suffix)
+    cbind(sums, counts, check.names = FALSE)
+  } else {
+    sums
+  }
+}
+
+# Example column names: X1_item1..X1_item6, X2_item1..X2_item6
+sums <- sum_scores_by_scale(dat_lik)
+head(sums)
+
+
+cor(sums)
+
+
+```
+
+## Two groups with differences in means + above functionality
+
+```{r}
+
+continuous_to_likert_by_condition <- function(data,
+                                              n_levels = 7,
+                                              labels   = NULL,
+                                              ordered  = TRUE,
+                                              method   = c("per_column", "fixed"),
+                                              mu_ref   = 0,
+                                              sd_ref   = 1) {
+  method <- match.arg(method)
+  stopifnot(is.matrix(data) || is.data.frame(data))
+  X <- as.data.frame(data)
+  p <- ncol(X)
+  
+  # recycle n_levels if scalar
+  if (length(n_levels) == 1) n_levels <- rep(n_levels, p)
+  stopifnot(length(n_levels) == p)
+  
+  # precompute endpoints per unique K
+  Ks <- unique(n_levels)
+  endp_list <- lapply(Ks, function(K) {
+    latent2likert::discretize_density(density_fn = stats::dnorm, n_levels = K)$endp
+  })
+  names(endp_list) <- as.character(Ks)
+  
+  # normalise labels input
+  lab_list <- vector("list", p)
+  if (!is.null(labels)) {
+    if (is.list(labels)) {
+      stopifnot(length(labels) == p)
+      lab_list <- labels
+    } else if (is.character(labels)) {
+      for (j in seq_len(p)) {
+        stopifnot(length(labels) == n_levels[j])
+        lab_list[[j]] <- labels
+      }
+    } else {
+      stop("labels must be NULL, a list (length = ncol(data)), or a character vector of length n_levels.")
+    }
+  }
+  
+  out <- X
+  for (j in seq_len(p)) {
+    xj <- X[[j]]
+    
+    if (method == "per_column") {
+      mu  <- mean(xj, na.rm = TRUE)
+      sdj <- stats::sd(xj, na.rm = TRUE)
+      if (!is.finite(sdj) || sdj <= 0) stop("Column ", j, " has non-positive SD.")
+      z <- (xj - mu) / sdj
+    } else { # fixed reference
+      if (!is.finite(sd_ref) || sd_ref <= 0) stop("sd_ref must be > 0.")
+      z <- (xj - mu_ref) / sd_ref
+    }
+    
+    endp   <- endp_list[[as.character(n_levels[j])]]
+    labs_j <- if (length(lab_list[[j]]) == 0) as.character(seq_len(n_levels[j])) else lab_list[[j]]
+    
+    yj <- cut(z, breaks = endp, labels = labs_j,
+              include.lowest = TRUE, right = TRUE, ordered_result = ordered)
+    if (!ordered) yj <- as.integer(yj)
+    
+    out[[j]] <- yj
+  }
+  out
+}
+
+```
+
+### Example
+
+```{r}
+
+library(lavaan)
+library(dplyr)
+library(latent2likert)
+
+# --- Your existing helpers (unchanged) ---
+# make_lavaan_kfactor_corr(...)  # <- as given in your message
+# sum_scores_by_scale(...)                # <- as given in your message
+
+# --- Model specification: K factors, standardized items & latents ---
+mod <- make_lavaan_kfactor_corr(
+  n_items     = c(10, 7, 15),                # example: 3 scales
+  alpha       = c(.70, .75, .80),
+  lv_var      = 1,                           # Var(Fk) = 1
+  x_var       = 1,                           # Var(items) ≈ 1 by construction
+  factors     = c("X1_latent","X2_latent","X3_latent"),
+  prefixes    = c("X1_item","X2_item","X3_item"),
+  corr_latent = 0.50
+)
+
+# --- Latent mean structure: all latents shifted by d_target ---
+d_target <- 0.50     # Cohen's d on latent (Var=1), so mean shift = 0.50
+
+# extract latent names from your model call (or reuse the vector you supplied)
+factors <- c("X1_latent","X2_latent","X3_latent")
+
+# control group: all latent means = 0
+means_ctrl <- paste0(factors, " ~ 0*1", collapse = "\n")
+mod_ctrl   <- paste(mod, means_ctrl, sep = "\n")
+
+# treatment group: all latent means = d_target
+means_treat <- paste0(factors, " ~ ", d_target, "*1", collapse = "\n")
+mod_treat   <- paste(mod, means_treat, sep = "\n")
+
+# --- Simulate continuous data for two groups ---
+set.seed(20250817)
+n_per_group <- 10000
+
+dat_ctrl_cont  <- simulateData(mod_ctrl,  sample.nobs = n_per_group)
+dat_treat_cont <- simulateData(mod_treat, sample.nobs = n_per_group)
+
+dat_ctrl_cont$group  <- "control"
+dat_treat_cont$group <- "treatment"
+
+# --- Discretize with SHARED cutpoints and SHARED reference (mu_ref=0, sd_ref=1) ---
+# Important: do NOT standardize per group, or the mean shift is lost.
+item_cols <- grep("^X\\d+_item\\d+$", names(dat_ctrl_cont), value = TRUE)
+
+dat_ctrl_lik <- continuous_to_likert_by_condition(
+  dat_ctrl_cont[item_cols],
+  n_levels = 7,
+  #labels   = as.character(1:n_levels),
+  ordered  = TRUE,
+  method   = "fixed",     # <- preserves mean differences
+  mu_ref   = 0,
+  sd_ref   = 1
+)
+dat_treat_lik <- continuous_to_likert_by_condition(
+  dat_treat_cont[item_cols],
+  n_levels = 7,
+  #labels   = as.character(1:n_levels),
+  ordered  = TRUE,
+  method   = "fixed",
+  mu_ref   = 0,
+  sd_ref   = 1
+)
+
+# add group labels back
+dat_ctrl_lik$group  <- "control"
+dat_treat_lik$group <- "treatment"
+
+# bind rows
+dat_lik <- bind_rows(dat_ctrl_lik, dat_treat_lik)
+
+
+
+# --- Sum scores per scale (X1_, X2_, X3_) ---
+sums <- sum_scores_by_scale(dat_lik[item_cols])  # returns X1_sum, X2_sum, X3_sum
+sums$group <- dat_lik$group
+
+# --- Check that only the targeted scale shows a mean shift ---
+sums %>%
+  group_by(group) %>%
+  summarise(across(everything(), ~ mean(.), .names = "mean_{.col}"))
+
+# --- (Optional) Compute Cohen's d on the summed scales ---
+d_cohen <- function(x, g) {
+  m <- tapply(x, g, mean)
+  s <- tapply(x, g, sd)
+  n <- table(g)
+  sp <- sqrt(((n[1]-1)*s[1]^2 + (n[2]-1)*s[2]^2) / (sum(n)-2))
+  unname((m[2] - m[1]) / sp)  # treatment - control
+}
+
+c(
+  d_X1_sum = d_cohen(sums$X1_sum, sums$group),
+  d_X2_sum = d_cohen(sums$X2_sum, sums$group),
+  d_X3_sum = d_cohen(sums$X3_sum, sums$group)
+)
+
+```
+
+
+### Function
+
+```{r}
+
+generate_data_likert_two_conditions <- function(
+    n_per_condition = 100,
+    factors     = NULL,        # names of the K latents (defaults F1..FK if NULL)
+    prefixes    = NULL,        # item name prefixes (defaults X1_item, X2_item, ...)
+    alpha       = 0.70,        # scalar or length-K
+    n_items,                   # integer vector length K (items per factor)
+    n_levels    = 7,           # Likert categories
+    r_among_outcomes = 0.30,        # scalar or KxK correlation matrix
+    approx_d_between_groups    = 0.50,        # scalar (applied to ALL latents) or length-K vector
+    seed        = NULL,
+    lv_var      = 1,           # scalar or length-K
+    x_var       = 1,           # scalar or length-K
+    return_continuous = FALSE  # also return continuous data/models if TRUE
+) {
+  if (!is.null(seed)) set.seed(seed)
+  
+  K <- length(n_items)
+  stopifnot(K >= 1, all(n_items >= 2))
+  
+  # default factor names / prefixes if not supplied
+  if (is.null(factors))  factors  <- paste0("X", seq_len(K), "_latent")
+  if (is.null(prefixes)) prefixes <- paste0("X", seq_len(K), "_item")
+  
+  # build structural (covariance) part and measurement with your helper
+  mod <- make_lavaan_kfactor_corr(
+    n_items     = n_items,
+    alpha       = alpha,
+    lv_var      = lv_var,
+    x_var       = x_var,
+    factors     = factors,
+    prefixes    = prefixes,
+    corr_latent = r_among_outcomes
+  )
+  
+  # approx_d_between_groups can be scalar or length-K; recycle if needed
+  if (length(approx_d_between_groups) == 1L) approx_d_between_groups <- rep(approx_d_between_groups, K)
+  stopifnot(length(approx_d_between_groups) == K)
+  
+  # latent mean structures for control (all 0) and treatment (shifted)
+  means_ctrl  <- paste0(factors, " ~ 0*1", collapse = "\n")
+  means_treat <- paste0(factors, " ~ ", approx_d_between_groups, "*1", collapse = "\n")
+  
+  mod_ctrl  <- paste(mod, means_ctrl,  sep = "\n")
+  mod_treat <- paste(mod, means_treat, sep = "\n")
+  
+  # simulate continuous data
+  dat_ctrl_cont  <- lavaan::simulateData(mod_ctrl,  sample.nobs = n_per_group)
+  dat_treat_cont <- lavaan::simulateData(mod_treat, sample.nobs = n_per_group)
+  dat_ctrl_cont$condition  <- "control"
+  dat_treat_cont$condition <- "treatment"
+  
+  # item column regex from prefixes, e.g., ^(X1_item|X2_item|...)\d+$
+  pref_regex <- paste0("^(", paste0(prefixes, collapse = "|"), ")\\d+$")
+  item_cols_ctrl  <- grep(pref_regex, names(dat_ctrl_cont),  value = TRUE)
+  item_cols_treat <- grep(pref_regex, names(dat_treat_cont), value = TRUE)
+  if (!identical(sort(item_cols_ctrl), sort(item_cols_treat))) {
+    stop("Item columns differ across conditions; check prefixes or model.")
+  }
+  item_cols <- item_cols_ctrl
+  
+  # discretize using a FIXED reference (mu_ref=0, sd_ref=1) with shared cutpoints
+  dat_ctrl_lik <- continuous_to_likert_by_condition(
+    dat_ctrl_cont[item_cols],
+    n_levels = n_levels,
+    ordered  = FALSE,
+    method   = "fixed",
+    mu_ref   = 0,
+    sd_ref   = 1
+  )
+  dat_treat_lik <- continuous_to_likert_by_condition(
+    dat_treat_cont[item_cols],
+    n_levels = n_levels,
+    ordered  = FALSE,
+    method   = "fixed",
+    mu_ref   = 0,
+    sd_ref   = 1
+  )
+  
+  # add condition and bind
+  dat_ctrl_lik$condition  <- "control"
+  dat_treat_lik$condition <- "treatment"
+  dat_lik <- dplyr::bind_rows(dat_ctrl_lik, dat_treat_lik) |>
+    mutate(id = row_number()) |>
+    dplyr::relocate(id, .before = 1) |>
+    dplyr::relocate(condition, .after = id)
+  
+  if (return_continuous) {
+    return(list(
+      dat_lik        = dat_lik,
+      dat_ctrl_cont  = dat_ctrl_cont,
+      dat_treat_cont = dat_treat_cont,
+      item_cols      = item_cols,
+      models         = list(base = mod, ctrl = mod_ctrl, treat = mod_treat)
+    ))
+  } else {
+    return(dat_lik)
+  }
+}
+
+```
+
+### Call
+
+```{r}
+
+dat_lik <- generate_data_likert_two_conditions(n_per_condition = 100,
+                                          factors  = c("X1_latent", "X2_latent", "X3_latent"),
+                                          prefixes = c("X1_item", "X2_item", "X3_item"),
+                                          alpha = c(.70, .75, .80),
+                                          n_items = c(10, 7, 15),
+                                          n_levels = 7,
+                                          r_among_outcomes = 0.50,
+                                          approx_d_between_groups = 0.50,
+                                          seed = 42)
+
+dat_lik
+
+```
+
+### check output
+
+```{r}
+#| fig-height: 20
+#| fig-width: 20
+
+# --- Sum scores per scale (X1_, X2_, X3_) ---
+dat_sumcores <- dat_lik %>%
+  select(-id, -condition) |>
+  sum_scores_by_scale()  # returns X1_sum, X2_sum, X3_sum
+
+dat_sumcores$condition <- dat_lik$condition
+dat_sumcores$id <- dat_lik$id
+
+d_cohen <- function(x, g) {
+  m <- tapply(x, g, mean)
+  s <- tapply(x, g, sd)
+  n <- table(g)
+  sp <- sqrt(((n[1]-1)*s[1]^2 + (n[2]-1)*s[2]^2) / (sum(n)-2))
+  unname((m[2] - m[1]) / sp)  # treatment - control
+}
+
+c(
+  d_X1_sum = d_cohen(dat_sumcores$X1_sum, dat_sumcores$condition),
+  d_X2_sum = d_cohen(dat_sumcores$X2_sum, dat_sumcores$condition),
+  d_X3_sum = d_cohen(dat_sumcores$X3_sum, dat_sumcores$condition)
+)
+
+dat_sumcores %>%
+  select(-id, -condition) |>
+  cor() |>
+  round(2)
+
+dat_lik |>
+  pivot_longer(cols = starts_with("X"),
+               names_to = "item",
+               values_to = "score") |>
+  ggplot(aes(score)) +
+  geom_histogram(binwidth = 1) +
+  facet_wrap(item ~ condition)
+
+```
+
+## Add demographics
+
+```{r}
+
+add_demographics <- function(dat){
+  dat |>
+    mutate(age = round(runif(nrow(dat), 18, 45)),
+           gender = sample(c("male", "female"), 
+                           size = nrow(dat), 
+                           replace = TRUE,
+                           prob = c(.30, .70))) |>
+    relocate(age, .after = id) |>
+    relocate(gender, .after = age)
+} 
+
+dat_lik_dem <- dat_lik |> 
+  add_demographics() 
+
+dat_lik_dem |>
+  head()
+
+```
+
+## Add messy demographics
+
+```{r}
+
+add_demographics_messy <- function(
+    dat,
+    p_messy_age      = 0.05,                  # age column: prob of messy entries
+    gender_probs     = c(male = .30, female = .70),
+    p_age_in_gender  = 0.05,                  # gender column: prob replaced by a number age
+    p_fmt_misspell   = 0.10                   # among correct genders, prob of case/misspell tweaks
+) {
+  stopifnot(is.data.frame(dat))
+  n <- nrow(dat)
+  
+  # ----- age (95% numeric 18:45; 5% spelled or 'male'/'female') -----
+  spelled <- c(
+    "eighteen","nineteen",
+    "twenty","twenty one","twenty two","twenty three","twenty four","twenty five",
+    "twenty six","twenty seven","twenty eight","twenty nine",
+    "thirty","thirty one","thirty two","thirty three","thirty four","thirty five",
+    "thirty six","thirty seven","thirty eight","thirty nine",
+    "forty","forty one","forty two","forty three","forty four","forty five"
+  )
+  messy_pool_age <- c(spelled, "male", "female")
+  
+  is_messy_age <- runif(n) < p_messy_age
+  age_chr <- character(n)
+  age_chr[!is_messy_age] <- as.character(sample(18:45, sum(!is_messy_age), replace = TRUE))
+  age_chr[ is_messy_age] <- sample(messy_pool_age, sum(is_messy_age),  replace = TRUE)
+  
+  # ----- gender (base correct genders by prob) -----
+  g_names <- names(gender_probs)
+  g_probs <- as.numeric(gender_probs)
+  gender_chr <- sample(g_names, size = n, replace = TRUE, prob = g_probs)
+  
+  # (A) 5%: replace gender with a numeric age
+  idx_age_in_gender <- runif(n) < p_age_in_gender
+  gender_chr[idx_age_in_gender] <- as.character(sample(18:45, sum(idx_age_in_gender), replace = TRUE))
+  
+  # (B) among the remaining “correct” genders, 10%: case/misspell tweaks
+  idx_correct <- !idx_age_in_gender
+  idx_tweak   <- idx_correct & (runif(n) < p_fmt_misspell)
+  
+  # tweak function: case variants + misspellings
+  tweak_gender <- function(g) {
+    # pools: mostly case variants, some misspellings
+    if (g == "male") {
+      pool <- c("Male","MALE","male","MalE",           # case variants / “title”
+                "mal","malee","ma le","mle")           # misspellings
+    } else {
+      pool <- c("Female","FEMALE","female","FeMale",   # case variants / “title”
+                "femail","femlae","femle","fem ale")   # misspellings
+    }
+    sample(pool, 1)
+  }
+  
+  if (any(idx_tweak)) {
+    gender_chr[idx_tweak] <- vapply(gender_chr[idx_tweak], tweak_gender, character(1))
+  }
+  
+  # ----- assemble & order -----
+  dat |>
+    dplyr::mutate(age = age_chr,
+                  gender = gender_chr) |>
+    dplyr::relocate(id, .before = 1) |>
+    dplyr::relocate(age, .after = id) |>
+    dplyr::relocate(gender, .after = age)
+}
+
+dat_lik_dem <- dat_lik |> 
+  add_demographics_messy() 
+
+dat_lik_dem
+
+```
+
+## Add missingness
+
+```{r}
+
+add_missingness <- function(dat, proportion_missing){ 
+  require(missMethods)
+  
+  delete_MCAR(
+    dat,
+    p = proportion_missing,
+    cols_mis = vars_select(colnames(dat), starts_with("X"))
+  )
+}
+
+dat_lik_dem_missing <- dat_lik_dem |> 
+  add_missingness(proportion_missing = .15) 
+
+head(dat_lik_dem_missing)
+
+```
+
+## Add impossible values ("outliers")
+
+```{r}
+
+add_impossible_values <- function(dat, proportion_impossible = 0.03, replacement_value = 99L) {
+  dat %>%
+    mutate(across(starts_with("X"), ~ replace(.x, runif(length(.x)) < proportion_impossible, replacement_value)))
+}
+
+dat_lik_dem_missing_impossible <- dat_lik_dem_missing |> 
+  add_impossible_values(proportion_impossible = .04, replacement_value = 8) 
+
+head(dat_lik_dem_missing_impossible)
+
+```
+
+## Combined workflow
+
+```{r}
+
+dat_clean <- 
+  generate_data_likert_two_conditions(n_per_condition = 50,
+                                 factors  = c("X1_latent", "X2_latent", "X3_latent"),
+                                 prefixes = c("X1_item", "X2_item", "X3_item"),
+                                 alpha = c(.70, .75, .80),
+                                 n_items = c(10, 7, 15),
+                                 n_levels = 7,
+                                 r_among_outcomes = 0.50,
+                                 approx_d_between_groups = 0.50,
+                                 seed = 42) |>
+  add_demographics_messy() 
+
+dat_messy_missing <- 
+  generate_data_likert_two_conditions(n_per_condition = 50,
+                                 factors  = c("X1_latent", "X2_latent", "X3_latent"),
+                                 prefixes = c("X1_item", "X2_item", "X3_item"),
+                                 alpha = c(.70, .75, .80),
+                                 n_items = c(10, 7, 15),
+                                 n_levels = 7,
+                                 r_among_outcomes = 0.50,
+                                 approx_d_between_groups = 0.50,
+                                 seed = 42) |>
+  add_demographics_messy() |>
+  add_missingness(proportion_missing = .05) |>
+  add_impossible_values(proportion_impossible = .04, replacement_value = 8)
+
+```
+
+### check output
+
+```{r}
+#| fig-height: 20
+#| fig-width: 20
+
+check_generated_data <- function(dat){
+  dat_sumcores <- dat %>%
+    select(-id, -condition, -gender, -age) |>
+    sum_scores_by_scale()  # returns X1_sum, X2_sum, X3_sum
+  
+  dat_sumcores$condition <- dat$condition
+  dat_sumcores$id <- dat$id
+  
+  cohens_d_function <- function(x, g) {
+    m <- tapply(x, g, mean)
+    s <- tapply(x, g, sd)
+    n <- table(g)
+    sp <- sqrt(((n[1]-1)*s[1]^2 + (n[2]-1)*s[2]^2) / (sum(n)-2))
+    unname((m[2] - m[1]) / sp)  # treatment - control
+  }
+  
+  cohens_d <- c(
+    d_X1_sum = cohens_d_function(dat_sumcores$X1_sum, dat_sumcores$condition),
+    d_X2_sum = cohens_d_function(dat_sumcores$X2_sum, dat_sumcores$condition),
+    d_X3_sum = cohens_d_function(dat_sumcores$X3_sum, dat_sumcores$condition)
+  ) |>
+    round(2)
+  
+  r <- dat_sumcores %>%
+    select(-id, -condition) |>
+    cor() |>
+    round(2)
+  
+  item_histograms <- dat |>
+    pivot_longer(cols = starts_with("X"),
+                 names_to = "item",
+                 values_to = "score") |>
+    ggplot(aes(score)) +
+    geom_histogram(binwidth = 1) +
+    facet_wrap(item ~ condition)
+  
+  return(list(cohens_d = cohens_d,
+              r = r,
+              item_histograms = item_histograms))
+}
+
+check_generated_data(dat_clean)
+
+
+```
