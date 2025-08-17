@@ -4,7 +4,7 @@
 
 {truffle} is an R package for teaching purposes. It allows you to create datasets with various known effects to be rediscovered (truffles), and then create data processing headaches that have to be solved (dirt). Users must then search for truffles among the dirt. 
 
-Datasets contain demographics data and item-level Likert responses. Known effects (truffles) can be buried in the data including differences in sum-score means between conditions, known correlations between the different outcomes' sum-scores, known Cronbach's alpha values for each scale, etc. Data can also be made messy, contain impossible values, or contain missingness, to create data processing challenges.
+Generated datasets can include demographics variables and item-level Likert responses. Known effects (truffles) can be buried in the data including differences in sum-score means between conditions, known correlations between the different outcomes' sum-scores, known Cronbach's alpha values for each scale, etc. Data can also be made messy, contain impossible values, or contain missingness, to create data processing challenges.
 
 The package's functions are currently quite fragile: it is designed for a specific internal use case in our teaching and not (yet) highly flexible, nor does it contain tests or handle errors or make them visible. Currently it can only generate data for a single design: a between groups experiment with equal sample sizes.
 
@@ -26,27 +26,28 @@ Generate data for the following:
 ```{r}
 library(truffle)
 
-dat_clean <- 
-  generate_data_likert_two_conditions(n_per_condition = 50,
+dat_truffle <- 
+  generate_data_likert_two_conditions(n_per_condition = 200,
                                       factors  = c("X1_latent", "X2_latent", "X3_latent"),
                                       prefixes = c("X1_item", "X2_item", "X3_item"),
                                       alpha = c(.70, .75, .80),
                                       n_items = c(10, 7, 15),
                                       n_levels = 7,
-                                      r_among_outcomes = 0.50,
-                                      approx_d_between_groups = 0.50,
-                                      seed = 42) |>
-  add_demographics() 
+                                      r_among_outcomes = c(0.50, .70, .40),
+                                      approx_d_between_groups = c(0.50, 0.20, 1.00),
+                                      seed = 42) 
 
-View(dat_clean)
+View(dat_truffle)
 ```
+
+![](./man/figures/truffle.png)
 
 
 
 Check that the sum scores conform to the predefined properties and that the item level data is approximately normal.
 
 ```{r}
-check_generated_data(dat_clean)
+check_generated_data(dat_truffle)
 ```
 
 
@@ -54,34 +55,23 @@ check_generated_data(dat_clean)
 Generate data for the same study but make the demographics data mess, add missingness, and add impossible values to the item level data.
 
 ```{r}
-dat_messy_missing <- 
-  generate_data_likert_two_conditions(n_per_condition = 50,
-                                      factors  = c("X1_latent", "X2_latent", "X3_latent"),
-                                      prefixes = c("X1_item", "X2_item", "X3_item"),
-                                      alpha = c(.70, .75, .80),
-                                      n_items = c(10, 7, 15),
-                                      n_levels = 7,
-                                      r_among_outcomes = 0.50,
-                                      approx_d_between_groups = 0.50,
-                                      seed = 42) |>
+dat_truffle_and_dirt <- dat_truffle |>
   add_demographics_messy() |>
-  add_missingness(proportion_missing = .05) |>
+  mutate(completion_time = generate_reaction_times(n = n())) |>
+  add_missingness_messy(proportion_missing = .05) |>
   add_impossible_values(proportion_impossible = .04, replacement_value = 8) |>
-  # impute sum scores with missingness using the mean response per participant
-  add_sum_scores_by_scale() 
+  add_non_tidy_column(col = "block_trial") 
 
-View(dat_messy_missing)
+View(dat_truffle_and_dirt)
 ```
 
 Output:
 
-![](./man/figures/output.png)
+![](./man/figures/truffle_and_dirt.png)
 
 
 
 ## TODO
-
-- Document dirt functions better
 
 Possible extensions:
 
