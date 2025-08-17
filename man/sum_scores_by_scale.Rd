@@ -18,36 +18,26 @@ sum_scores_by_scale(
 \arguments{
 \item{data}{A data.frame containing item-level data.}
 
-\item{id_regex}{A regular expression used to identify scale IDs
-(default: \code{"^(X\\d+)"}).}
+\item{id_regex}{A regular expression with a capturing group for the scale ID
+(default: "^(X\\d+)").}
 
-\item{suffix}{A character suffix to append to the resulting sum score
-column names (default: \code{"_sum"}).}
+\item{suffix}{A suffix for the resulting sum-score column names (default: "_sum").}
+
+\item{na_rm}{Logical; ignore NAs when summing (default TRUE).}
+
+\item{min_non_missing}{Integer; minimum answered items required per scale (default 1).}
+
+\item{prorate}{Logical; if TRUE, prorate sums by k/answered (default FALSE).}
+
+\item{add_counts}{Logical; if TRUE, also return counts of non-missing items per scale.}
+
+\item{count_suffix}{Suffix for the count columns (default "_n").}
 }
 \value{
-A data.frame containing one column per scale, with sum scores
-for each participant.
+A data.frame with one column per scale (and optionally counts).
 }
 \description{
 This function computes participant-level sum scores for each scale
-based on item naming conventions (e.g., \code{X1_item1}, \code{X1_item2}, ...).
-It assumes no missingness and returns one sum score per scale.
-}
-\details{
-Scale IDs are extracted using the provided \code{id_regex}, and
-items are grouped accordingly. Factors or ordered factors are
-coerced to integers before summing. Assumes complete data with
-no missing values.
-}
-\examples{
-\dontrun{
-dat <- data.frame(
-  X1_item1 = c(1,2,3),
-  X1_item2 = c(2,3,4),
-  X2_item1 = c(1,1,2),
-  X2_item2 = c(2,2,3)
-)
-sum_scores_by_scale(dat)
-}
-
+based on item naming conventions (e.g., X1_item1, X1_item2, ...).
+It can handle missingness and optional prorating.
 }
