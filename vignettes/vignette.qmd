@@ -7,25 +7,7 @@ The package's functions are currently quite fragile: it is designed for a specif
 
 ```{r}
 
-#library(truffle)
-
-library(lavaan)
-library(dplyr)
-library(tidyr)
-library(tidyselect)
-library(latent2likert)
-library(ggplot2)
-library(missMethods)
-
-source("../R/add_demographics_messy.R")
-source("../R/add_demographics.R")
-source("../R/add_impossible_values.R")
-source("../R/add_missingness.R")
-source("../R/check_generated_data.R")
-source("../R/continuous_to_likert_by_condition.R")
-source("../R/generate_data_likert_two_conditions.R")
-source("../R/make_lavaan_kfactor_corr.R")
-source("../R/sum_scores_by_scale.R")
+library(truffle)
 
 ```
 
