@@ -10,7 +10,7 @@ The package's functions are currently quite fragile: it is designed for a specif
 
 
 
-### Usage
+## Usage
 
 Generate data for the following:
 
@@ -70,6 +70,20 @@ dat_messy_missing <-
 
 View(dat_messy_missing)
 ```
+
+Output:
+
+![](./man/figures/output.png)
+
+
+
+## TODO
+
+Possible extensions:
+
+- Other study designs, e.g., cross sectional for regressions studies; Mixed within between for 2X2 RCT
+- Improve fragility. Many functions rely on columns being called "X1_..." Etc.
+- Improve ecological validity of column names. Eg help users rename the generated variables to things like "BDI\_", "MADRS\_", etc
 
 
 
