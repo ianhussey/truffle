@@ -2,36 +2,35 @@
 % Please edit documentation in R/check_generated_data.R
 \name{check_generated_data}
 \alias{check_generated_data}
-\title{Check Generated Data}
+\title{Check Generated Data (flexible number of scales)}
 \usage{
 check_generated_data(dat)
 }
 \arguments{
-\item{dat}{A data frame containing the generated dataset.}
-
-\item{impossible_value}{An integer value considered impossible for the
-simulated data (default: 99).}
+\item{dat}{A data frame containing item-level Likert data and a
+\code{condition} column with exactly two groups. Optional columns
+\code{id}, \code{age}, \code{gender} are ignored in score creation.}
 }
 \value{
-Prints messages to the console about detected issues and returns
-\code{TRUE} invisibly if the checks pass without problems.
+A list with:
+\describe{
+\item{\code{cohens_d}}{Named numeric vector: Cohen's \emph{d} per scale sum score.}
+\item{\code{r}}{Correlation matrix among scale sum scores.}
+\item{\code{item_histograms}}{A ggplot object with histograms faceted by item and condition.}
+}
 }
 \description{
-This function checks for missing values, impossible values, and the presence
-of demographic columns in a generated dataset. It is designed for use in
-teaching or simulation settings where generated Likert-style item data and
-demographics are combined.
+Checks a generated dataset by computing (i) Cohen's \emph{d} per scale
+between two groups in \code{condition}, (ii) the correlation matrix among
+scale sum scores, and (iii) item-level histograms by condition.
+The number of scales is discovered from column names (no need to be fixed at 3).
 }
 \examples{
 \dontrun{
-df <- data.frame(
-  id = 1:5,
-  age = c(25, 30, 40, NA, 35),
-  gender = c("male", "female", "male", "female", "female"),
-  X1 = c(1, 2, 3, 4, 99),
-  X2 = c(2, 3, 4, 5, 1)
-)
-check_generated_data(df, impossible_value = 99)
+out <- check_generated_data(dat)
+out$cohens_d
+out$r
+print(out$item_histograms)
 }
 
 }

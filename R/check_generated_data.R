@@ -1,70 +1,91 @@
-#' Check Generated Data
+#' Check Generated Data (flexible number of scales)
 #'
-#' This function checks for missing values, impossible values, and the presence 
-#' of demographic columns in a generated dataset. It is designed for use in 
-#' teaching or simulation settings where generated Likert-style item data and 
-#' demographics are combined.
+#' Checks a generated dataset by computing (i) Cohen's \emph{d} per scale
+#' between two groups in \code{condition}, (ii) the correlation matrix among
+#' scale sum scores, and (iii) item-level histograms by condition.
+#' The number of scales is discovered from column names (no need to be fixed at 3).
 #'
-#' @param dat A data frame containing the generated dataset.
-#' @param impossible_value An integer value considered impossible for the 
-#'   simulated data (default: 99).
+#' @param dat A data frame containing item-level Likert data and a
+#'   \code{condition} column with exactly two groups. Optional columns
+#'   \code{id}, \code{age}, \code{gender} are ignored in score creation.
 #'
-#' @return Prints messages to the console about detected issues and returns 
-#'   \code{TRUE} invisibly if the checks pass without problems.
+#' @return A list with:
+#' \describe{
+#'   \item{\code{cohens_d}}{Named numeric vector: Cohen's \emph{d} per scale sum score.}
+#'   \item{\code{r}}{Correlation matrix among scale sum scores.}
+#'   \item{\code{item_histograms}}{A ggplot object with histograms faceted by item and condition.}
+#' }
 #'
 #' @examples
 #' \dontrun{
-#' df <- data.frame(
-#'   id = 1:5,
-#'   age = c(25, 30, 40, NA, 35),
-#'   gender = c("male", "female", "male", "female", "female"),
-#'   X1 = c(1, 2, 3, 4, 99),
-#'   X2 = c(2, 3, 4, 5, 1)
-#' )
-#' check_generated_data(df, impossible_value = 99)
+#' out <- check_generated_data(dat)
+#' out$cohens_d
+#' out$r
+#' print(out$item_histograms)
 #' }
 #'
 #' @export
-#' @importFrom dplyr across select where
-#' @importFrom stats complete.cases
-check_generated_data <- function(dat){
-  dat_sumcores <- dat %>%
-    select(-id, -condition, -gender, -age) |>
-    add_sum_scores_by_scale() |> # returns X1_sum, X2_sum, X3_sum
-    select(ends_with("_sum"))
+#' @importFrom dplyr select any_of bind_cols
+#' @importFrom tidyr pivot_longer
+#' @importFrom ggplot2 ggplot aes geom_histogram facet_wrap
+check_generated_data <- function(dat) {
+  stopifnot(is.data.frame(dat))
+  if (!("condition" %in% names(dat))) {
+    stop("`dat` must contain a `condition` column with two groups.")
+  }
+  # Ensure two-group design
+  if (length(unique(na.omit(dat$condition))) != 2L) {
+    stop("`condition` must have exactly two non-missing levels.")
+  }
   
-  dat_sumcores$condition <- dat$condition
-  dat_sumcores$id <- dat$id
+  # 1) Build sum scores (discover scales automatically)
+  item_block <- dplyr::select(dat, -dplyr::any_of(c("id","condition","gender","age")))
+  sums_appended <- add_sum_scores_by_scale(item_block)
+  sum_cols <- grep("_sum$", names(sums_appended), value = TRUE)
+  if (length(sum_cols) == 0L) stop("No *_sum columns found after add_sum_scores_by_scale().")
   
+  # Keep only the sums; attach id and condition for analysis
+  dat_sumcores <- dplyr::bind_cols(
+    dplyr::select(dat, dplyr::any_of(c("id","condition"))),
+    sums_appended[sum_cols]
+  )
+  
+  # 2) Cohen's d per sum score
   cohens_d_function <- function(x, g) {
+    # g expected to be 2 groups; handle NAs safely
+    ok <- !(is.na(x) | is.na(g))
+    x <- x[ok]; g <- droplevels(as.factor(g[ok]))
+    if (nlevels(g) != 2L) return(NA_real_)
     m <- tapply(x, g, mean)
     s <- tapply(x, g, sd)
     n <- table(g)
     sp <- sqrt(((n[1]-1)*s[1]^2 + (n[2]-1)*s[2]^2) / (sum(n)-2))
-    unname((m[2] - m[1]) / sp)  # treatment - control
+    unname((m[2] - m[1]) / sp)  # group2 - group1
   }
+  d_vec <- vapply(sum_cols, function(cc) {
+    cohens_d_function(dat_sumcores[[cc]], dat_sumcores$condition)
+  }, numeric(1))
+  names(d_vec) <- sub("_sum$", "", sum_cols)
+  d_vec <- round(d_vec, 2)
   
-  cohens_d <- c(
-    d_X1_sum = cohens_d_function(dat_sumcores$X1_sum, dat_sumcores$condition),
-    d_X2_sum = cohens_d_function(dat_sumcores$X2_sum, dat_sumcores$condition),
-    d_X3_sum = cohens_d_function(dat_sumcores$X3_sum, dat_sumcores$condition)
-  ) |>
-    round(2)
+  # 3) Correlation matrix among sum scores
+  r_mat <- cor(dat_sumcores[sum_cols], use = "pairwise.complete.obs")
+  r_mat <- round(r_mat, 2)
   
-  r <- dat_sumcores %>%
-    select(-id, -condition) |>
-    cor() |>
-    round(2)
-  
+  # 4) Item histograms by condition
   item_histograms <- dat |>
-    pivot_longer(cols = starts_with("X"),
-                 names_to = "item",
-                 values_to = "score") |>
-    ggplot(aes(score)) +
-    geom_histogram(binwidth = 1) +
-    facet_wrap(item ~ condition)
+    tidyr::pivot_longer(
+      cols = starts_with("X"),
+      names_to = "item",
+      values_to = "score"
+    ) |>
+    ggplot2::ggplot(ggplot2::aes(score)) +
+    ggplot2::geom_histogram(binwidth = 1) +
+    ggplot2::facet_wrap(item ~ condition)
   
-  return(list(cohens_d = cohens_d,
-              r = r,
-              item_histograms = item_histograms))
+  list(
+    cohens_d = d_vec,
+    r = r_mat,
+    item_histograms = item_histograms
+  )
 }
