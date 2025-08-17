@@ -36,6 +36,7 @@ library(missMethods)
 
 # not needed by truffle but used in this script
 library(janitor)
+library(readr)
 
 ```
 
@@ -138,7 +139,7 @@ head(dat_truffle_and_dirt, n = 10)
 
 ```
 
-## Messy missingness
+### Messy missingness
 
 ```{r}
 
@@ -160,18 +161,7 @@ head(dat_truffle_and_dirt, n = 10)
 
 ```
 
-## Duplicate rows
-
-```{r}
-
-dat_truffle_and_dirt <- dat_truffle_and_dirt |>
-  add_duplicates(prop = 0.05)
-
-head(dat_truffle_and_dirt, n = 10)
-
-```
-
-## Generate reaction times
+### Generate reaction times
 
 ```{r}
 
@@ -185,7 +175,7 @@ ggplot(dat_truffle_and_dirt, aes(completion_time)) +
 
 ```
 
-## Messy number formatting
+### Messy number formatting
 
 ```{r}
 
@@ -196,18 +186,7 @@ head(dat_truffle_and_dirt, n = 10)
 
 ```
 
-## Messy dates
-
-```{r}
-
-dat_truffle_and_dirt <- dat_truffle_and_dirt |>
-  mutate(date = add_dates_messy(n = n()))
-
-head(dat_truffle_and_dirt, n = 10)
-
-```
-
-## Add block_trial
+### Add block_trial
 
 ```{r}
 
@@ -218,9 +197,27 @@ head(dat_truffle_and_dirt, n = 10)
 
 ```
 
-## Messy colnames
+### Messy dates
 
 ```{r}
+
+dat_truffle_and_dirt <- dat_truffle_and_dirt |>
+  mutate(date = add_dates_messy(n = n()))
+
+head(dat_truffle_and_dirt, n = 10)
+
+```
+
+### Messy colnames
+
+```{r}
+
+# move some columns around before renaming makes it hard
+dat_truffle_and_dirt <- dat_truffle_and_dirt |>
+  relocate(date, .after = "id") |>
+  relocate(completion_time, .after = "id") |>
+  relocate(block_trial, .after = "id") |>
+  write_lines("dat_truffle_and_dirt.csv")
 
 dat_truffle_and_dirt <- dat_truffle_and_dirt |>
   messy_colnames()
@@ -229,24 +226,35 @@ head(dat_truffle_and_dirt, n = 10)
 
 ```
 
-## Messy headers
+### Duplicate rows
 
 ```{r}
 
 dat_truffle_and_dirt <- dat_truffle_and_dirt |>
-  add_messy_header_row()
+  add_duplicates(prop = 0.05)
 
 head(dat_truffle_and_dirt, n = 10)
 
+```
+
+### Messy headers
+
+```{r}
+
+dat_truffle_and_dirt_with_header <- dat_truffle_and_dirt |>
+  add_messy_header_rows()
+
+head(dat_truffle_and_dirt_with_header, n = 10)
+
 # write to desk
-readr::write_lines(dat_truffle_and_dirt, "dat_truffle_and_dirt.csv")
+readr::write_lines(dat_truffle_and_dirt_with_header, "dat_truffle_and_dirt_with_header.csv")
 
 # re-import later
-messy <- readr::read_csv("dat_truffle_and_dirt.csv")
+messy <- readr::read_csv("dat_truffle_and_dirt_with_header.csv")
 
 head(messy)
 
-clean <- readr::read_csv("dat_truffle_and_dirt.csv", skip = 2)
+clean <- readr::read_csv("dat_truffle_and_dirt_with_header.csv", skip = 2)
 
 head(clean)
 
