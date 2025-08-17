@@ -66,7 +66,9 @@ dat_messy_missing <-
                                       seed = 42) |>
   add_demographics_messy() |>
   add_missingness(proportion_missing = .05) |>
-  add_impossible_values(proportion_impossible = .04, replacement_value = 8)
+  add_impossible_values(proportion_impossible = .04, replacement_value = 8) |>
+  # impute sum scores with missingness using the mean response per participant
+  add_sum_scores_by_scale() 
 
 View(dat_messy_missing)
 ```
