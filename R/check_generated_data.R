@@ -30,7 +30,8 @@
 check_generated_data <- function(dat){
   dat_sumcores <- dat %>%
     select(-id, -condition, -gender, -age) |>
-    sum_scores_by_scale()  # returns X1_sum, X2_sum, X3_sum
+    add_sum_scores_by_scale() |> # returns X1_sum, X2_sum, X3_sum
+    select(ends_with("_sum"))
   
   dat_sumcores$condition <- dat$condition
   dat_sumcores$id <- dat$id

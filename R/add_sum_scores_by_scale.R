@@ -1,8 +1,9 @@
 #' Compute Sum Scores by Scale
 #'
-#' This function computes participant-level sum scores for each scale 
+#' This function computes participant-level sum scores for each scale
 #' based on item naming conventions (e.g., X1_item1, X1_item2, ...).
-#' It can handle missingness and optional prorating.
+#' It can handle missingness and optional prorating, and appends the
+#' resulting columns to the input data frame.
 #'
 #' @param data A data.frame containing item-level data.
 #' @param id_regex A regular expression with a capturing group for the scale ID
@@ -10,19 +11,20 @@
 #' @param suffix A suffix for the resulting sum-score column names (default: "_sum").
 #' @param na_rm Logical; ignore NAs when summing (default TRUE).
 #' @param min_non_missing Integer; minimum answered items required per scale (default 1).
-#' @param prorate Logical; if TRUE, prorate sums by k/answered (default FALSE).
-#' @param add_counts Logical; if TRUE, also return counts of non-missing items per scale.
+#' @param prorate Logical; if TRUE, prorate sums by k/answered (default TRUE).
+#' @param add_counts Logical; if TRUE, also append counts of non-missing items per scale.
 #' @param count_suffix Suffix for the count columns (default "_n").
 #'
-#' @return A data.frame with one column per scale (and optionally counts).
+#' @return A data.frame equal to `data` with sum-score columns (and optionally
+#'   count columns) appended at the end.
 #' @export
-sum_scores_by_scale <- function(
+add_sum_scores_by_scale <- function(
     data,
     id_regex = "^(X\\d+)",   # captures scale IDs like X1, X2, ...
     suffix   = "_sum",
     na_rm    = TRUE,
     min_non_missing = 1,
-    prorate  = FALSE,
+    prorate  = TRUE,
     add_counts = FALSE,
     count_suffix = "_n"
 ) {
@@ -38,7 +40,7 @@ sum_scores_by_scale <- function(
   nms_sel <- nms[sel]
   ids     <- sub(paste0(id_regex, ".*"), "\\1", nms_sel, perl = TRUE)
   
-  # 2) Group indices by extracted IDs (now many items map to one scale)
+  # 2) Group indices by extracted IDs (many items -> one scale)
   idx <- split(which(sel), ids)
   
   # 3) Coercion helper
@@ -81,8 +83,11 @@ sum_scores_by_scale <- function(
   if (add_counts) {
     counts <- as.data.frame(counts_list, check.names = FALSE)[ord]
     names(counts) <- paste0(sub(paste0(suffix, "$"), "", names(sums)), count_suffix)
-    cbind(sums, counts, check.names = FALSE)
+    new_cols <- dplyr::bind_cols(sums, counts)
   } else {
-    sums
+    new_cols <- sums
   }
+  
+  # 6) Append to original data (sum/count columns at the end)
+  dplyr::bind_cols(data, new_cols)
 }
