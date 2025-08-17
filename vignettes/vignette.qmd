@@ -18,7 +18,7 @@ execute:
 
 The package's functions are currently quite fragile: it is designed for a specific internal use case in our teaching and not (yet) highly flexible, nor does it contain tests or handle errors or make them visible. Currently it can only generate data for a single design: a between groups experiment with equal sample sizes.
 
-# Dependencies
+## Dependencies
 
 ```{r}
 
@@ -39,7 +39,7 @@ library(janitor)
 
 ```
 
-# Generate data
+## Generate data
 
 - Item level Likert data (no choice)
 - Between subjects experiment (control vs intervention) (2 conditions only, but can be renamed)

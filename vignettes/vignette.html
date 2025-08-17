@@ -125,8 +125,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <p>{truffle} creates datasets with various known effects to be rediscovered, for teaching purposes. Datasets contain demographics data and item-level Likert responses. Known effects (truffles) can be buried in the data including differences in sum-score means between conditions, known correlations between the different outcomes’ sum-scores, known Cronbach’s alpha values for each scale, etc. Data can also be made messy, contain impossible values, or contain missingness, to create data processing challenges.</p>
 <p>The package’s functions are currently quite fragile: it is designed for a specific internal use case in our teaching and not (yet) highly flexible, nor does it contain tests or handle errors or make them visible. Currently it can only generate data for a single design: a between groups experiment with equal sample sizes.</p>
-<section id="dependencies" class="level1">
-<h1>Dependencies</h1>
+<section id="dependencies" class="level2">
+<h2 class="anchored" data-anchor-id="dependencies">Dependencies</h2>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
@@ -147,8 +147,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </details>
 </div>
 </section>
-<section id="generate-data" class="level1">
-<h1>Generate data</h1>
+<section id="generate-data" class="level2">
+<h2 class="anchored" data-anchor-id="generate-data">Generate data</h2>
 <ul>
 <li>Item level Likert data (no choice)</li>
 <li>Between subjects experiment (control vs intervention) (2 conditions only, but can be renamed)</li>
@@ -163,7 +163,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>dat_clean <span class="ot">&lt;-</span> </span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">generate_data_likert_two_conditions</span>(<span class="at">n_per_condition =</span> <span class="dv">20</span>,</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">generate_data_likert_two_conditions</span>(<span class="at">n_per_condition =</span> <span class="dv">50</span>,</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">factors  =</span> <span class="fu">c</span>(<span class="st">"X1_latent"</span>, <span class="st">"X2_latent"</span>, <span class="st">"X3_latent"</span>),</span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">prefixes =</span> <span class="fu">c</span>(<span class="st">"X1_item"</span>, <span class="st">"X2_item"</span>, <span class="st">"X3_item"</span>),</span>
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">alpha =</span> <span class="fu">c</span>(.<span class="dv">70</span>, .<span class="dv">75</span>, .<span class="dv">80</span>),</span>
@@ -174,260 +174,113 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">seed =</span> <span class="dv">42</span>) <span class="sc">|&gt;</span></span>
 <span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_demographics</span>() </span>
 <span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>dat_clean</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(dat_clean, <span class="at">n =</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>   id age gender condition X1_item1 X1_item2 X1_item3 X1_item4 X1_item5
-1   1  33 female   control        3        2        3        1        2
-2   2  18   male   control        3        4        2        3        4
-3   3  20 female   control        4        5        3        3        4
-4   4  44 female   control        4        7        2        4        5
-5   5  30   male   control        6        4        6        5        3
-6   6  29   male   control        3        6        4        5        1
-7   7  32 female   control        2        3        4        2        4
-8   8  38 female   control        2        4        3        1        1
-9   9  23 female   control        2        5        2        3        2
-10 10  34 female   control        2        3        4        5        2
-11 11  44 female   control        4        2        3        3        4
-12 12  33 female   control        4        3        4        4        3
-13 13  20   male   control        3        5        3        3        6
-14 14  24 female   control        6        3        3        6        3
-15 15  38   male   control        5        4        4        6        3
-16 16  19 female   control        3        4        3        1        3
-17 17  24   male   control        1        3        5        3        4
-18 18  31 female   control        6        6        5        7        5
-19 19  42 female   control        7        6        7        4        7
-20 20  30 female   control        4        2        3        2        3
-21 21  44 female treatment        3        3        3        6        2
-22 22  25 female treatment        6        6        6        7        5
-23 23  35 female treatment        6        4        5        4        4
-24 24  24 female treatment        4        4        5        4        5
-25 25  29 female treatment        4        4        5        5        7
-26 26  40   male treatment        6        5        5        4        6
-27 27  37   male treatment        6        4        7        6        6
-28 28  27   male treatment        3        2        5        5        1
-29 29  41   male treatment        5        6        4        3        2
-30 30  45   male treatment        4        3        7        5        4
-31 31  43 female treatment        3        4        5        5        6
-32 32  36   male treatment        6        7        6        4        4
-33 33  37 female treatment        5        5        6        5        4
-34 34  30 female treatment        5        4        5        2        3
-35 35  32   male treatment        1        4        3        6        6
-36 36  35 female treatment        5        5        3        5        5
-37 37  45 female treatment        5        7        3        5        5
-38 38  32 female treatment        6        5        7        7        4
-39 39  31   male treatment        5        3        5        3        7
-40 40  32   male treatment        7        4        4        5        1
+1   1  42 female   control        4        4        2        4        1
+2   2  43 female   control        4        1        2        4        5
+3   3  37   male   control        4        6        5        5        6
+4   4  30   male   control        3        2        3        4        4
+5   5  38 female   control        4        3        5        4        3
+6   6  43 female   control        3        2        5        4        4
+7   7  19 female   control        3        3        6        2        4
+8   8  37 female   control        6        4        4        4        3
+9   9  19 female   control        4        2        5        1        1
+10 10  28 female   control        2        6        1        4        5
    X1_item6 X1_item7 X1_item8 X1_item9 X1_item10 X2_item1 X2_item2 X2_item3
-1         5        2        2        6         4        4        3        4
-2         6        4        4        4         4        3        3        4
-3         2        5        3        2         2        6        3        6
-4         6        4        3        2         6        5        3        5
-5         5        5        7        6         5        6        4        3
-6         3        4        2        5         4        6        1        6
-7         4        3        5        4         3        2        5        1
-8         4        3        3        3         3        3        3        6
-9         4        4        2        5         4        2        3        3
-10        5        4        2        4         1        3        6        3
-11        3        2        3        6         3        1        5        4
-12        5        5        3        1         1        2        2        2
-13        3        5        4        5         6        7        4        6
-14        2        4        2        6         2        5        3        4
-15        2        6        6        4         3        5        3        5
-16        4        3        4        2         2        4        2        3
-17        4        4        5        2         3        6        6        4
-18        7        3        6        2         5        4        5        4
-19        5        6        6        6         5        5        2        5
-20        2        2        2        5         5        2        3        2
-21        3        6        3        4         2        4        2        4
-22        7        4        3        7         7        2        6        4
-23        5        6        6        6         3        6        6        7
-24        4        6        6        6         2        5        5        3
-25        3        7        6        6         5        6        7        7
-26        7        4        5        7         5        5        4        6
-27        7        7        7        7         6        5        5        6
-28        4        6        5        5         5        4        3        4
-29        4        5        3        2         4        3        4        3
-30        3        5        3        3         6        2        3        4
-31        2        5        6        6         4        3        5        5
-32        3        7        4        5         4        5        5        4
-33        4        5        3        5         5        7        4        5
-34        4        3        5        4         5        4        5        1
-35        3        7        6        5         3        3        5        2
-36        6        6        6        7         5        6        5        3
-37        6        4        6        3         2        5        3        5
-38        7        5        6        5         5        2        4        4
-39        6        5        4        4         5        4        5        4
-40        4        4        3        5         3        6        4        5
+1         1        6        3        1         4        2        5        4
+2         4        4        4        3         3        3        4        5
+3         4        6        3        6         4        5        5        2
+4         4        2        2        4         1        5        4        5
+5         6        3        6        3         5        4        5        2
+6         2        6        6        4         6        5        4        5
+7         3        2        5        4         3        2        1        5
+8         2        3        6        5         6        3        5        5
+9         1        1        2        2         1        2        1        3
+10        5        5        6        4         3        2        6        3
    X2_item4 X2_item5 X2_item6 X2_item7 X3_item1 X3_item2 X3_item3 X3_item4
-1         1        4        2        2        3        3        4        6
-2         4        4        3        4        7        5        4        4
-3         4        3        4        3        6        2        3        4
-4         3        2        2        4        4        1        4        5
-5         1        3        7        3        1        3        3        3
-6         3        2        5        6        5        3        2        5
-7         3        2        2        3        2        5        1        5
-8         5        4        4        4        6        2        6        6
-9         2        2        3        3        4        1        6        1
-10        5        2        3        6        4        6        4        4
-11        4        3        4        4        1        2        3        3
-12        3        2        1        3        1        2        2        1
-13        7        7        7        7        4        5        5        2
-14        2        4        5        7        2        7        3        5
-15        4        5        3        6        6        4        2        5
-16        4        3        2        2        4        5        4        4
-17        5        3        3        3        4        7        4        2
-18        7        7        6        6        6        6        7        7
-19        2        1        4        2        7        7        5        5
-20        5        5        3        2        3        2        4        4
-21        2        5        2        6        1        4        4        5
-22        6        5        6        4        6        5        3        3
-23        6        7        5        7        7        6        5        6
-24        2        6        5        3        3        3        5        4
-25        7        6        7        5        3        7        5        3
-26        7        6        6        3        7        3        6        7
-27        7        6        7        7        6        5        6        3
-28        6        5        2        3        5        5        5        2
-29        4        4        3        3        6        4        5        4
-30        3        6        5        4        6        4        3        4
-31        2        2        5        4        2        2        4        5
-32        4        4        3        4        6        4        3        7
-33        6        6        5        5        4        6        5        5
-34        4        3        3        2        5        5        5        3
-35        3        1        5        2        2        4        3        2
-36        4        5        4        6        7        4        7        5
-37        5        6        2        2        7        6        5        7
-38        1        5        6        5        5        7        5        6
-39        6        4        4        5        7        6        4        5
-40        2        5        3        4        7        4        2        2
+1         5        4        2        4        2        2        5        3
+2         5        3        6        6        5        3        6        5
+3         2        4        4        4        5        3        3        2
+4         5        5        6        4        4        2        2        3
+5         4        2        5        3        3        4        3        1
+6         5        3        4        3        6        2        4        4
+7         2        3        4        3        3        1        5        2
+8         4        3        4        4        5        2        4        6
+9         3        2        1        1        4        5        5        5
+10        4        3        5        7        2        3        5        5
    X3_item5 X3_item6 X3_item7 X3_item8 X3_item9 X3_item10 X3_item11 X3_item12
-1         5        3        2        2        3         1         3         1
-2         5        7        3        6        5         3         5         7
-3         5        4        4        3        5         3         3         4
-4         3        4        5        2        2         4         3         3
-5         2        1        3        4        6         2         4         2
-6         5        6        5        4        3         5         5         5
-7         2        2        3        4        3         4         1         4
-8         5        5        4        2        6         3         4         6
-9         3        1        6        1        2         4         3         1
-10        4        4        5        7        5         3         5         3
-11        4        2        1        6        3         4         3         2
-12        3        2        4        1        2         3         2         2
-13        6        5        6        7        4         3         3         5
-14        4        6        7        2        6         5         7         4
-15        3        5        2        5        4         6         2         4
-16        6        5        2        6        5         3         7         2
-17        5        6        7        5        5         2         3         4
-18        6        6        7        6        4         5         7         7
-19        7        7        7        7        7         4         6         5
-20        6        2        1        3        3         4         1         3
-21        6        3        6        6        6         4         1         4
-22        4        5        5        5        5         7         5         2
-23        7        6        6        7        4         6         6         4
-24        4        7        5        6        3         3         2         2
-25        6        7        4        2        7         3         4         6
-26        2        4        7        4        5         7         5         6
-27        6        6        6        7        7         7         6         6
-28        4        4        6        4        1         1         7         4
-29        4        6        2        7        3         4         7         6
-30        1        3        5        4        4         6         3         5
-31        4        3        3        4        2         3         5         4
-32        4        6        3        3        2         4         4         4
-33        7        6        4        5        6         6         4         5
-34        4        5        2        5        6         6         6         3
-35        3        2        1        5        5         4         4         2
-36        5        4        6        6        7         6         7         6
-37        5        6        4        4        6         5         5         2
-38        3        3        4        2        4         3         7         5
-39        5        7        6        5        6         6         4         7
-40        4        2        6        1        1         2         2         5
+1         6        2        3        1        4         4         1         3
+2         6        6        5        5        5         5         4         3
+3         2        3        1        2        2         6         3         3
+4         3        4        2        2        3         4         3         4
+5         5        5        3        6        3         3         1         3
+6         2        6        5        2        4         3         6         2
+7         3        3        1        5        2         1         2         4
+8         3        5        5        7        5         3         3         3
+9         2        2        6        5        5         3         4         3
+10        5        2        4        3        6         2         6         3
    X3_item13 X3_item14 X3_item15
-1          6         3         3
-2          6         4         4
-3          5         4         3
-4          2         3         1
-5          2         3         3
-6          4         3         5
-7          4         1         5
-8          5         6         5
-9          2         3         1
-10         4         4         3
-11         2         3         3
-12         2         2         1
-13         4         4         5
-14         3         3         3
-15         4         5         2
-16         4         4         3
-17         3         4         4
-18         7         6         5
-19         7         7         6
-20         2         6         4
-21         5         1         3
-22         3         4         4
-23         2         6         6
-24         2         4         1
-25         6         4         5
-26         5         2         6
-27         7         4         6
-28         2         1         3
-29         5         6         4
-30         6         2         5
-31         2         4         4
-32         5         6         4
-33         6         4         5
-34         4         2         6
-35         6         2         2
-36         6         7         5
-37         6         6         4
-38         4         2         3
-39         3         6         7
-40         4         6         7</code></pre>
+1          4         1         4
+2          6         2         6
+3          4         4         3
+4          3         4         5
+5          5         4         7
+6          3         4         5
+7          5         3         1
+8          1         4         6
+9          3         2         2
+10         4         6         2</code></pre>
 </div>
 </div>
 <p>Sum scores by scale</p>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>dat_clean_sumscores <span class="ot">&lt;-</span> <span class="fu">bind_cols</span>(</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  dat_clean,</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sum_scores_by_scale</span>(dat_clean)</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(condition, X1_sum, X2_sum, X3_sum)</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(dat_clean_sumscores)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>dat_clean_sumscores <span class="ot">&lt;-</span> dat_clean <span class="sc">|&gt;</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_sum_scores_by_scale</span>() <span class="sc">|&gt;</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(condition, X1_sum, X2_sum, X3_sum)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(dat_clean_sumscores, <span class="at">n =</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>  condition X1_sum X2_sum X3_sum
-1   control     30     20     48
-2   control     38     25     75
-3   control     33     29     58
-4   control     43     24     46
-5   control     52     27     42
-6   control     37     29     65</code></pre>
+<pre><code>   condition X1_sum X2_sum X3_sum
+1    control     30     26     45
+2    control     34     32     72
+3    control     49     26     46
+4    control     29     34     48
+5    control     42     25     56
+6    control     42     29     58
+7    control     35     20     41
+8    control     43     28     62
+9    control     20     13     56
+10   control     41     30     58</code></pre>
 </div>
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>dat_clean_sumscores <span class="sc">|&gt;</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="fu">starts_with</span>(<span class="st">"X"</span>),</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>               <span class="at">names_to =</span> <span class="st">"scale"</span>,</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>               <span class="at">values_to =</span> <span class="st">"sum_score"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(scale, condition) <span class="sc">|&gt;</span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">n =</span> <span class="fu">n</span>(),</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>            <span class="at">mean =</span> <span class="fu">mean</span>(sum_score, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>            <span class="at">sd =</span> <span class="fu">sd</span>(sum_score, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate_if</span>(is.numeric, round_half_up, <span class="at">digits =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># N, M, SD</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>dat_clean_sumscores <span class="sc">|&gt;</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="fu">starts_with</span>(<span class="st">"X"</span>),</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>               <span class="at">names_to =</span> <span class="st">"scale"</span>,</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>               <span class="at">values_to =</span> <span class="st">"sum_score"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(scale, condition) <span class="sc">|&gt;</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">n =</span> <span class="fu">n</span>(),</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>            <span class="at">mean =</span> <span class="fu">mean</span>(sum_score, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>            <span class="at">sd =</span> <span class="fu">sd</span>(sum_score, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate_if</span>(is.numeric, round_half_up, <span class="at">digits =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 6 × 5
 # Groups:   scale [3]
   scale  condition     n  mean    sd
   &lt;chr&gt;  &lt;chr&gt;     &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
-1 X1_sum control      20  37.6  8.6 
-2 X1_sum treatment    20  47.4  7.19
-3 X2_sum control      20  26.2  7.2 
-4 X2_sum treatment    20  31.0  7.12
-5 X3_sum control      20  59.2 16.8 
-6 X3_sum treatment    20  68.2 12.7 </code></pre>
+1 X1_sum control      50  41.2  8.79
+2 X1_sum treatment    50  43.3  7.78
+3 X2_sum control      50  27.8  6.91
+4 X2_sum treatment    50  29.6  6.47
+5 X3_sum control      50  59.7 12.0 
+6 X3_sum treatment    50  60.9 11.6 </code></pre>
 </div>
 </div>
 <p>Check that the sum scores conform to the predefined properties and that the item level data is approximately normal.</p>
@@ -439,13 +292,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell-output cell-output-stdout">
 <pre><code>$cohens_d
 d_X1_sum d_X2_sum d_X3_sum 
-    1.24     0.66     0.60 
+    0.26     0.27     0.09 
 
 $r
        X1_sum X2_sum X3_sum
-X1_sum   1.00   0.54   0.53
-X2_sum   0.54   1.00   0.62
-X3_sum   0.53   0.62   1.00
+X1_sum   1.00   0.46   0.37
+X2_sum   0.46   1.00   0.48
+X3_sum   0.37   0.48   1.00
 
 $item_histograms</code></pre>
 </div>
@@ -475,50 +328,20 @@ $item_histograms</code></pre>
 <span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_missingness</span>(<span class="at">proportion_missing =</span> .<span class="dv">05</span>) <span class="sc">|&gt;</span></span>
 <span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_impossible_values</span>(<span class="at">proportion_impossible =</span> .<span class="dv">04</span>, <span class="at">replacement_value =</span> <span class="dv">8</span>)</span>
 <span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>dat_messy_missing</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(dat_messy_missing, <span class="at">n =</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>   id        age gender condition X1_item1 X1_item2 X1_item3 X1_item4 X1_item5
-1   1         32 female   control        3        2        3        1        2
-2   2         35 female   control        3        4        2        3        4
-3   3         45     29   control        4        5        3        3        8
-4   4         32   male   control        4        7        2        4        5
-5   5         31   male   control        6        4        6        5        3
-6   6         32   male   control        3        6        8        5        1
-7   7         27 female   control        2        3        4        2        4
-8   8         27  femle   control        2        4        3       NA        1
-9   9         37   male   control        8        5        2        3        2
-10 10         41   male   control        2       NA        8        5        2
-11 11         38   male   control       NA        2        3        3        4
-12 12         23 female   control        4        3        4        4        3
-13 13         23 female   control        3        5        3        3        6
-14 14         26    mal   control        8        3        3        6        3
-15 15         23 female   control        5        4        4        6        3
-16 16         24 female   control        3        4        3        1        3
-17 17         21   male   control        1        3        5        3        4
-18 18         43 female   control        6        6        5        7        5
-19 19         38 female   control        7        6        7        4        8
-20 20         18 female   control        4        2        3        2        8
-21 21         43 female treatment        3        3        3       NA        2
-22 22         20 female treatment        6       NA        6        8        5
-23 23         27 female treatment        6        4        5        4        8
-24 24         19 female treatment        4        4        5        4       NA
-25 25         42 female treatment        4        4        5        5        7
-26 26         21 female treatment        6        5        5        4        6
-27 27         44   male treatment        6        4        7        6        6
-28 28         38 female treatment        3        2        5        5        1
-29 29         25 femlae treatment        5        6        4        3        2
-30 30         19   male treatment        4        3        7        5        4
-31 31         29 female treatment        3        8        5        5        6
-32 32         29   male treatment       NA        7       NA        4        4
-33 33         39   male treatment        5        5        6        5        4
-34 34 thirty six female treatment        5        4       NA        2        3
-35 35         33 female treatment        1        4        8        6        6
-36 36         29   male treatment        5        5        3        5        5
-37 37         32 female treatment        5        8        3        5        5
-38 38  forty one female treatment        6        5        7        7        4
-39 39         27   male treatment        5        3        5        3       NA
-40 40         45   male treatment        7        4        4        5        1
+<pre><code>   id age gender condition X1_item1 X1_item2 X1_item3 X1_item4 X1_item5
+1   1  32 female   control        3        2        3        1        2
+2   2  35 female   control        3        4        2        3        4
+3   3  45     29   control        4        5        3        3        8
+4   4  32   male   control        4        7        2        4        5
+5   5  31   male   control        6        4        6        5        3
+6   6  32   male   control        3        6        8        5        1
+7   7  27 female   control        2        3        4        2        4
+8   8  27  femle   control        2        4        3       NA        1
+9   9  37   male   control        8        5        2        3        2
+10 10  41   male   control        2       NA        8        5        2
    X1_item6 X1_item7 X1_item8 X1_item9 X1_item10 X2_item1 X2_item2 X2_item3
 1         5        2        2        6         4        8        3        4
 2         6        4        4        4         4        3        3        4
@@ -530,36 +353,6 @@ $item_histograms</code></pre>
 8         8        3        3        3         3        3        3        6
 9         8        4        2        5         4        2        3        3
 10        5        4        2        4         1        3        6        3
-11        3        2        3        6         3        1        5        4
-12        5        5        3        1         1        2        2        2
-13        3        5        4        5         6        7        4        6
-14        2        4        2        6         2       NA        3        4
-15        2        6        6        4         3        5        3        5
-16        4        3        4        2         2       NA        2        3
-17        4        4        5        2         3        6        6        4
-18        7        3        6       NA        NA        4        5        4
-19        5        6        6        6         5        5        2        5
-20        2        2        2        5         5        2        8        2
-21        3        6        3        4         2        4        2        4
-22        8        4        3        7        NA        2        6       NA
-23        5       NA        6        6         8        6        6        7
-24        4        6        6        6         2        5        5        3
-25        3        7        6        6         5        6        7        7
-26        7        4        5        7         5        5        8        6
-27        7        7        7        7         6        5        5        6
-28        4        6        5        5         5        4        3       NA
-29        4        5        3        2         4        3        4        3
-30        3        5        3        3         6        2        3        4
-31        2        5       NA        6         4        3        5        5
-32        3        7        4        5         4        5        5        4
-33        4        5        8        5         5        7        4        5
-34       NA        3        5        4         5        4       NA        1
-35       NA       NA       NA        5         3        3       NA        2
-36        6        6        6        7         5        6        5        3
-37        6        4        6        8         2        5        3        5
-38        7        5        6        5         5        2        4        4
-39        6        5        4        4         5        4        5        4
-40        4        4        3        5         3        6        4        5
    X2_item4 X2_item5 X2_item6 X2_item7 X3_item1 X3_item2 X3_item3 X3_item4
 1         1        4        2        2        8        3        4        6
 2         4        4        3        4        7        5        4        4
@@ -571,36 +364,6 @@ $item_histograms</code></pre>
 8         5        4        4        4        6        2        6        6
 9         2        2        3        3        4        1        6        1
 10        5        2       NA        6        4        6        4        4
-11        4        3        4        4        1        2        3        3
-12        3        2        1        3        1        8        2        1
-13        7        7        7        7        4        5        5        2
-14        2       NA        5        7        2        7        3        5
-15        4       NA        3        6        6        4        2        5
-16        4        3        2        2        4        5        4        4
-17        5        3        3        3        4        7        4        2
-18        7        7        6        6        6        6        7        7
-19        2        1        4       NA        7        7        5        5
-20        5        5        3        2        3        2        4        4
-21        2        5        2        6        1        4        4        5
-22        6        5        6        4        6        5        3        3
-23        6        7        5        7        7        6        5        6
-24        2        8        5        3        3        3        5        4
-25       NA        6        7        5        3        7        5        3
-26       NA        6       NA        3        7        3        6        7
-27        8        6        7        8        6        5        6        3
-28        6        5        2        8        5        5        5        2
-29        8        4        3        3        6        4        5        4
-30        3        8        5        4        6        4        3        4
-31        2        2        5        8        2       NA        4        5
-32        4        4        3        4        6        4        3        7
-33        6        6        5        5       NA        6       NA        5
-34        4        3        3        2        5        5        8        3
-35        3        1        5        2        2        4        3        2
-36        4        5        4        6        8       NA        7        5
-37        5        6        2        2        7        6        5       NA
-38        1        5        6        5       NA        7        5        6
-39        6        4        4        5        7        6        4       NA
-40        2        5        3        4        7        4        2        2
    X3_item5 X3_item6 X3_item7 X3_item8 X3_item9 X3_item10 X3_item11 X3_item12
 1         5       NA        2        2        3         1         3         1
 2         5        7        3        6        5         3         5         7
@@ -612,36 +375,6 @@ $item_histograms</code></pre>
 8         5        5        4        2        6        NA         4         6
 9         3        1        6        1        2         4         3         1
 10        4        4        5        7        5         3         8         8
-11        4        2        1        6        3         4         3         8
-12        3        2       NA        1        2         3         2         2
-13        6        5        6        7        4         3         3         5
-14        8        6       NA        2        6         5         7         4
-15        3        5        2        5        4        NA         2        NA
-16        6        8        2        6        5         3         7         2
-17        5        6        7        5        5         2         3         4
-18        6        6        7        6        4         5         7         7
-19        7        7        7        7        7         4         6        NA
-20        6       NA        1        3       NA         4         1         3
-21        6        3        6        6        6         4         1         4
-22        4        5        5        5        5         7         5         2
-23       NA        6        6        7        4         6         6         4
-24        4        7        5        6        3         3         2         2
-25        6        7        4        2        7         3         4         6
-26        2        4        8        4        5         7         5         6
-27        6        6        6        7        7         7         6         6
-28        4        4        6        4        1         1         7         4
-29        4        6        2        7        3         4         7         8
-30        1        3        5        4        4         6         3         5
-31        4        3        3       NA        2         3         5         4
-32        4        6        3        8        2         4         4         4
-33        7        6        4        5        6         6         4         5
-34        4        5        2        5        6         6        NA         3
-35        3        2        1        5        5         4         4         2
-36        5        4        6        8        7         6         7         6
-37       NA        6        4        4        6         8        NA         2
-38        3        3        4        2        4         3         7         5
-39        5        7        6        5        6         6         4         7
-40        4        2        6        1        1         8         2         5
    X3_item13 X3_item14 X3_item15
 1          6         3         3
 2          6         4         4
@@ -652,37 +385,7 @@ $item_histograms</code></pre>
 7          4         1         5
 8          5         6        NA
 9          2         3         1
-10         4         4         3
-11         2         3         3
-12         2         2         8
-13         4         4         5
-14         3         3         3
-15         4         5         2
-16         4         4         3
-17         3         4         4
-18        NA         6         5
-19         7         7         6
-20         2         6         4
-21         5         1         3
-22         3         4         4
-23         2         6         6
-24         2         4         8
-25         6         4         5
-26         5         2         6
-27         8         4         6
-28         2        NA         3
-29         8         6         4
-30         6         2         5
-31         2         4         4
-32         5        NA         4
-33         6         4        NA
-34         4         2         6
-35         6         2         2
-36         6         7         5
-37         6         6         4
-38         4         2         3
-39         3         6         7
-40         4         6         7</code></pre>
+10         4         4         3</code></pre>
 </div>
 </div>
 </section>
