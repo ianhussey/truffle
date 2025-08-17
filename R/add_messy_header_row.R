@@ -17,7 +17,7 @@
 #'   id = 1:3,
 #'   score = c(10, 20, 15)
 #' )
-#' messy <- add_header_rows(dat, c("Data collected: 2025-08-17", "Study: Pilot"))
+#' messy <- add_messy_header_rows(dat, c("Data collected: 2025-08-17", "Study: Pilot"))
 #' readr::write_lines(messy, "messy.csv")
 #' # To re-import: readr::read_csv("messy.csv", skip = 2)
 #' }
