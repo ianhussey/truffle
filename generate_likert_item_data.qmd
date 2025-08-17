@@ -362,7 +362,7 @@ inspect(fit, "std")$psi  # off-diagonals ~ .30 (sampling error aside)
 ```{r}
 
 # K-factor lavaan model with user-specified latent correlations
-make_lavaan_kfactor_corr <- function(
+.make_lavaan_kfactor_corr <- function(
     n_items,                  # integer vector length K
     alpha    = 0.70,          # scalar or length-K
     lv_var   = 1,             # scalar or length-K (latent variances)
@@ -458,7 +458,7 @@ make_lavaan_kfactor_corr <- function(
 1 correlation value supplied for all latent cors
 
 ```{r}
-mod_eq <- make_lavaan_kfactor_corr(
+mod_eq <- .make_lavaan_kfactor_corr(
   n_items = c(  6,   6,   5),
   alpha   = c(.70, .75, .80),
   factors = c("X1_latent", "X2_latent", "X3_latent"),
@@ -477,7 +477,7 @@ R <- matrix(c(
   0.35, 0.10, 1.00
 ), 3, 3, byrow = TRUE)
 
-mod_mat <- make_lavaan_kfactor_corr(
+mod_mat <- .make_lavaan_kfactor_corr(
   n_items = c(6,6,5),
   alpha   = .70,
   factors = c("X1_latent","X2_latent","X3_latent"),
@@ -607,7 +607,7 @@ continuous_to_likert <- function(data,
 
 
 # 1) Build lavaan model with your helper (K latent factors)
-mod <- make_lavaan_kfactor_corr(
+mod <- .make_lavaan_kfactor_corr(
   n_items     = c(6,6,5),
   alpha       = c(.70,.75,.80),
   factors     = c("X1_latent","X2_latent","X3_latent"),
@@ -796,11 +796,11 @@ library(dplyr)
 library(latent2likert)
 
 # --- Your existing helpers (unchanged) ---
-# make_lavaan_kfactor_corr(...)  # <- as given in your message
+# .make_lavaan_kfactor_corr(...)  # <- as given in your message
 # sum_scores_by_scale(...)                # <- as given in your message
 
 # --- Model specification: K factors, standardized items & latents ---
-mod <- make_lavaan_kfactor_corr(
+mod <- .make_lavaan_kfactor_corr(
   n_items     = c(10, 7, 15),                # example: 3 scales
   alpha       = c(.70, .75, .80),
   lv_var      = 1,                           # Var(Fk) = 1
@@ -921,7 +921,7 @@ generate_data_likert_two_conditions <- function(
   if (is.null(prefixes)) prefixes <- paste0("X", seq_len(K), "_item")
   
   # build structural (covariance) part and measurement with your helper
-  mod <- make_lavaan_kfactor_corr(
+  mod <- .make_lavaan_kfactor_corr(
     n_items     = n_items,
     alpha       = alpha,
     lv_var      = lv_var,

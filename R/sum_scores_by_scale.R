@@ -1,3 +1,37 @@
+#' Compute Sum Scores by Scale
+#'
+#' This function computes participant-level sum scores for each scale 
+#' based on item naming conventions (e.g., \code{X1_item1}, \code{X1_item2}, ...). 
+#' It assumes no missingness and returns one sum score per scale.
+#'
+#' @param data A data.frame containing item-level data.
+#' @param id_regex A regular expression used to identify scale IDs 
+#'   (default: \code{"^(X\\d+)"}).
+#' @param suffix A character suffix to append to the resulting sum score 
+#'   column names (default: \code{"_sum"}).
+#'
+#' @details
+#' Scale IDs are extracted using the provided \code{id_regex}, and 
+#' items are grouped accordingly. Factors or ordered factors are 
+#' coerced to integers before summing. Assumes complete data with 
+#' no missing values.
+#'
+#' @return A data.frame containing one column per scale, with sum scores 
+#' for each participant.
+#'
+#' @examples
+#' \dontrun{
+#' dat <- data.frame(
+#'   X1_item1 = c(1,2,3),
+#'   X1_item2 = c(2,3,4),
+#'   X2_item1 = c(1,1,2),
+#'   X2_item2 = c(2,2,3)
+#' )
+#' sum_scores_by_scale(dat)
+#' }
+#'
+#' @export
+#' @importFrom stats setNames
 sum_scores_by_scale <- function(
     data,
     id_regex = "^(X\\d+)",   # captures scale IDs like X1, X2, ...

@@ -1,3 +1,32 @@
+#' Check Generated Data
+#'
+#' This function checks for missing values, impossible values, and the presence 
+#' of demographic columns in a generated dataset. It is designed for use in 
+#' teaching or simulation settings where generated Likert-style item data and 
+#' demographics are combined.
+#'
+#' @param dat A data frame containing the generated dataset.
+#' @param impossible_value An integer value considered impossible for the 
+#'   simulated data (default: 99).
+#'
+#' @return Prints messages to the console about detected issues and returns 
+#'   \code{TRUE} invisibly if the checks pass without problems.
+#'
+#' @examples
+#' \dontrun{
+#' df <- data.frame(
+#'   id = 1:5,
+#'   age = c(25, 30, 40, NA, 35),
+#'   gender = c("male", "female", "male", "female", "female"),
+#'   X1 = c(1, 2, 3, 4, 99),
+#'   X2 = c(2, 3, 4, 5, 1)
+#' )
+#' check_generated_data(df, impossible_value = 99)
+#' }
+#'
+#' @export
+#' @importFrom dplyr across select where
+#' @importFrom stats complete.cases
 check_generated_data <- function(dat){
   dat_sumcores <- dat %>%
     select(-id, -condition, -gender, -age) |>

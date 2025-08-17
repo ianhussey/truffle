@@ -1,4 +1,47 @@
-make_lavaan_kfactor_corr <- function(
+#' Build a K-Factor Correlated Latent Variable Model for lavaan
+#'
+#' This function constructs a lavaan model string for simulating data from 
+#' K correlated latent factors, each with a specified number of items and 
+#' target reliability (Cronbach’s alpha).
+#'
+#' @param n_items Integer vector giving the number of items per factor.
+#' @param alpha Numeric vector of target Cronbach's alpha reliabilities 
+#'   for each factor.
+#' @param lv_var Numeric scalar or vector; latent variances (default = 1).
+#' @param x_var Numeric scalar or vector; item variances (default = 1).
+#' @param factors Character vector of latent factor names.
+#' @param prefixes Character vector of item name prefixes.
+#' @param corr_latent Either a single numeric correlation applied across all 
+#'   latent pairs, or a full correlation matrix.
+#'
+#' @details
+#' Each block is built by converting Cronbach’s alpha to an average 
+#' inter-item correlation, then to a factor loading. Residual variances are 
+#' calculated so that item variances equal \code{x_var}. The function allows 
+#' specifying either a single common correlation between factors, or a full 
+#' correlation matrix.
+#'
+#' @return A character string representing a lavaan model specification, 
+#' including measurement models, latent variances, residual variances, 
+#' and latent correlations.
+#'
+#' @examples
+#' \dontrun{
+#' mod <- make_lavaan_kfactor_corr(
+#'   n_items     = c(5, 6, 7),
+#'   alpha       = c(.70, .75, .80),
+#'   lv_var      = 1,
+#'   x_var       = 1,
+#'   factors     = c("X1_latent","X2_latent","X3_latent"),
+#'   prefixes    = c("X1_item","X2_item","X3_item"),
+#'   corr_latent = 0.3
+#' )
+#' cat(mod)
+#' }
+#'
+#' @export
+#' @importFrom stats setNames
+.make_lavaan_kfactor_corr <- function(
     n_items,                  # integer vector length K
     alpha    = 0.70,          # scalar or length-K
     lv_var   = 1,             # scalar or length-K (latent variances)

@@ -1,3 +1,62 @@
+#' Generate Likert-Scale Data for Two Experimental Conditions
+#'
+#' This function generates item-level Likert-scale data for two groups 
+#' (control and treatment), with a specified mean shift on the latent variables. 
+#' Data are simulated from a latent variable model using \code{lavaan::simulateData} 
+#' and then discretized into Likert categories with shared cutpoints.
+#'
+#' @param n_items Integer vector giving the number of items per factor.
+#' @param alpha Numeric vector of target Cronbach's alpha reliabilities 
+#'   for each factor.
+#' @param lv_var Numeric; latent variance (default = 1).
+#' @param x_var Numeric; item variance (default = 1).
+#' @param factors Character vector of latent factor names.
+#' @param prefixes Character vector of item name prefixes.
+#' @param corr_latent Either a single numeric correlation applied across all 
+#'   latent pairs, or a correlation matrix.
+#' @param d_target Numeric; Cohen’s d mean shift applied to all latents in 
+#'   the treatment group (default = 0.5).
+#' @param n_per_group Integer; number of participants per group (default = 1000).
+#' @param n_levels Integer; number of Likert response categories (default = 7).
+#' @param ordered Logical; whether the Likert responses are returned as 
+#'   ordered factors (default = TRUE).
+#'
+#' @details
+#' The function builds a correlated latent factor model using 
+#' \code{.make_lavaan_kfactor_corr()}. Latent means are set to zero for the 
+#' control group and shifted by \code{d_target} for the treatment group.  
+#' Continuous data are then simulated via \code{lavaan::simulateData}, 
+#' discretized into Likert scales with shared cutpoints across groups, 
+#' and returned as a single combined dataset.
+#'
+#' @return A data frame containing Likert-scale item responses for both 
+#' groups, with columns:
+#' \itemize{
+#'   \item \code{id} — participant ID
+#'   \item \code{group} — experimental group ("control" or "treatment")
+#'   \item item responses (Likert-scale)
+#' }
+#'
+#' @examples
+#' \dontrun{
+#' dat <- generate_data_likert_two_conditions(
+#'   n_items     = c(5, 6, 7),
+#'   alpha       = c(.70, .75, .80),
+#'   factors     = c("X1_latent","X2_latent","X3_latent"),
+#'   prefixes    = c("X1_item","X2_item","X3_item"),
+#'   corr_latent = 0.3,
+#'   d_target    = 0.5,
+#'   n_per_group = 500,
+#'   n_levels    = 5
+#' )
+#' head(dat)
+#' }
+#'
+#' @export
+#' @importFrom lavaan simulateData
+#' @importFrom dplyr bind_rows mutate relocate
+#' @importFrom stats rnorm
+#' @importFrom latent2likert discretize_density
 generate_data_likert_two_conditions <- function(
     n_per_condition = 100,
     factors     = NULL,        # names of the K latents (defaults F1..FK if NULL)
@@ -23,7 +82,7 @@ generate_data_likert_two_conditions <- function(
   if (is.null(prefixes)) prefixes <- paste0("X", seq_len(K), "_item")
   
   # build structural (covariance) part and measurement with your helper
-  mod <- make_lavaan_kfactor_corr(
+  mod <- .make_lavaan_kfactor_corr(
     n_items     = n_items,
     alpha       = alpha,
     lv_var      = lv_var,

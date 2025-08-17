@@ -1,3 +1,42 @@
+#' Add Messy Demographics Columns
+#'
+#' This function augments a data frame with simulated demographic variables
+#' (`age`, `gender`) that intentionally include a mix of clean and messy entries.
+#' It is useful for teaching data cleaning and preprocessing tasks.
+#'
+#' @param dat A data frame. Must contain at least one column (e.g., `id`).
+#' @param p_messy_age Numeric scalar in [0,1]. Probability that `age` entries
+#'   are "messy" (spelled-out words like "twenty one" or replaced with `"male"`
+#'   or `"female"`). Defaults to 0.05.
+#' @param gender_probs A named numeric vector giving probabilities for the base
+#'   gender categories (default: `c(male = 0.30, female = 0.70)`). Must sum to 1.
+#' @param p_age_in_gender Numeric scalar in [0,1]. Probability that `gender`
+#'   entries are replaced by numeric ages instead of text genders. Defaults to 0.05.
+#' @param p_fmt_misspell Numeric scalar in [0,1]. Probability that otherwise
+#'   correct genders are altered with case formatting or misspellings
+#'   (e.g., `"FEMALE"`, `"femail"`). Defaults to 0.10.
+#'
+#' @return A data frame containing all original columns of `dat`, plus two new
+#'   columns:
+#'   \describe{
+#'     \item{age}{Character vector of ages as numbers, spelled-out words, or
+#'       gender labels (depending on simulation).}
+#'     \item{gender}{Character vector of gender labels, sometimes replaced with
+#'       numbers, case variations, or misspellings.}
+#'   }
+#'   Columns are ordered with `id` first, followed by `age`, `gender`, then the
+#'   remaining columns of `dat`.
+#'
+#' @examples
+#' \dontrun{
+#' set.seed(123)
+#' df <- data.frame(id = 1:5)
+#' add_demographics_messy(df)
+#' }
+#' 
+#' @export
+#' @importFrom dplyr mutate relocate
+#' @importFrom stats runif
 add_demographics_messy <- function(
     dat,
     p_messy_age      = 0.05,                  # age column: prob of messy entries
