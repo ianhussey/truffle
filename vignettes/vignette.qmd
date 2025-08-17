@@ -4,7 +4,7 @@ author: "Ian Hussey"
 date: today
 format:
   html:
-    code-fold: true
+    code-fold: show
     highlight-style: haddock
     theme: flatly
     toc: true
@@ -25,6 +25,7 @@ The package's functions are currently quite fragile: it is designed for a specif
 #devtools::install_github("ianhussey/truffle")
 library(truffle)
 
+# needed by truffle
 library(lavaan)
 library(dplyr)
 library(tidyr)
@@ -32,6 +33,9 @@ library(tidyselect)
 library(latent2likert)
 library(ggplot2)
 library(missMethods)
+
+# not needed by truffle but used in this script
+library(janitor)
 
 ```
 
@@ -49,7 +53,7 @@ library(missMethods)
 ```{r}
 
 dat_clean <- 
-  generate_data_likert_two_conditions(n_per_condition = 50,
+  generate_data_likert_two_conditions(n_per_condition = 20,
                                       factors  = c("X1_latent", "X2_latent", "X3_latent"),
                                       prefixes = c("X1_item", "X2_item", "X3_item"),
                                       alpha = c(.70, .75, .80),
@@ -61,6 +65,31 @@ dat_clean <-
   add_demographics() 
 
 dat_clean
+
+```
+
+Sum scores by scale
+
+```{r}
+
+dat_clean_sumscores <- bind_cols(
+  dat_clean,
+  sum_scores_by_scale(dat_clean)
+) |>
+  select(condition, X1_sum, X2_sum, X3_sum)
+
+head(dat_clean_sumscores)
+
+
+dat_clean_sumscores |>
+  pivot_longer(cols = starts_with("X"),
+               names_to = "scale",
+               values_to = "sum_score") |>
+  group_by(scale, condition) |>
+  summarize(n = n(),
+            mean = mean(sum_score, na.rm = TRUE),
+            sd = sd(sum_score, na.rm = TRUE)) |>
+  mutate_if(is.numeric, round_half_up, digits = 2)
 
 ```
 
@@ -79,7 +108,7 @@ Generate data for the same study but make the demographics data mess, add missin
 ```{r}
 
 dat_messy_missing <- 
-  generate_data_likert_two_conditions(n_per_condition = 50,
+  generate_data_likert_two_conditions(n_per_condition = 20,
                                       factors  = c("X1_latent", "X2_latent", "X3_latent"),
                                       prefixes = c("X1_item", "X2_item", "X3_item"),
                                       alpha = c(.70, .75, .80),
