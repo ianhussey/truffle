@@ -25,3 +25,4 @@ data/outputs/plots/
 # OS-specific files
 .DS_Store
 Thumbs.db
+/vignettes/vignette_files

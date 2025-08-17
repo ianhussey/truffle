@@ -1,3 +1,18 @@
+---
+title: "truffles vignette"
+author: "Ian Hussey"
+date: today
+format:
+  html:
+    code-fold: true
+    highlight-style: haddock
+    theme: flatly
+    toc: true
+    toc-location: left
+execute:
+  warning: false
+  message: false
+---
 
 {truffle} creates datasets with various known effects to be rediscovered, for teaching purposes. Datasets contain demographics data and item-level Likert responses. Known effects (truffles) can be buried in the data including differences in sum-score means between conditions, known correlations between the different outcomes' sum-scores, known Cronbach's alpha values for each scale, etc. Data can also be made messy, contain impossible values, or contain missingness, to create data processing challenges.
 
@@ -7,7 +22,16 @@ The package's functions are currently quite fragile: it is designed for a specif
 
 ```{r}
 
+#devtools::install_github("ianhussey/truffle")
 library(truffle)
+
+library(lavaan)
+library(dplyr)
+library(tidyr)
+library(tidyselect)
+library(latent2likert)
+library(ggplot2)
+library(missMethods)
 
 ```
 
