@@ -29,16 +29,16 @@ sum_scores_by_scale <- function(
   stopifnot(is.data.frame(data))
   nms <- colnames(data)
   
-  # 1) Keep only columns matching the regex and extract IDs via sub()
+  # 1) Keep only columns matching the regex and extract IDs (X1, X2, ...)
   sel <- grepl(id_regex, nms, perl = TRUE)
   if (!any(sel)) {
     stop("No columns match id_regex = ", id_regex,
          ". Example names: ", paste(head(nms, 5), collapse = ", "))
   }
   nms_sel <- nms[sel]
-  ids     <- sub(id_regex, "\\1", nms_sel, perl = TRUE)
+  ids     <- sub(paste0(id_regex, ".*"), "\\1", nms_sel, perl = TRUE)
   
-  # 2) Group indices by extracted IDs (lengths now match; no split warning)
+  # 2) Group indices by extracted IDs (now many items map to one scale)
   idx <- split(which(sel), ids)
   
   # 3) Coercion helper
@@ -52,7 +52,7 @@ sum_scores_by_scale <- function(
   counts_list <- vector("list", length(idx))
   names(sums_list) <- names(counts_list) <- names(idx)
   
-  # 4) Compute row-wise sums (with missingness rules and optional prorating)
+  # 4) Compute row-wise sums (with optional missingness handling)
   for (nm in names(idx)) {
     cols <- idx[[nm]]
     X <- as.data.frame(lapply(data[, cols, drop = FALSE], to_num))
@@ -72,9 +72,8 @@ sum_scores_by_scale <- function(
     counts_list[[nm]] <- n_nonmiss
   }
   
-  # 5) Assemble, order by numeric part of ID, and add suffixes
+  # 5) Assemble and order by numeric part of the ID
   sums <- as.data.frame(sums_list, check.names = FALSE)
-  
   ord <- order(suppressWarnings(as.integer(sub("^X(\\d+)$", "\\1", names(sums)))))
   sums <- sums[ord]
   names(sums) <- paste0(names(sums), suffix)
