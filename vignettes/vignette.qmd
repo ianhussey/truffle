@@ -188,7 +188,7 @@ Add dirt to the formatting of the reaction times: comma thousands separators and
 ```{r}
 
 dat_truffle_and_dirt <- dat_truffle_and_dirt |>
-  mutate(completion_time = dirt_numbers(completion_time))
+ dirt_numbers(cols = completion_time)
 
 dat_truffle_and_dirt |>
   head(n = 10) |>
@@ -348,7 +348,8 @@ dat_truffle_complex |>
 dat_truffle_and_dirt_complex <- dat_truffle_complex |>
   dirt_demographics() |>
   dirt_impossible_values(prop = .04, replacement_value = 8) |>
-  mutate(completion_time = dirt_numbers(truffle_reaction_times(n = n()))) |>
+  mutate(completion_time = truffle_reaction_times(n = n())) |>
+  dirt_numbers(cols = "completion_time") |>
   dirt_dates(col = "date") |>
   dirt_missingness(prop = .05) |>
   dirt_untidy(col = "block_trial") |>

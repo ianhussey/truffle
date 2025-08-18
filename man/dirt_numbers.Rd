@@ -2,12 +2,14 @@
 % Please edit documentation in R/dirt_numbers.R
 \name{dirt_numbers}
 \alias{dirt_numbers}
-\title{Format numbers column with thousands separators and optional units suffix (e.g., "ms")}
+\title{Format numeric columns with thousands separators and optional unit suffix}
 \usage{
-dirt_numbers(.data, big_mark = ",", decimal_mark = ".", unit = " ms")
+dirt_numbers(.data, cols, big_mark = ",", decimal_mark = ".", unit = " ms")
 }
 \arguments{
-\item{.data}{A numeric vector of reaction times in ms.}
+\item{.data}{A data frame.}
+
+\item{cols}{Columns to format (tidyselect). Can be a single column name or a vector.}
 
 \item{big_mark}{Character used as thousands separator (default: ",").}
 
@@ -16,9 +18,10 @@ dirt_numbers(.data, big_mark = ",", decimal_mark = ".", unit = " ms")
 \item{unit}{Character suffix to append (default: " ms").}
 }
 \value{
-A character vector of formatted reaction times.
+A data frame with the specified columns converted to character.
 }
 \description{
-Takes a numeric column of reaction times (milliseconds) and converts
-them to strings like "1,234 ms".
+Takes one or more numeric columns (e.g., reaction times in milliseconds)
+and converts them to character with thousands separators and optional units
+(e.g., "1,234 ms").
 }

@@ -1,45 +1,14 @@
 Study: depression RCT
 Data collected: 2025-08-17
-id,blo ck tial,compl etionime,date,#age,gender,condition,X1_item1,X1_item2,X1_item3,X1_item4,X1_item5
-1,block1_trial001,"1,013 ms",02/28/2024,forty three,female,control,1,4,3,3,2
-2,block3_trial002,"1,296 ms",03/04/2022,32,male,control,5,4,4,7,3
-3,block6_trial003,"1,535 ms","Jun 19, 2025",37,female,control,4,3,4,3,3
-4,block4_trial004,"1,908 ms",,28,33,control,5,4,2,2,NA
-4,block4_trial004,"1,908 ms",,28,33,control,5,4,2,2,NA
-5,block6_trial005,818 ms,04/02/2022,26,female,control,3,3,2,2,7
-6,block1_trial006,"1,088 ms","Sep 16, 2022",39,female,control,5,5,4,4,8
-7,block4_trial007,"1,199 ms",2022-07-20T14:46:19+02:00,27,female,control,3,2,1,3,2
-8,block6_trial008,866 ms,2024-08-17,24,Non-binary,control,5,3,NA,5,2
-9,block4_trial009,"1,076 ms",2024/03/23,36,female,control,2,3,1,1,1
-10,block6_trial010,"1,069 ms",2025-01-19T12:18:01+01:00,45,male,control,4,5,5,4,2
-11,block1_trial011,"1,083 ms",02/05/2023,35,fem ale,control,1,4,3,2,2
-12,block3_trial012,769 ms,2022/10/25,42,Female,control,2,2,1,1,3
-13,block3_trial013,"1,369 ms",17 Jan 2022,29,female,control,6,6,7,4,5
-14,block1_trial014,"1,107 ms",04/27/2023,27,43,control,2,5,5,5,3
-15,block2_trial015,"1,930 ms",2023-06-16T04:40:49Z,26,female,control,4,3,5,4,5
-16,block3_trial016,"1,592 ms",27 Dec 2025,36,female,control,4,2,3,5,2
-17,block3_trial017,909 ms,"Mar 17, 2022",32,female,control,6,3,5,5,4
-18,block1_trial018,"1,329 ms",2025/01/16,31,female,control,,5,7,7,7
-19,block3_trial019,"1,118 ms",09/24/2024,40,female,control,6,6,3,7,7
-20,block1_trial020,"1,632 ms",2022/06/07,20,female,control,1,NA,3,3,3
-21,block1_trial021,"1,314 ms",2023-04-23,39,male,treatment,3,3,3,5,2
-22,block3_trial022,"1,128 ms",22/11/2023,37,female,treatment,2,2,2,6,4
-23,block2_trial023,"1,451 ms",2025/02/09,27,male,treatment,6,6,5,6,6
-24,block1_trial024,"1,348 ms",03/30/2025,19,female,treatment,2,2,2,NA,NA
-25,block6_trial025,"1,244 ms",03 Feb 2025,40,female,treatment,6,5,5,-999,5
-26,block2_trial026,"2,210 ms",2025-03-04,34,male,treatment,6,NA,5,4,3
-27,block6_trial027,"1,136 ms",20/06/2023,35,female,treatment,3,5,5,6,5
-28,block5_trial028,"1,152 ms",19.10.2022,36,female,treatment,NA,5,4,7,3
-29,block1_trial029,890 ms,"Oct  3, 2024",31,male,treatment,5,3,5,5,3
-30,block6_trial030,"1,283 ms","May 14, 2025",34,female,treatment,6,NA,NA,4,NA
-31,block1_trial031,"1,632 ms",2022/05/25,27,female,treatment,4,5,5,4,5
-31,block1_trial031,"1,632 ms",2022/05/25,27,female,treatment,4,5,5,4,5
-32,block2_trial032,789 ms,29.11.2023,22,female,treatment,NA,NA,2,5,5
-33,block4_trial033,"1,217 ms",2024-07-21,30,femle,treatment,3,5,7,5,5
-34,block4_trial034,969 ms,23/01/2024,35,female,treatment,7,4,NA,8,NA
-35,block6_trial035,"1,890 ms",14 Mar 2025,36,female,treatment,7,6,6,NA,7
-36,block2_trial036,"1,848 ms",2025-01-08,twenty one,female,treatment,4,6,3,6,4
-37,block3_trial037,"1,412 ms",2024/05/13,36,female,treatment,3,5,NA,6,6
-38,block5_trial038,"1,884 ms",23/11/2023,27,male,treatment,2,3,1,NA,2
-39,block6_trial039,"1,045 ms",2024/11/14,33,male,treatment,6,7,5,6,5
-40,block5_trial040,"1,659 ms",01.05.2023,19,29,treatment,4,4,6,4,3
+id,BlockTralOld,completion_time,date,age,gender,condition,X1 item1,X1_item2,X1_item3,X1_item4,X1 iem5
+1,block6_trial001,"1,311 ms","Oct  5, 2024",21,female,control,3,2,4,2,2
+2,block5_trial002,"1,250 ms",2024/02/12,42,FEMALE,control,5,2,7,2,6
+3,block6_trial003,"1,250 ms",19/03/2022,21,female,control,1,3,3,5,6
+4,block4_trial004,"1,284 ms","Jun 10, 2023",24,female,control,1,5,4,2,6
+5,block1_trial005,"1,104 ms",25.01.2025,27,male,control,4,6,3,3,2
+6,block5_trial006,"1,431 ms",28/04/2023,35,female,treatment,5,6,3,5,6
+7,block4_trial007,889 ms,01/07/2022,44,male,treatment,8,4,4,4,6
+8,block1_trial008,"1,676 ms",24.02.2025,30,male,treatment,6,7,5,5,6
+9,block1_trial009,"1,180 ms",2024-09-18,38,female,treatment,3,4,1,6,6
+9,block1_trial009,"1,180 ms",2024-09-18,38,female,treatment,3,4,1,6,6
+10,block1_trial010,"1,791 ms",12/03/2022,thirty nine,male,treatment,3,6,6,5,6
