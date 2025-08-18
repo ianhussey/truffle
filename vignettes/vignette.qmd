@@ -42,6 +42,8 @@ library(readr)
 library(knitr)
 library(kableExtra)
 
+set.seed(42)
+
 ```
 
 ## Create truffle
@@ -241,14 +243,28 @@ dat_truffle_and_dirt |>
 
 ```
 
-### Non-tidy columns
+### Untidy columns
 
-With more than one data point per cell, ie both block and trial number.
+With more than one data point per cell, ie both block and trial number, violating Tidy Data principles.
 
 ```{r}
 
 dat_truffle_and_dirt <- dat_truffle_and_dirt |>
   dirt_untidy(col = "block_trial")
+
+dat_truffle_and_dirt |>
+  head(n = 10) |>
+  kable() |>
+  kable_classic(full_width = FALSE)
+
+```
+
+### Duplicate rows
+
+```{r}
+
+dat_truffle_and_dirt <- dat_truffle_and_dirt |>
+  dirt_duplicates(prop = 0.05)
 
 dat_truffle_and_dirt |>
   head(n = 10) |>
@@ -270,20 +286,6 @@ dat_truffle_and_dirt <- dat_truffle_and_dirt |>
 
 dat_truffle_and_dirt <- dat_truffle_and_dirt |>
   dirt_colnames()
-
-dat_truffle_and_dirt |>
-  head(n = 10) |>
-  kable() |>
-  kable_classic(full_width = FALSE)
-
-```
-
-### Duplicate rows
-
-```{r}
-
-dat_truffle_and_dirt <- dat_truffle_and_dirt |>
-  dirt_duplicates(prop = 0.05)
 
 dat_truffle_and_dirt |>
   head(n = 10) |>
@@ -331,7 +333,7 @@ clean |>
 #| fig-height: 20
 #| fig-width: 20
 
-dat_truffle_complex <- 
+dat_truffle_complex <-
   truffle_likert(n_per_condition = 200,
                  factors  = c("X1_latent", "X2_latent", "X3_latent"),
                  prefixes = c("X1_item", "X2_item", "X3_item"),
@@ -340,7 +342,18 @@ dat_truffle_complex <-
                  n_levels = 7,
                  r_among_outcomes = 0.50,
                  approx_d_between_groups = c(0.50, 0.20, 1.00),
-                 seed = 42) 
+                 seed = 42)
+
+# # for readme
+# dat_truffle_complex <-
+#   truffle_likert(n_per_condition = 5,
+#                  factors  = "X1_latent",
+#                  prefixes = "X1_item",
+#                  alpha = .70,
+#                  n_items = 5,
+#                  n_levels = 7,
+#                  approx_d_between_groups = 0.50,
+#                  seed = 42)
 
 dat_truffle_complex |>
   truffle_check()
@@ -348,18 +361,27 @@ dat_truffle_complex |>
 dat_truffle_and_dirt_complex <- dat_truffle_complex |>
   dirt_demographics() |>
   dirt_impossible_values(prop = .04, replacement_value = 8) |>
+  # generate RT data and then add dirt
   mutate(completion_time = truffle_reaction_times(n = n())) |>
   dirt_numbers(cols = "completion_time") |>
   dirt_dates(col = "date") |>
   dirt_missingness(prop = .05) |>
   dirt_untidy(col = "block_trial") |>
-  dirt_duplicates() |>
+  dirt_duplicates(prop = 0.05) |>
+  # move some columns around before renaming makes it hard
+  relocate(date, .after = "id") |>
+  relocate(completion_time, .after = "id") |>
+  relocate(block_trial, .after = "id") |>
   dirt_colnames() |>
   dirt_header_rows()
 
-
 dat_truffle_and_dirt_complex |>
   readr::write_lines("dat_truffle_and_dirt_complex.csv")
+
+dat_truffle_and_dirt_complex |>
+  head(n = 10) |>
+  kable() |>
+  kable_classic(full_width = FALSE)
 
 ```
 

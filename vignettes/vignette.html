@@ -100,9 +100,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#number-formatting" id="toc-number-formatting" class="nav-link" data-scroll-target="#number-formatting">Number formatting</a></li>
   <li><a href="#dates" id="toc-dates" class="nav-link" data-scroll-target="#dates">Dates</a></li>
   <li><a href="#missingness" id="toc-missingness" class="nav-link" data-scroll-target="#missingness">Missingness</a></li>
-  <li><a href="#non-tidy-columns" id="toc-non-tidy-columns" class="nav-link" data-scroll-target="#non-tidy-columns">Non-tidy columns</a></li>
-  <li><a href="#colnames" id="toc-colnames" class="nav-link" data-scroll-target="#colnames">Colnames</a></li>
+  <li><a href="#untidy-columns" id="toc-untidy-columns" class="nav-link" data-scroll-target="#untidy-columns">Untidy columns</a></li>
   <li><a href="#duplicate-rows" id="toc-duplicate-rows" class="nav-link" data-scroll-target="#duplicate-rows">Duplicate rows</a></li>
+  <li><a href="#colnames" id="toc-colnames" class="nav-link" data-scroll-target="#colnames">Colnames</a></li>
   <li><a href="#headers" id="toc-headers" class="nav-link" data-scroll-target="#headers">Headers</a></li>
   </ul></li>
   <li><a href="#truffle-and-dirt---more-complicated" id="toc-truffle-and-dirt---more-complicated" class="nav-link" data-scroll-target="#truffle-and-dirt---more-complicated">Truffle and dirt - more complicated</a></li>
@@ -168,7 +168,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(janitor)</span>
 <span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readr)</span>
 <span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(knitr)</span>
-<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(kableExtra)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(kableExtra)</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </section>
@@ -1546,9 +1548,9 @@ $item_histograms</code></pre>
 </div>
 </div>
 </section>
-<section id="non-tidy-columns" class="level3">
-<h3 class="anchored" data-anchor-id="non-tidy-columns">Non-tidy columns</h3>
-<p>With more than one data point per cell, ie both block and trial number.</p>
+<section id="untidy-columns" class="level3">
+<h3 class="anchored" data-anchor-id="untidy-columns">Untidy columns</h3>
+<p>With more than one data point per cell, ie both block and trial number, violating Tidy Data principles.</p>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
@@ -1724,50 +1726,40 @@ $item_histograms</code></pre>
 </div>
 </div>
 </section>
-<section id="colnames" class="level3">
-<h3 class="anchored" data-anchor-id="colnames">Colnames</h3>
+<section id="duplicate-rows" class="level3">
+<h3 class="anchored" data-anchor-id="duplicate-rows">Duplicate rows</h3>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># move some columns around before renaming makes it hard</span></span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>dat_truffle_and_dirt <span class="ot">&lt;-</span> dat_truffle_and_dirt <span class="sc">|&gt;</span></span>
-<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">relocate</span>(date, <span class="at">.after =</span> <span class="st">"id"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">relocate</span>(completion_time, <span class="at">.after =</span> <span class="st">"id"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">relocate</span>(block_trial, <span class="at">.after =</span> <span class="st">"id"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">write_lines</span>(<span class="st">"dat_truffle_and_dirt.csv"</span>)</span>
-<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>dat_truffle_and_dirt <span class="ot">&lt;-</span> dat_truffle_and_dirt <span class="sc">|&gt;</span></span>
-<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dirt_colnames</span>()</span>
-<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>dat_truffle_and_dirt <span class="sc">|&gt;</span></span>
-<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(<span class="at">n =</span> <span class="dv">10</span>) <span class="sc">|&gt;</span></span>
-<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>() <span class="sc">|&gt;</span></span>
-<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_classic</span>(<span class="at">full_width =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>dat_truffle_and_dirt <span class="ot">&lt;-</span> dat_truffle_and_dirt <span class="sc">|&gt;</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dirt_duplicates</span>(<span class="at">prop =</span> <span class="fl">0.05</span>)</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>dat_truffle_and_dirt <span class="sc">|&gt;</span></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(<span class="at">n =</span> <span class="dv">10</span>) <span class="sc">|&gt;</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>() <span class="sc">|&gt;</span></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_classic</span>(<span class="at">full_width =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <table class="lightable-classic caption-top table table-sm table-striped small" data-quarto-postprocess="true">
 <thead>
 <tr class="header">
 <th style="text-align: right;" data-quarto-table-cell-role="th">id</th>
-<th style="text-align: left;" data-quarto-table-cell-role="th">BlockTralOld</th>
-<th style="text-align: left;" data-quarto-table-cell-role="th">completion_time</th>
-<th style="text-align: left;" data-quarto-table-cell-role="th">date</th>
 <th style="text-align: left;" data-quarto-table-cell-role="th">age</th>
 <th style="text-align: left;" data-quarto-table-cell-role="th">gender</th>
 <th style="text-align: left;" data-quarto-table-cell-role="th">condition</th>
-<th style="text-align: left;" data-quarto-table-cell-role="th">X1 item1</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">X1_item1</th>
 <th style="text-align: left;" data-quarto-table-cell-role="th">X1_item2</th>
 <th style="text-align: left;" data-quarto-table-cell-role="th">X1_item3</th>
 <th style="text-align: left;" data-quarto-table-cell-role="th">X1_item4</th>
-<th style="text-align: left;" data-quarto-table-cell-role="th">X1 iem5</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">X1_item5</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">completion_time</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">date</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">block_trial</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td style="text-align: right;">1</td>
-<td style="text-align: left;">block6_trial001</td>
-<td style="text-align: left;">1,311 ms</td>
-<td style="text-align: left;">Oct 5, 2024</td>
 <td style="text-align: left;">21</td>
 <td style="text-align: left;">female</td>
 <td style="text-align: left;">control</td>
@@ -1776,12 +1768,12 @@ $item_histograms</code></pre>
 <td style="text-align: left;">4</td>
 <td style="text-align: left;">2</td>
 <td style="text-align: left;">2</td>
+<td style="text-align: left;">1,311 ms</td>
+<td style="text-align: left;">Oct 5, 2024</td>
+<td style="text-align: left;">block6_trial001</td>
 </tr>
 <tr class="even">
 <td style="text-align: right;">2</td>
-<td style="text-align: left;">block5_trial002</td>
-<td style="text-align: left;">1,250 ms</td>
-<td style="text-align: left;">2024/02/12</td>
 <td style="text-align: left;">42</td>
 <td style="text-align: left;">FEMALE</td>
 <td style="text-align: left;">control</td>
@@ -1790,12 +1782,26 @@ $item_histograms</code></pre>
 <td style="text-align: left;">7</td>
 <td style="text-align: left;">2</td>
 <td style="text-align: left;">6</td>
+<td style="text-align: left;">1,250 ms</td>
+<td style="text-align: left;">2024/02/12</td>
+<td style="text-align: left;">block5_trial002</td>
 </tr>
 <tr class="odd">
-<td style="text-align: right;">3</td>
-<td style="text-align: left;">block6_trial003</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">42</td>
+<td style="text-align: left;">FEMALE</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: left;">5</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">7</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">6</td>
 <td style="text-align: left;">1,250 ms</td>
-<td style="text-align: left;">19/03/2022</td>
+<td style="text-align: left;">2024/02/12</td>
+<td style="text-align: left;">block5_trial002</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">3</td>
 <td style="text-align: left;">21</td>
 <td style="text-align: left;">female</td>
 <td style="text-align: left;">control</td>
@@ -1804,12 +1810,12 @@ $item_histograms</code></pre>
 <td style="text-align: left;">3</td>
 <td style="text-align: left;">5</td>
 <td style="text-align: left;">6</td>
+<td style="text-align: left;">1,250 ms</td>
+<td style="text-align: left;">19/03/2022</td>
+<td style="text-align: left;">block6_trial003</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: right;">4</td>
-<td style="text-align: left;">block4_trial004</td>
-<td style="text-align: left;">1,284 ms</td>
-<td style="text-align: left;">Jun 10, 2023</td>
 <td style="text-align: left;">24</td>
 <td style="text-align: left;">female</td>
 <td style="text-align: left;">control</td>
@@ -1818,12 +1824,12 @@ $item_histograms</code></pre>
 <td style="text-align: left;">4</td>
 <td style="text-align: left;">2</td>
 <td style="text-align: left;">6</td>
+<td style="text-align: left;">1,284 ms</td>
+<td style="text-align: left;">Jun 10, 2023</td>
+<td style="text-align: left;">block4_trial004</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: right;">5</td>
-<td style="text-align: left;">block1_trial005</td>
-<td style="text-align: left;">1,104 ms</td>
-<td style="text-align: left;">25.01.2025</td>
 <td style="text-align: left;">27</td>
 <td style="text-align: left;">male</td>
 <td style="text-align: left;">control</td>
@@ -1832,12 +1838,12 @@ $item_histograms</code></pre>
 <td style="text-align: left;">3</td>
 <td style="text-align: left;">3</td>
 <td style="text-align: left;">2</td>
+<td style="text-align: left;">1,104 ms</td>
+<td style="text-align: left;">25.01.2025</td>
+<td style="text-align: left;">block1_trial005</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: right;">6</td>
-<td style="text-align: left;">block5_trial006</td>
-<td style="text-align: left;">1,431 ms</td>
-<td style="text-align: left;">28/04/2023</td>
 <td style="text-align: left;">35</td>
 <td style="text-align: left;">female</td>
 <td style="text-align: left;">treatment</td>
@@ -1846,12 +1852,12 @@ $item_histograms</code></pre>
 <td style="text-align: left;">3</td>
 <td style="text-align: left;">5</td>
 <td style="text-align: left;">6</td>
+<td style="text-align: left;">1,431 ms</td>
+<td style="text-align: left;">28/04/2023</td>
+<td style="text-align: left;">block5_trial006</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: right;">7</td>
-<td style="text-align: left;">block4_trial007</td>
-<td style="text-align: left;">889 ms</td>
-<td style="text-align: left;">01/07/2022</td>
 <td style="text-align: left;">44</td>
 <td style="text-align: left;">male</td>
 <td style="text-align: left;">treatment</td>
@@ -1860,12 +1866,12 @@ $item_histograms</code></pre>
 <td style="text-align: left;">4</td>
 <td style="text-align: left;">4</td>
 <td style="text-align: left;">6</td>
+<td style="text-align: left;">889 ms</td>
+<td style="text-align: left;">01/07/2022</td>
+<td style="text-align: left;">block4_trial007</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: right;">8</td>
-<td style="text-align: left;">block1_trial008</td>
-<td style="text-align: left;">1,676 ms</td>
-<td style="text-align: left;">24.02.2025</td>
 <td style="text-align: left;">30</td>
 <td style="text-align: left;">male</td>
 <td style="text-align: left;">treatment</td>
@@ -1874,12 +1880,12 @@ $item_histograms</code></pre>
 <td style="text-align: left;">5</td>
 <td style="text-align: left;">5</td>
 <td style="text-align: left;">6</td>
+<td style="text-align: left;">1,676 ms</td>
+<td style="text-align: left;">24.02.2025</td>
+<td style="text-align: left;">block1_trial008</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: right;">9</td>
-<td style="text-align: left;">block1_trial009</td>
-<td style="text-align: left;">1,180 ms</td>
-<td style="text-align: left;">2024-09-18</td>
 <td style="text-align: left;">38</td>
 <td style="text-align: left;">female</td>
 <td style="text-align: left;">treatment</td>
@@ -1888,55 +1894,51 @@ $item_histograms</code></pre>
 <td style="text-align: left;">1</td>
 <td style="text-align: left;">6</td>
 <td style="text-align: left;">6</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">10</td>
-<td style="text-align: left;">block1_trial010</td>
-<td style="text-align: left;">1,791 ms</td>
-<td style="text-align: left;">12/03/2022</td>
-<td style="text-align: left;">thirty nine</td>
-<td style="text-align: left;">male</td>
-<td style="text-align: left;">treatment</td>
-<td style="text-align: left;">3</td>
-<td style="text-align: left;">6</td>
-<td style="text-align: left;">6</td>
-<td style="text-align: left;">5</td>
-<td style="text-align: left;">6</td>
+<td style="text-align: left;">1,180 ms</td>
+<td style="text-align: left;">2024-09-18</td>
+<td style="text-align: left;">block1_trial009</td>
 </tr>
 </tbody>
 </table>
 </div>
 </div>
 </section>
-<section id="duplicate-rows" class="level3">
-<h3 class="anchored" data-anchor-id="duplicate-rows">Duplicate rows</h3>
+<section id="colnames" class="level3">
+<h3 class="anchored" data-anchor-id="colnames">Colnames</h3>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>dat_truffle_and_dirt <span class="ot">&lt;-</span> dat_truffle_and_dirt <span class="sc">|&gt;</span></span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dirt_duplicates</span>(<span class="at">prop =</span> <span class="fl">0.05</span>)</span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>dat_truffle_and_dirt <span class="sc">|&gt;</span></span>
-<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(<span class="at">n =</span> <span class="dv">10</span>) <span class="sc">|&gt;</span></span>
-<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>() <span class="sc">|&gt;</span></span>
-<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_classic</span>(<span class="at">full_width =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># move some columns around before renaming makes it hard</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>dat_truffle_and_dirt <span class="ot">&lt;-</span> dat_truffle_and_dirt <span class="sc">|&gt;</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">relocate</span>(date, <span class="at">.after =</span> <span class="st">"id"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">relocate</span>(completion_time, <span class="at">.after =</span> <span class="st">"id"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">relocate</span>(block_trial, <span class="at">.after =</span> <span class="st">"id"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">write_lines</span>(<span class="st">"dat_truffle_and_dirt.csv"</span>)</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>dat_truffle_and_dirt <span class="ot">&lt;-</span> dat_truffle_and_dirt <span class="sc">|&gt;</span></span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dirt_colnames</span>()</span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>dat_truffle_and_dirt <span class="sc">|&gt;</span></span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(<span class="at">n =</span> <span class="dv">10</span>) <span class="sc">|&gt;</span></span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>() <span class="sc">|&gt;</span></span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_classic</span>(<span class="at">full_width =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <table class="lightable-classic caption-top table table-sm table-striped small" data-quarto-postprocess="true">
 <thead>
 <tr class="header">
 <th style="text-align: right;" data-quarto-table-cell-role="th">id</th>
-<th style="text-align: left;" data-quarto-table-cell-role="th">BlockTralOld</th>
-<th style="text-align: left;" data-quarto-table-cell-role="th">completion_time</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">block_trial</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">compleonTime</th>
 <th style="text-align: left;" data-quarto-table-cell-role="th">date</th>
-<th style="text-align: left;" data-quarto-table-cell-role="th">age</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Age</th>
 <th style="text-align: left;" data-quarto-table-cell-role="th">gender</th>
 <th style="text-align: left;" data-quarto-table-cell-role="th">condition</th>
-<th style="text-align: left;" data-quarto-table-cell-role="th">X1 item1</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">~X1 item1</th>
 <th style="text-align: left;" data-quarto-table-cell-role="th">X1_item2</th>
 <th style="text-align: left;" data-quarto-table-cell-role="th">X1_item3</th>
 <th style="text-align: left;" data-quarto-table-cell-role="th">X1_item4</th>
-<th style="text-align: left;" data-quarto-table-cell-role="th">X1 iem5</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">X1_item5</th>
 </tr>
 </thead>
 <tbody>
@@ -1969,6 +1971,20 @@ $item_histograms</code></pre>
 <td style="text-align: left;">6</td>
 </tr>
 <tr class="odd">
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">block5_trial002</td>
+<td style="text-align: left;">1,250 ms</td>
+<td style="text-align: left;">2024/02/12</td>
+<td style="text-align: left;">42</td>
+<td style="text-align: left;">FEMALE</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: left;">5</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">7</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: left;">6</td>
+</tr>
+<tr class="even">
 <td style="text-align: right;">3</td>
 <td style="text-align: left;">block6_trial003</td>
 <td style="text-align: left;">1,250 ms</td>
@@ -1982,7 +1998,7 @@ $item_histograms</code></pre>
 <td style="text-align: left;">5</td>
 <td style="text-align: left;">6</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: right;">4</td>
 <td style="text-align: left;">block4_trial004</td>
 <td style="text-align: left;">1,284 ms</td>
@@ -1996,7 +2012,7 @@ $item_histograms</code></pre>
 <td style="text-align: left;">2</td>
 <td style="text-align: left;">6</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: right;">5</td>
 <td style="text-align: left;">block1_trial005</td>
 <td style="text-align: left;">1,104 ms</td>
@@ -2010,7 +2026,7 @@ $item_histograms</code></pre>
 <td style="text-align: left;">3</td>
 <td style="text-align: left;">2</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: right;">6</td>
 <td style="text-align: left;">block5_trial006</td>
 <td style="text-align: left;">1,431 ms</td>
@@ -2024,7 +2040,7 @@ $item_histograms</code></pre>
 <td style="text-align: left;">5</td>
 <td style="text-align: left;">6</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: right;">7</td>
 <td style="text-align: left;">block4_trial007</td>
 <td style="text-align: left;">889 ms</td>
@@ -2038,7 +2054,7 @@ $item_histograms</code></pre>
 <td style="text-align: left;">4</td>
 <td style="text-align: left;">6</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: right;">8</td>
 <td style="text-align: left;">block1_trial008</td>
 <td style="text-align: left;">1,676 ms</td>
@@ -2050,20 +2066,6 @@ $item_histograms</code></pre>
 <td style="text-align: left;">7</td>
 <td style="text-align: left;">5</td>
 <td style="text-align: left;">5</td>
-<td style="text-align: left;">6</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">9</td>
-<td style="text-align: left;">block1_trial009</td>
-<td style="text-align: left;">1,180 ms</td>
-<td style="text-align: left;">2024-09-18</td>
-<td style="text-align: left;">38</td>
-<td style="text-align: left;">female</td>
-<td style="text-align: left;">treatment</td>
-<td style="text-align: left;">3</td>
-<td style="text-align: left;">4</td>
-<td style="text-align: left;">1</td>
-<td style="text-align: left;">6</td>
 <td style="text-align: left;">6</td>
 </tr>
 <tr class="even">
@@ -2113,7 +2115,7 @@ $item_histograms</code></pre>
 <td style="text-align: left;">Data collected: 2025-08-17</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">id,BlockTralOld,completion_time,date,age,gender,condition,X1 item1,X1_item2,X1_item3,X1_item4,X1 iem5</td>
+<td style="text-align: left;">id,block_trial,compleonTime,date,Age,gender,condition,~X1 item1,X1_item2,X1_item3,X1_item4,X1_item5</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">1,block6_trial001,"1,311 ms","Oct 5, 2024",21,female,control,3,2,4,2,2</td>
@@ -2122,19 +2124,19 @@ $item_histograms</code></pre>
 <td style="text-align: left;">2,block5_trial002,"1,250 ms",2024/02/12,42,FEMALE,control,5,2,7,2,6</td>
 </tr>
 <tr class="even">
+<td style="text-align: left;">2,block5_trial002,"1,250 ms",2024/02/12,42,FEMALE,control,5,2,7,2,6</td>
+</tr>
+<tr class="odd">
 <td style="text-align: left;">3,block6_trial003,"1,250 ms",19/03/2022,21,female,control,1,3,3,5,6</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;">4,block4_trial004,"1,284 ms","Jun 10, 2023",24,female,control,1,5,4,2,6</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;">5,block1_trial005,"1,104 ms",25.01.2025,27,male,control,4,6,3,3,2</td>
 </tr>
-<tr class="odd">
-<td style="text-align: left;">6,block5_trial006,"1,431 ms",28/04/2023,35,female,treatment,5,6,3,5,6</td>
-</tr>
 <tr class="even">
-<td style="text-align: left;">7,block4_trial007,889 ms,01/07/2022,44,male,treatment,8,4,4,4,6</td>
+<td style="text-align: left;">6,block5_trial006,"1,431 ms",28/04/2023,35,female,treatment,5,6,3,5,6</td>
 </tr>
 </tbody>
 </table>
@@ -2165,7 +2167,7 @@ $item_histograms</code></pre>
 <td style="text-align: left;">Data collected: 2025-08-17</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">id,BlockTralOld,completion_time,date,age,gender,condition,X1 item1,X1_item2,X1_item3,X1_item4,X1 iem5</td>
+<td style="text-align: left;">id,block_trial,compleonTime,date,Age,gender,condition,~X1 item1,X1_item2,X1_item3,X1_item4,X1_item5</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">1,block6_trial001,"1,311 ms","Oct 5, 2024",21,female,control,3,2,4,2,2</td>
@@ -2174,22 +2176,22 @@ $item_histograms</code></pre>
 <td style="text-align: left;">2,block5_trial002,"1,250 ms",2024/02/12,42,FEMALE,control,5,2,7,2,6</td>
 </tr>
 <tr class="odd">
+<td style="text-align: left;">2,block5_trial002,"1,250 ms",2024/02/12,42,FEMALE,control,5,2,7,2,6</td>
+</tr>
+<tr class="even">
 <td style="text-align: left;">3,block6_trial003,"1,250 ms",19/03/2022,21,female,control,1,3,3,5,6</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;">4,block4_trial004,"1,284 ms","Jun 10, 2023",24,female,control,1,5,4,2,6</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;">5,block1_trial005,"1,104 ms",25.01.2025,27,male,control,4,6,3,3,2</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;">6,block5_trial006,"1,431 ms",28/04/2023,35,female,treatment,5,6,3,5,6</td>
 </tr>
-<tr class="odd">
-<td style="text-align: left;">7,block4_trial007,889 ms,01/07/2022,44,male,treatment,8,4,4,4,6</td>
-</tr>
 <tr class="even">
-<td style="text-align: left;">8,block1_trial008,"1,676 ms",24.02.2025,30,male,treatment,6,7,5,5,6</td>
+<td style="text-align: left;">7,block4_trial007,889 ms,01/07/2022,44,male,treatment,8,4,4,4,6</td>
 </tr>
 </tbody>
 </table>
@@ -2208,17 +2210,17 @@ $item_histograms</code></pre>
 <thead>
 <tr class="header">
 <th style="text-align: right;" data-quarto-table-cell-role="th">id</th>
-<th style="text-align: left;" data-quarto-table-cell-role="th">BlockTralOld</th>
-<th style="text-align: left;" data-quarto-table-cell-role="th">completion_time</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">block_trial</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">compleonTime</th>
 <th style="text-align: left;" data-quarto-table-cell-role="th">date</th>
-<th style="text-align: left;" data-quarto-table-cell-role="th">age</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">Age</th>
 <th style="text-align: left;" data-quarto-table-cell-role="th">gender</th>
 <th style="text-align: left;" data-quarto-table-cell-role="th">condition</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">X1 item1</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">~X1 item1</th>
 <th style="text-align: right;" data-quarto-table-cell-role="th">X1_item2</th>
 <th style="text-align: right;" data-quarto-table-cell-role="th">X1_item3</th>
 <th style="text-align: right;" data-quarto-table-cell-role="th">X1_item4</th>
-<th style="text-align: right;" data-quarto-table-cell-role="th">X1 iem5</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">X1_item5</th>
 </tr>
 </thead>
 <tbody>
@@ -2251,6 +2253,20 @@ $item_histograms</code></pre>
 <td style="text-align: right;">6</td>
 </tr>
 <tr class="odd">
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">block5_trial002</td>
+<td style="text-align: left;">1,250 ms</td>
+<td style="text-align: left;">2024/02/12</td>
+<td style="text-align: left;">42</td>
+<td style="text-align: left;">FEMALE</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">6</td>
+</tr>
+<tr class="even">
 <td style="text-align: right;">3</td>
 <td style="text-align: left;">block6_trial003</td>
 <td style="text-align: left;">1,250 ms</td>
@@ -2264,7 +2280,7 @@ $item_histograms</code></pre>
 <td style="text-align: right;">5</td>
 <td style="text-align: right;">6</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: right;">4</td>
 <td style="text-align: left;">block4_trial004</td>
 <td style="text-align: left;">1,284 ms</td>
@@ -2278,7 +2294,7 @@ $item_histograms</code></pre>
 <td style="text-align: right;">2</td>
 <td style="text-align: right;">6</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: right;">5</td>
 <td style="text-align: left;">block1_trial005</td>
 <td style="text-align: left;">1,104 ms</td>
@@ -2292,7 +2308,7 @@ $item_histograms</code></pre>
 <td style="text-align: right;">3</td>
 <td style="text-align: right;">2</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: right;">6</td>
 <td style="text-align: left;">block5_trial006</td>
 <td style="text-align: left;">1,431 ms</td>
@@ -2306,7 +2322,7 @@ $item_histograms</code></pre>
 <td style="text-align: right;">5</td>
 <td style="text-align: right;">6</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: right;">7</td>
 <td style="text-align: left;">block4_trial007</td>
 <td style="text-align: left;">889 ms</td>
@@ -2320,7 +2336,7 @@ $item_histograms</code></pre>
 <td style="text-align: right;">4</td>
 <td style="text-align: right;">6</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: right;">8</td>
 <td style="text-align: left;">block1_trial008</td>
 <td style="text-align: left;">1,676 ms</td>
@@ -2332,20 +2348,6 @@ $item_histograms</code></pre>
 <td style="text-align: right;">7</td>
 <td style="text-align: right;">5</td>
 <td style="text-align: right;">5</td>
-<td style="text-align: right;">6</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">9</td>
-<td style="text-align: left;">block1_trial009</td>
-<td style="text-align: left;">1,180 ms</td>
-<td style="text-align: left;">2024-09-18</td>
-<td style="text-align: left;">38</td>
-<td style="text-align: left;">female</td>
-<td style="text-align: left;">treatment</td>
-<td style="text-align: right;">3</td>
-<td style="text-align: right;">4</td>
-<td style="text-align: right;">1</td>
-<td style="text-align: right;">6</td>
 <td style="text-align: right;">6</td>
 </tr>
 <tr class="even">
@@ -2373,7 +2375,7 @@ $item_histograms</code></pre>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>dat_truffle_complex <span class="ot">&lt;-</span> </span>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>dat_truffle_complex <span class="ot">&lt;-</span></span>
 <span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">truffle_likert</span>(<span class="at">n_per_condition =</span> <span class="dv">200</span>,</span>
 <span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>                 <span class="at">factors  =</span> <span class="fu">c</span>(<span class="st">"X1_latent"</span>, <span class="st">"X2_latent"</span>, <span class="st">"X3_latent"</span>),</span>
 <span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>                 <span class="at">prefixes =</span> <span class="fu">c</span>(<span class="st">"X1_item"</span>, <span class="st">"X2_item"</span>, <span class="st">"X3_item"</span>),</span>
@@ -2382,10 +2384,21 @@ $item_histograms</code></pre>
 <span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>                 <span class="at">n_levels =</span> <span class="dv">7</span>,</span>
 <span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>                 <span class="at">r_among_outcomes =</span> <span class="fl">0.50</span>,</span>
 <span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>                 <span class="at">approx_d_between_groups =</span> <span class="fu">c</span>(<span class="fl">0.50</span>, <span class="fl">0.20</span>, <span class="fl">1.00</span>),</span>
-<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>                 <span class="at">seed =</span> <span class="dv">42</span>) </span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>                 <span class="at">seed =</span> <span class="dv">42</span>)</span>
 <span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a>dat_truffle_complex <span class="sc">|&gt;</span></span>
-<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">truffle_check</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a><span class="co"># # for readme</span></span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a><span class="co"># dat_truffle_complex &lt;-</span></span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a><span class="co">#   truffle_likert(n_per_condition = 5,</span></span>
+<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a><span class="co">#                  factors  = "X1_latent",</span></span>
+<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a><span class="co">#                  prefixes = "X1_item",</span></span>
+<span id="cb22-17"><a href="#cb22-17" aria-hidden="true" tabindex="-1"></a><span class="co">#                  alpha = .70,</span></span>
+<span id="cb22-18"><a href="#cb22-18" aria-hidden="true" tabindex="-1"></a><span class="co">#                  n_items = 5,</span></span>
+<span id="cb22-19"><a href="#cb22-19" aria-hidden="true" tabindex="-1"></a><span class="co">#                  n_levels = 7,</span></span>
+<span id="cb22-20"><a href="#cb22-20" aria-hidden="true" tabindex="-1"></a><span class="co">#                  approx_d_between_groups = 0.50,</span></span>
+<span id="cb22-21"><a href="#cb22-21" aria-hidden="true" tabindex="-1"></a><span class="co">#                  seed = 42)</span></span>
+<span id="cb22-22"><a href="#cb22-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-23"><a href="#cb22-23" aria-hidden="true" tabindex="-1"></a>dat_truffle_complex <span class="sc">|&gt;</span></span>
+<span id="cb22-24"><a href="#cb22-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">truffle_check</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>$cohens_d
@@ -2412,19 +2425,69 @@ $item_histograms</code></pre>
 <div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>dat_truffle_and_dirt_complex <span class="ot">&lt;-</span> dat_truffle_complex <span class="sc">|&gt;</span></span>
 <span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dirt_demographics</span>() <span class="sc">|&gt;</span></span>
 <span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dirt_impossible_values</span>(<span class="at">prop =</span> .<span class="dv">04</span>, <span class="at">replacement_value =</span> <span class="dv">8</span>) <span class="sc">|&gt;</span></span>
-<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">completion_time =</span> <span class="fu">truffle_reaction_times</span>(<span class="at">n =</span> <span class="fu">n</span>())) <span class="sc">|&gt;</span></span>
-<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dirt_numbers</span>(<span class="at">cols =</span> <span class="st">"completion_time"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dirt_dates</span>(<span class="at">col =</span> <span class="st">"date"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dirt_missingness</span>(<span class="at">prop =</span> .<span class="dv">05</span>) <span class="sc">|&gt;</span></span>
-<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dirt_untidy</span>(<span class="at">col =</span> <span class="st">"block_trial"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dirt_duplicates</span>() <span class="sc">|&gt;</span></span>
-<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dirt_colnames</span>() <span class="sc">|&gt;</span></span>
-<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dirt_header_rows</span>()</span>
-<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a>dat_truffle_and_dirt_complex <span class="sc">|&gt;</span></span>
-<span id="cb24-15"><a href="#cb24-15" aria-hidden="true" tabindex="-1"></a>  readr<span class="sc">::</span><span class="fu">write_lines</span>(<span class="st">"dat_truffle_and_dirt_complex.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>  <span class="co"># generate RT data and then add dirt</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">completion_time =</span> <span class="fu">truffle_reaction_times</span>(<span class="at">n =</span> <span class="fu">n</span>())) <span class="sc">|&gt;</span></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dirt_numbers</span>(<span class="at">cols =</span> <span class="st">"completion_time"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dirt_dates</span>(<span class="at">col =</span> <span class="st">"date"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dirt_missingness</span>(<span class="at">prop =</span> .<span class="dv">05</span>) <span class="sc">|&gt;</span></span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dirt_untidy</span>(<span class="at">col =</span> <span class="st">"block_trial"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dirt_duplicates</span>(<span class="at">prop =</span> <span class="fl">0.05</span>) <span class="sc">|&gt;</span></span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>  <span class="co"># move some columns around before renaming makes it hard</span></span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">relocate</span>(date, <span class="at">.after =</span> <span class="st">"id"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">relocate</span>(completion_time, <span class="at">.after =</span> <span class="st">"id"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">relocate</span>(block_trial, <span class="at">.after =</span> <span class="st">"id"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb24-15"><a href="#cb24-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dirt_colnames</span>() <span class="sc">|&gt;</span></span>
+<span id="cb24-16"><a href="#cb24-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dirt_header_rows</span>()</span>
+<span id="cb24-17"><a href="#cb24-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-18"><a href="#cb24-18" aria-hidden="true" tabindex="-1"></a>dat_truffle_and_dirt_complex <span class="sc">|&gt;</span></span>
+<span id="cb24-19"><a href="#cb24-19" aria-hidden="true" tabindex="-1"></a>  readr<span class="sc">::</span><span class="fu">write_lines</span>(<span class="st">"dat_truffle_and_dirt_complex.csv"</span>)</span>
+<span id="cb24-20"><a href="#cb24-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-21"><a href="#cb24-21" aria-hidden="true" tabindex="-1"></a>dat_truffle_and_dirt_complex <span class="sc">|&gt;</span></span>
+<span id="cb24-22"><a href="#cb24-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(<span class="at">n =</span> <span class="dv">10</span>) <span class="sc">|&gt;</span></span>
+<span id="cb24-23"><a href="#cb24-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>() <span class="sc">|&gt;</span></span>
+<span id="cb24-24"><a href="#cb24-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_classic</span>(<span class="at">full_width =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
+<div class="cell-output-display">
+<table class="lightable-classic caption-top table table-sm table-striped small" data-quarto-postprocess="true">
+<thead>
+<tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">x</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Study: depression RCT</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Data collected: 2025-08-17</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">id,X3_item9,completion_time,date,age,Gender v2,condition,X1_item1,X1_item2,X1_item3,X1 im4,X1_item5,X tem6,X1 ie7,x1Item8,X1_item9,X1 ite0,xItem1,X te m2,X2_item3,X2_item4,X2_item5,X2_item6,X2_item7,X3_item1,X3_item1,X3_item3,X3_item4,X2_item5,X3_item6,X3_item7,X3_item8,X3_item9,Inf,X3_item11,X3_item13,X3_item13,X3_item14,X3_item15</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">1,block3_trial001,"1,518 ms",2024-10-05T05:09:12-05:00,34,female,control,8,1,1,3,1,4,1,1,2,4,4,3,2,3,2,3,3,6,5,3,2,4,5,5,3,2,3,3,2,4,4,5</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">2,block3_trial002,"1,406 ms",04/09/2024,27,female,control,6,6,8,6,3,6,4,4,6,2,4,5,5,2,4,5,3,3,-99,4,3,4,6,4,4,6,5,5,3,4,5,4</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">3,block1_trial003,"1,608 ms",2024/01/03,24,nonbinary,control,3,5,5,5,2,5,2,4,6,8,3,5,2,,6,7,4,3,3,missing,2,3,5,-999,3,5,4,4,3,2,4,5</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">4,block2_trial004,"2,002 ms",2024-04-03T08:53:27Z,39,female,control,3,6,3,5,3,4,3,6,6,5,6,4,5,5,8,4,4,2,6,2,2,1,4,3,1,3,2,2,2,6,1,3</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">5,block1_trial005,"1,521 ms",17/02/2025,42,female,control,2,2,5,6,1,2,5,5,5,3,4,3,1,-99,3,8,3,6,4,4,3,5,5,5,6,4,2,5,4,1,6,4</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">6,block1_trial006,"1,342 ms","Apr 17, 2025",36,male,control,5,7,NA,5,3,2,4,3,4,4,1,3,2,3,3,8,3,3,4,4,5,3,8,5,6,4,6,4,5,6,2,</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">7,block4_trial007,915 ms,12.10.2024,33,female,control,4,1,5,1,2,8,4,3,2,2,1,3,2,2,3,5,2,3,3,3,5,4,2,2,5,missing,4,2,5,4,3,1</td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 </section>
 

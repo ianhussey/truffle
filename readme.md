@@ -2,7 +2,7 @@
 
 # truffle
 
-{truffle} is an R package for teaching purposes. It allows you to create datasets with various known effects to be rediscovered (truffles), and then create data processing headaches that have to be solved (dirt). Users must then search for truffles among the dirt. 
+{truffle} is an R package for teaching purposes. It allows you to create datasets with various known effects to be rediscovered (truffles, via `truffle_` functions), and then create data processing headaches that have to be solved (dirt, via `dirt_` functions). Users must then search for truffles among the dirt. 
 
 Generated datasets can include demographics variables and item-level Likert responses. Known effects (truffles) can be buried in the data including differences in sum-score means between conditions, known correlations between the different outcomes' sum-scores, known Cronbach's alpha values for each scale, etc. Data can also be made messy, contain impossible values, or contain missingness, to create data processing challenges.
 
@@ -12,7 +12,7 @@ The package's functions are currently quite fragile: it is designed for a specif
 
 ## Usage
 
-Generate data for the following:
+Generate data for the following experiment design (between groups factorial design with two groups):
 
 - Item level Likert data (no choice)
 - Between subjects experiment (control vs intervention) (2 conditions only, but can be renamed)
@@ -25,20 +25,28 @@ Generate data for the following:
 
 ```{r}
 library(truffle)
+library(knitr)
+library(kableExtra)
 
 dat_truffle <- 
-  generate_data_likert_two_conditions(n_per_condition = 200,
-                                      factors  = c("X1_latent", "X2_latent", "X3_latent"),
-                                      prefixes = c("X1_item", "X2_item", "X3_item"),
-                                      alpha = c(.70, .75, .80),
-                                      n_items = c(10, 7, 15),
-                                      n_levels = 7,
-                                      r_among_outcomes = c(0.50, .70, .40),
-                                      approx_d_between_groups = c(0.50, 0.20, 1.00),
-                                      seed = 42) 
+  truffle_likert(study_design = "factorial_between2",
+                 n_per_condition = 5,
+                 factors  = "X1_latent",
+                 prefixes = "X1_item",
+                 alpha = .70,
+                 n_items = 5,
+                 n_levels = 7,
+                 approx_d_between_groups = 0.50,
+                 seed = 42) |>
+  truffle_demographics()
 
-View(dat_truffle)
+dat_truffle |>
+  head(n = 10) |>
+  kable() |>
+  kable_classic(full_width = FALSE)
 ```
+
+Output:
 
 ![](./man/figures/truffle.png)
 
@@ -47,7 +55,7 @@ View(dat_truffle)
 Check that the sum scores conform to the predefined properties and that the item level data is approximately normal.
 
 ```{r}
-check_generated_data(dat_truffle)
+truffle_check(dat_truffle)
 ```
 
 
@@ -55,14 +63,38 @@ check_generated_data(dat_truffle)
 Generate data for the same study but make the demographics data mess, add missingness, and add impossible values to the item level data.
 
 ```{r}
-dat_truffle_and_dirt <- dat_truffle |>
-  add_demographics_messy() |>
-  mutate(completion_time = generate_reaction_times(n = n())) |>
-  add_missingness_messy(proportion_missing = .05) |>
-  add_impossible_values(proportion_impossible = .04, replacement_value = 8) |>
-  add_non_tidy_column(col = "block_trial") 
+dat_truffle_and_dirt <- 
+  # make truffle
+  ## Likert data with known effects
+  truffle_likert(n_per_condition = 5,
+                 factors  = "X1_latent",
+                 prefixes = "X1_item",
+                 alpha = .70,
+                 n_items = 5,
+                 n_levels = 7,
+                 approx_d_between_groups = 0.50,
+                 seed = 42) |>
+  ## RT data (no within or between effects baked in)
+  mutate(completion_time = truffle_reaction_times(n = n())) |>
+  # add dirt
+  dirt_demographics() |>
+  dirt_impossible_values(prop = .04, replacement_value = 8) |>
+  
+  dirt_numbers(cols = "completion_time") |>
+  dirt_dates(col = "date") |>
+  dirt_missingness(prop = .05) |>
+  dirt_untidy(col = "block_trial") |>
+  dirt_duplicates(prop = 0.05) |>
+  ## move some columns around before dirt_colnames() makes it hard
+  relocate(date, .after = "id") |>
+  relocate(completion_time, .after = "id") |>
+  relocate(block_trial, .after = "id")
+  dirt_colnames() 
 
-View(dat_truffle_and_dirt)
+dat_truffle_and_dirt |>
+  head(n = 10) |>
+  kable() |>
+  kable_classic(full_width = FALSE)
 ```
 
 Output:

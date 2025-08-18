@@ -1,7 +1,8 @@
 Study: depression RCT
 Data collected: 2025-08-17
-id,BlockTralOld,completion_time,date,age,gender,condition,X1 item1,X1_item2,X1_item3,X1_item4,X1 iem5
+id,block_trial,compleonTime,date,Age,gender,condition,~X1 item1,X1_item2,X1_item3,X1_item4,X1_item5
 1,block6_trial001,"1,311 ms","Oct  5, 2024",21,female,control,3,2,4,2,2
+2,block5_trial002,"1,250 ms",2024/02/12,42,FEMALE,control,5,2,7,2,6
 2,block5_trial002,"1,250 ms",2024/02/12,42,FEMALE,control,5,2,7,2,6
 3,block6_trial003,"1,250 ms",19/03/2022,21,female,control,1,3,3,5,6
 4,block4_trial004,"1,284 ms","Jun 10, 2023",24,female,control,1,5,4,2,6
@@ -9,6 +10,5 @@ id,BlockTralOld,completion_time,date,age,gender,condition,X1 item1,X1_item2,X1_i
 6,block5_trial006,"1,431 ms",28/04/2023,35,female,treatment,5,6,3,5,6
 7,block4_trial007,889 ms,01/07/2022,44,male,treatment,8,4,4,4,6
 8,block1_trial008,"1,676 ms",24.02.2025,30,male,treatment,6,7,5,5,6
-9,block1_trial009,"1,180 ms",2024-09-18,38,female,treatment,3,4,1,6,6
 9,block1_trial009,"1,180 ms",2024-09-18,38,female,treatment,3,4,1,6,6
 10,block1_trial010,"1,791 ms",12/03/2022,thirty nine,male,treatment,3,6,6,5,6
