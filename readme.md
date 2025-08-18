@@ -124,6 +124,14 @@ Output:
 
 ![](./man/figures/truffle_and_dirt.png)
 
+<br>
+
+Applied to a more complex design with three correlated outcomes, with more participants, and with broken headers, the data is now truly dirty. Perfect for training students to overcome the sort of data processing issues they'll encounter in the real world.
+
+![](./man/figures/truffle_and_dirt_complex.png)
+
+
+
 
 
 ## TODO
