@@ -41,7 +41,7 @@ truffle_check <- function(.data) {
   
   # 1) Build sum scores (discover scales automatically)
   item_block <- dplyr::select(.data, -dplyr::any_of(c("id","condition","gender","age")))
-  sums_appended <- truffle_check(item_block)
+  sums_appended <- truffle_sum_scores_by_scale(item_block)
   sum_cols <- grep("_sum$", names(sums_appended), value = TRUE)
   if (length(sum_cols) == 0L) stop("No *_sum columns found after truffle_check().")
   
