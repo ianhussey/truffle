@@ -188,7 +188,7 @@ Add dirt to the formatting of the reaction times: comma thousands separators and
 ```{r}
 
 dat_truffle_and_dirt <- dat_truffle_and_dirt |>
- dirt_numbers(cols = completion_time)
+ dirt_numbers(cols = "completion_time")
 
 dat_truffle_and_dirt |>
   head(n = 10) |>
