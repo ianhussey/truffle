@@ -12,11 +12,11 @@
 #' @return Numeric vector of reaction times (ms).
 #' @export
 #' @importFrom stats rlnorm
-generate_reaction_times <- function(n,
-                                    shift = 200,
-                                    meanlog = 7,
-                                    sdlog  = 0.30,
-                                    seed = NULL) {
+truffle_reaction_times <- function(n,
+                                   shift = 200,
+                                   meanlog = 7,
+                                   sdlog  = 0.30,
+                                   seed = NULL) {
   stopifnot(n > 0)
   if (!is.null(seed)) set.seed(seed)
   round(shift + rlnorm(n, meanlog = meanlog, sdlog = sdlog))

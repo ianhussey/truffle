@@ -14,7 +14,9 @@ execute:
   message: false
 ---
 
-{truffle} creates datasets with various known effects to be rediscovered, for teaching purposes. Datasets contain demographics data and item-level Likert responses. Known effects (truffles) can be buried in the data including differences in sum-score means between conditions, known correlations between the different outcomes' sum-scores, known Cronbach's alpha values for each scale, etc. Data can also be made messy, contain impossible values, or contain missingness, to create data processing challenges.
+{truffle} is an R package for teaching purposes. It allows you to create datasets with various known effects to be rediscovered (truffles), and then create data processing headaches that have to be solved (dirt). Users must then search for truffles among the dirt. 
+
+Generated datasets can include demographics variables and item-level Likert responses. Known effects (truffles) can be buried in the data including differences in sum-score means between conditions, known correlations between the different outcomes' sum-scores, known Cronbach's alpha values for each scale, etc. Data can also be made messy, contain impossible values, or contain missingness, to create data processing challenges.
 
 The package's functions are currently quite fragile: it is designed for a specific internal use case in our teaching and not (yet) highly flexible, nor does it contain tests or handle errors or make them visible. Currently it can only generate data for a single design: a between groups experiment with equal sample sizes.
 
@@ -58,15 +60,15 @@ library(kableExtra)
 ```{r}
 
 dat_truffle <- 
-  generate_data_likert_two_conditions(n_per_condition = 20,
-                                      factors  = "X1_latent",
-                                      prefixes = "X1_item",
-                                      alpha = .70,
-                                      n_items = 5,
-                                      n_levels = 7,
-                                      approx_d_between_groups = 0.50,
-                                      seed = 42) |>
-  add_demographics() 
+  truffle_likert(study_design = "factorial_between2",
+                 n_per_condition = 5,
+                 factors  = "X1_latent",
+                 prefixes = "X1_item",
+                 alpha = .70,
+                 n_items = 5,
+                 n_levels = 7,
+                 approx_d_between_groups = 0.50,
+                 seed = 42)
 
 dat_truffle |>
   head(n = 10) |>
@@ -75,15 +77,29 @@ dat_truffle |>
 
 ```
 
-### Sum scores by scale
+### Add demographics
+
+```{r}
+
+dat_truffle <- dat_truffle |>
+  truffle_demographics() 
+
+dat_truffle |>
+  head(n = 10) |>
+  kable() |>
+  kable_classic(full_width = FALSE)
+
+```
+
+### Calculate sum-scores by scale
 
 ```{r}
 
 dat_truffle_sumscores <- dat_truffle |>
-  add_sum_scores_by_scale() |>
-  select(condition, X1_sum) # X2_sum, X3_sum
+  truffle_sum_scores_by_scale() |>
+  select(condition, X1_sum) 
 
-dat_truffle |>
+dat_truffle_sumscores |>
   head(n = 10) |>
   kable() |>
   kable_classic(full_width = FALSE)
@@ -100,6 +116,7 @@ dat_truffle_sumscores |>
   mutate_if(is.numeric, round_half_up, digits = 2)
 
 ```
+
 ### Check generated data
 
 Check that the sum scores conform to the predefined properties and that the item level data is approximately normal.
@@ -108,28 +125,28 @@ Check that the sum scores conform to the predefined properties and that the item
 #| fig-height: 6
 #| fig-width: 10
 
-check_generated_data(dat_truffle)
+truffle_check(dat_truffle)
 
 ```
 
-## Create dirt
+## Add dirt
 
-### Messy demographics
+Generate data for the same study but add dirt, step by step.
 
-Generate data for the same study but make the demographics data mess, add missingness, and add impossible values to the item level data.
+### Demographics
 
 ```{r}
 
 dat_truffle_and_dirt <- 
-  generate_data_likert_two_conditions(n_per_condition = 20,
-                                      factors  = "X1_latent",
-                                      prefixes = "X1_item",
-                                      alpha = .70,
-                                      n_items = 5,
-                                      n_levels = 7,
-                                      approx_d_between_groups = 0.50,
-                                      seed = 42) |>
-  add_demographics_messy() 
+  truffle_likert(n_per_condition = 5,
+                 factors  = "X1_latent",
+                 prefixes = "X1_item",
+                 alpha = .70,
+                 n_items = 5,
+                 n_levels = 7,
+                 approx_d_between_groups = 0.50,
+                 seed = 42) |>
+  dirt_demographics() 
 
 dat_truffle_and_dirt |>
   head(n = 10) |>
@@ -143,7 +160,7 @@ dat_truffle_and_dirt |>
 ```{r}
 
 dat_truffle_and_dirt <- dat_truffle_and_dirt |>
-  add_impossible_values(proportion_impossible = .04, replacement_value = 8)
+  dirt_impossible_values(prop = .04, replacement_value = 8)
 
 dat_truffle_and_dirt |>
   head(n = 10) |>
@@ -152,29 +169,40 @@ dat_truffle_and_dirt |>
 
 ```
 
-### Generate reaction times
+### Number formatting 
+
+First generate reaction time data
 
 ```{r}
 
 dat_truffle_and_dirt <- dat_truffle_and_dirt |>
-  mutate(completion_time = generate_reaction_times(n = n()))
-
-dat_truffle_and_dirt |>
-  head(n = 10) |>
-  kable() |>
-  kable_classic(full_width = FALSE)
+  mutate(completion_time = truffle_reaction_times(n = n()))
 
 ggplot(dat_truffle_and_dirt, aes(completion_time)) +
   geom_histogram()
 
 ```
 
-### Messy number formatting
+Add dirt to the formatting of the reaction times: comma thousands separators and the "ms" suffix.
 
 ```{r}
 
 dat_truffle_and_dirt <- dat_truffle_and_dirt |>
-  mutate(completion_time = messy_numbers(completion_time))
+  mutate(completion_time = dirt_numbers(completion_time))
+
+dat_truffle_and_dirt |>
+  head(n = 10) |>
+  kable() |>
+  kable_classic(full_width = FALSE)
+
+```
+
+### Dates
+
+```{r}
+
+dat_truffle_and_dirt <- dat_truffle_and_dirt |>
+  dirt_dates(col = "date")
 
 dat_truffle_and_dirt |>
   head(n = 10) |>
@@ -185,10 +213,26 @@ dat_truffle_and_dirt |>
 
 ### Missingness
 
+MCAR missingness
+
+```{r}
+
+dat_truffle_and_dirt_temp <- dat_truffle_and_dirt |>
+  dirt_missingness(prop = .05, dirtier = FALSE) 
+
+dat_truffle_and_dirt_temp |>
+  head(n = 10) |>
+  kable() |>
+  kable_classic(full_width = FALSE)
+
+```
+
+MCAR missingness + inconsistent missingness labels
+
 ```{r}
 
 dat_truffle_and_dirt <- dat_truffle_and_dirt |>
-  add_missingness(proportion_missing = .05) 
+  dirt_missingness(prop = .05, dirtier = TRUE)
 
 dat_truffle_and_dirt |>
   head(n = 10) |>
@@ -197,12 +241,14 @@ dat_truffle_and_dirt |>
 
 ```
 
-### Messy missingness
+### Non-tidy columns
+
+With more than one data point per cell, ie both block and trial number.
 
 ```{r}
 
 dat_truffle_and_dirt <- dat_truffle_and_dirt |>
-  add_missingness_messy(proportion_missing = .05)
+  dirt_untidy(col = "block_trial")
 
 dat_truffle_and_dirt |>
   head(n = 10) |>
@@ -211,35 +257,7 @@ dat_truffle_and_dirt |>
 
 ```
 
-### Add block_trial
-
-```{r}
-
-dat_truffle_and_dirt <- dat_truffle_and_dirt |>
-  add_non_tidy_column(col = "block_trial")
-
-dat_truffle_and_dirt |>
-  head(n = 10) |>
-  kable() |>
-  kable_classic(full_width = FALSE)
-
-```
-
-### Messy dates
-
-```{r}
-
-dat_truffle_and_dirt <- dat_truffle_and_dirt |>
-  mutate(date = add_dates_messy(n = n()))
-
-dat_truffle_and_dirt |>
-  head(n = 10) |>
-  kable() |>
-  kable_classic(full_width = FALSE)
-
-```
-
-### Messy colnames
+### Colnames
 
 ```{r}
 
@@ -251,7 +269,7 @@ dat_truffle_and_dirt <- dat_truffle_and_dirt |>
   write_lines("dat_truffle_and_dirt.csv")
 
 dat_truffle_and_dirt <- dat_truffle_and_dirt |>
-  messy_colnames()
+  dirt_colnames()
 
 dat_truffle_and_dirt |>
   head(n = 10) |>
@@ -265,7 +283,7 @@ dat_truffle_and_dirt |>
 ```{r}
 
 dat_truffle_and_dirt <- dat_truffle_and_dirt |>
-  add_duplicates(prop = 0.05)
+  dirt_duplicates(prop = 0.05)
 
 dat_truffle_and_dirt |>
   head(n = 10) |>
@@ -274,12 +292,12 @@ dat_truffle_and_dirt |>
 
 ```
 
-### Messy headers
+### Headers
 
 ```{r}
 
 dat_truffle_and_dirt_with_header <- dat_truffle_and_dirt |>
-  add_messy_header_rows()
+  dirt_header_rows()
 
 dat_truffle_and_dirt_with_header |>
   head(n = 10) |>
@@ -291,9 +309,9 @@ dat_truffle_and_dirt_with_header |>
   readr::write_lines("dat_truffle_and_dirt_with_header.csv")
 
 # re-import later
-messy <- readr::read_csv("dat_truffle_and_dirt_with_header.csv")
+dirty <- readr::read_csv("dat_truffle_and_dirt_with_header.csv")
 
-messy |>
+dirty |>
   head(n = 10) |>
   kable() |>
   kable_classic(full_width = FALSE)
@@ -314,26 +332,30 @@ clean |>
 #| fig-width: 20
 
 dat_truffle_complex <- 
-  generate_data_likert_two_conditions(n_per_condition = 200,
-                                      factors  = c("X1_latent", "X2_latent", "X3_latent"),
-                                      prefixes = c("X1_item", "X2_item", "X3_item"),
-                                      alpha = c(.70, .75, .80),
-                                      n_items = c(10, 7, 15),
-                                      n_levels = 7,
-                                      r_among_outcomes = 0.50,
-                                      approx_d_between_groups = c(0.50, 0.20, 1.00),
-                                      seed = 42) 
+  truffle_likert(n_per_condition = 200,
+                 factors  = c("X1_latent", "X2_latent", "X3_latent"),
+                 prefixes = c("X1_item", "X2_item", "X3_item"),
+                 alpha = c(.70, .75, .80),
+                 n_items = c(10, 7, 15),
+                 n_levels = 7,
+                 r_among_outcomes = 0.50,
+                 approx_d_between_groups = c(0.50, 0.20, 1.00),
+                 seed = 42) 
 
 dat_truffle_complex |>
-  check_generated_data()
+  truffle_check()
 
 dat_truffle_and_dirt_complex <- dat_truffle_complex |>
-  add_demographics_messy() |>
-  mutate(completion_time = generate_reaction_times(n = n())) |>
-  add_missingness_messy(proportion_missing = .05) |>
-  add_impossible_values(proportion_impossible = .04, replacement_value = 8) |>
-  add_non_tidy_column(col = "block_trial") |>
-  add_messy_header_rows()
+  dirt_demographics() |>
+  dirt_impossible_values(prop = .04, replacement_value = 8) |>
+  mutate(completion_time = dirt_numbers(truffle_reaction_times(n = n()))) |>
+  dirt_dates(col = "date") |>
+  dirt_missingness(prop = .05) |>
+  dirt_untidy(col = "block_trial") |>
+  dirt_duplicates() |>
+  dirt_colnames() |>
+  dirt_header_rows()
+
 
 dat_truffle_and_dirt_complex |>
   readr::write_lines("dat_truffle_and_dirt_complex.csv")

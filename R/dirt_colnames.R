@@ -5,7 +5,7 @@
 #' Corruptions include partial case changes, inserted spaces/dots, added or
 #' dropped characters, prefixes/suffixes, occasional duplicates or reserved names.
 #'
-#' @param data A data.frame or tibble.
+#' @param .data A data.frame or tibble.
 #' @param prop Proportion of column names to corrupt (0–1). Default 0.5.
 #' @param seed Optional integer seed for reproducibility.
 #' @param allow_duplicates If TRUE, may introduce duplicate names (default TRUE).
@@ -25,23 +25,23 @@
 #'   agreeableness_sum_score = c(10, 9, 13),
 #'   reaction_time_ms = c(350, 420, 390)
 #' )
-#' bad <- messy_colnames(dat, prop = 0.6, seed = 123)
+#' bad <- dirt_colnames(dat, prop = 0.6, seed = 123)
 #' attr(bad, "name_map")
 #' }
-messy_colnames <- function(
-    data,
+dirt_colnames <- function(
+    .data,
     prop = 0.25,
     seed = NULL,
     allow_duplicates = TRUE,
     reserved_prob = 0.03
 ) {
-  stopifnot(is.data.frame(data))
+  stopifnot(is.data.frame(.data))
   if (!is.null(seed)) set.seed(seed)
   
-  nms <- names(data)
+  nms <- names(.data)
   n <- length(nms)
   k <- max(0, min(n, round(prop * n)))
-  if (k == 0) return(data)
+  if (k == 0) return(.data)
   
   pick <- sample(seq_len(n), k, replace = FALSE)
   
@@ -117,7 +117,7 @@ messy_colnames <- function(
   }
   
   # assign and attach map
-  names(data) <- new
-  attr(data, "name_map") <- data.frame(old = nms, new = new, stringsAsFactors = FALSE)
-  return(data)
+  names(.data) <- new
+  attr(.data, "name_map") <- data.frame(old = nms, new = new, stringsAsFactors = FALSE)
+  return(.data)
 }

@@ -4,19 +4,19 @@
 #' (`age`, `gender`) that intentionally include a mix of clean and messy entries.
 #' It is useful for teaching data cleaning and preprocessing tasks.
 #'
-#' @param dat A data frame. Must contain at least one column (e.g., `id`).
-#' @param p_messy_age Numeric scalar in [0,1]. Probability that `age` entries
+#' @param .data A data frame. Must contain at least one column (e.g., `id`).
+#' @param p_messy_age Numeric scalar in \eqn{[0,1]}. Probability that `age` entries
 #'   are "messy" (spelled-out words like "twenty one" or replaced with `"male"`
 #'   or `"female"`). Defaults to 0.05.
 #' @param gender_probs A named numeric vector giving probabilities for the base
 #'   gender categories (default: `c(male = 0.30, female = 0.70)`). Must sum to 1.
-#' @param p_age_in_gender Numeric scalar in [0,1]. Probability that `gender`
+#' @param p_age_in_gender Numeric scalar in \eqn{[0,1]}. Probability that `gender`
 #'   entries are replaced by numeric ages instead of text genders. Defaults to 0.05.
-#' @param p_fmt_misspell Numeric scalar in [0,1]. Probability that otherwise
+#' @param p_fmt_misspell Numeric scalar in \eqn{[0,1]}. Probability that otherwise
 #'   correct genders are altered with case formatting, misspellings, or replaced
 #'   with `"man"`/`"woman"`. Defaults to 0.10.
 #'
-#' @return A data frame containing all original columns of `dat`, plus two new
+#' @return A data frame containing all original columns of `.data`, plus two new
 #'   columns:
 #'   \describe{
 #'     \item{age}{Character vector of ages as numbers, spelled-out words, or
@@ -25,27 +25,27 @@
 #'       numbers, case variations, misspellings, or `"man"`/`"woman"`.}
 #'   }
 #'   Columns are ordered with `id` first, followed by `age`, `gender`, then the
-#'   remaining columns of `dat`.
+#'   remaining columns of `.data`.
 #'
 #' @examples
 #' \dontrun{
 #' set.seed(123)
 #' df <- data.frame(id = 1:5)
-#' add_demographics_messy(df)
+#' dirt_demographics(df)
 #' }
 #' 
 #' @export
 #' @importFrom dplyr mutate relocate
 #' @importFrom stats runif
-add_demographics_messy <- function(
-    dat,
+dirt_demographics <- function(
+    .data,
     p_messy_age      = 0.05,                  # age column: prob of messy entries
     gender_probs     = c(male = .29, female = .68, nonbinary = .03),
     p_age_in_gender  = 0.05,                  # gender column: prob replaced by a number age
     p_fmt_misspell   = 0.10                   # among correct genders, prob of tweaks
 ) {
-  stopifnot(is.data.frame(dat))
-  n <- nrow(dat)
+  stopifnot(is.data.frame(.data))
+  n <- nrow(.data)
   
   # ----- age (95% numeric 18:45; 5% spelled or 'male'/'female') -----
   spelled <- c(
@@ -97,7 +97,7 @@ add_demographics_messy <- function(
   }
   
   # ----- assemble & order -----
-  dat |>
+  .data |>
     dplyr::mutate(age = age_chr,
                   gender = gender_chr) |>
     dplyr::relocate(id, .before = 1) |>

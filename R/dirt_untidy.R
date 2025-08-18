@@ -1,11 +1,12 @@
-#' Add a "block_trial" Column to a Data Frame
+#' Add an untidy column to a data frame 
 #'
 #' This helper function adds a new column (by default called `"block_trial"`) 
 #' that combines a randomly sampled block number and a sequential trial number. 
 #' The resulting column is a character vector in the format 
-#' `"block<block>_trial<trial>"` (e.g., `"block3_trial005"`).
+#' `"block<block>_trial<trial>"` (e.g., `"block3_trial005"`), which breaks Tidy Data 
+#' principles.
 #'
-#' @param dat A data frame.
+#' @param .data A data frame.
 #' @param col A string giving the name of the new column (default: `"block_trial"`).
 #'
 #' @details
@@ -23,11 +24,11 @@
 #' library(dplyr)
 #'
 #' dat <- data.frame(id = 1:5)
-#' add_non_tidy_column(dat)
-#' add_non_tidy_column(dat, col = "trial_id")
+#' dirt_untidy(dat)
+#' dirt_untidy(dat, col = "trial_id")
 #' }
 #' 
 #' @export
-add_non_tidy_column <- function(dat, col = "block_trial") {
-  dplyr::mutate(dat, !!col := sprintf("block%d_trial%03d", sample(1:6, n(), 1), dplyr::row_number()))
+dirt_untidy <- function(.data, col = "block_trial") {
+  dplyr::mutate(.data, !!col := sprintf("block%d_trial%03d", sample(1:6, n(), 1), dplyr::row_number()))
 }

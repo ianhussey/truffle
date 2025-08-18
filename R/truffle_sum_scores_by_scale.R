@@ -5,7 +5,7 @@
 #' It can handle missingness and optional prorating, and appends the
 #' resulting columns to the input data frame.
 #'
-#' @param data A data.frame containing item-level data.
+#' @param .data A data.frame containing item-level data.
 #' @param id_regex A regular expression with a capturing group for the scale ID
 #'   (default: "^(X\\d+)").
 #' @param suffix A suffix for the resulting sum-score column names (default: "_sum").
@@ -15,11 +15,12 @@
 #' @param add_counts Logical; if TRUE, also append counts of non-missing items per scale.
 #' @param count_suffix Suffix for the count columns (default "_n").
 #'
-#' @return A data.frame equal to `data` with sum-score columns (and optionally
+#' @importFrom utils head
+#' @return A data.frame equal to `.data` with sum-score columns (and optionally
 #'   count columns) appended at the end.
 #' @export
-add_sum_scores_by_scale <- function(
-    data,
+truffle_sum_scores_by_scale <- function(
+    .data,
     id_regex = "^(X\\d+)",   # captures scale IDs like X1, X2, ...
     suffix   = "_sum",
     na_rm    = TRUE,
@@ -28,8 +29,8 @@ add_sum_scores_by_scale <- function(
     add_counts = FALSE,
     count_suffix = "_n"
 ) {
-  stopifnot(is.data.frame(data))
-  nms <- colnames(data)
+  stopifnot(is.data.frame(.data))
+  nms <- colnames(.data)
   
   # 1) Keep only columns matching the regex and extract IDs (X1, X2, ...)
   sel <- grepl(id_regex, nms, perl = TRUE)
@@ -57,7 +58,7 @@ add_sum_scores_by_scale <- function(
   # 4) Compute row-wise sums (with optional missingness handling)
   for (nm in names(idx)) {
     cols <- idx[[nm]]
-    X <- as.data.frame(lapply(data[, cols, drop = FALSE], to_num))
+    X <- as.data.frame(lapply(.data[, cols, drop = FALSE], to_num))
     k <- ncol(X)
     
     n_nonmiss <- rowSums(!is.na(X))
@@ -89,5 +90,5 @@ add_sum_scores_by_scale <- function(
   }
   
   # 6) Append to original data (sum/count columns at the end)
-  dplyr::bind_cols(data, new_cols)
+  dplyr::bind_cols(.data, new_cols)
 }

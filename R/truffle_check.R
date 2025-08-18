@@ -5,7 +5,7 @@
 #' scale sum scores, and (iii) item-level histograms by condition.
 #' The number of scales is discovered from column names (no need to be fixed at 3).
 #'
-#' @param dat A data frame containing item-level Likert data and a
+#' @param .data A data frame containing item-level Likert data and a
 #'   \code{condition} column with exactly two groups. Optional columns
 #'   \code{id}, \code{age}, \code{gender} are ignored in score creation.
 #'
@@ -18,7 +18,7 @@
 #'
 #' @examples
 #' \dontrun{
-#' out <- check_generated_data(dat)
+#' out <- truffle_check(dat)
 #' out$cohens_d
 #' out$r
 #' print(out$item_histograms)
@@ -28,25 +28,26 @@
 #' @importFrom dplyr select any_of bind_cols
 #' @importFrom tidyr pivot_longer
 #' @importFrom ggplot2 ggplot aes geom_histogram facet_wrap
-check_generated_data <- function(dat) {
-  stopifnot(is.data.frame(dat))
-  if (!("condition" %in% names(dat))) {
-    stop("`dat` must contain a `condition` column with two groups.")
+#' @importFrom stats na.omit cor
+truffle_check <- function(.data) {
+  stopifnot(is.data.frame(.data))
+  if (!("condition" %in% names(.data))) {
+    stop("`.data` must contain a `condition` column with two groups.")
   }
   # Ensure two-group design
-  if (length(unique(na.omit(dat$condition))) != 2L) {
+  if (length(unique(na.omit(.data$condition))) != 2L) {
     stop("`condition` must have exactly two non-missing levels.")
   }
   
   # 1) Build sum scores (discover scales automatically)
-  item_block <- dplyr::select(dat, -dplyr::any_of(c("id","condition","gender","age")))
-  sums_appended <- add_sum_scores_by_scale(item_block)
+  item_block <- dplyr::select(.data, -dplyr::any_of(c("id","condition","gender","age")))
+  sums_appended <- truffle_check(item_block)
   sum_cols <- grep("_sum$", names(sums_appended), value = TRUE)
-  if (length(sum_cols) == 0L) stop("No *_sum columns found after add_sum_scores_by_scale().")
+  if (length(sum_cols) == 0L) stop("No *_sum columns found after truffle_check().")
   
   # Keep only the sums; attach id and condition for analysis
   dat_sumcores <- dplyr::bind_cols(
-    dplyr::select(dat, dplyr::any_of(c("id","condition"))),
+    dplyr::select(.data, dplyr::any_of(c("id","condition"))),
     sums_appended[sum_cols]
   )
   
@@ -73,7 +74,7 @@ check_generated_data <- function(dat) {
   r_mat <- round(r_mat, 2)
   
   # 4) Item histograms by condition
-  item_histograms <- dat |>
+  item_histograms <- .data |>
     tidyr::pivot_longer(
       cols = starts_with("X"),
       names_to = "item",

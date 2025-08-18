@@ -75,7 +75,7 @@
   links <- character(0)
   if (K >= 2) {
     if (is.null(corr_latent)) {
-      stop("corr_latent must be provided (scalar or K×K matrix) when K >= 2.")
+      stop("corr_latent must be provided (scalar or K*K matrix) when K > 1.")
     }
     
     # Build latent correlation matrix R

@@ -4,7 +4,7 @@
 #' while preserving mean differences between experimental conditions. 
 #' Shared cutpoints are applied across groups to ensure comparability.
 #'
-#' @param data A data frame or matrix of continuous variables (e.g., from 
+#' @param .data A data frame or matrix of continuous variables (e.g., from 
 #'   \code{lavaan::simulateData}).
 #' @param n_levels Integer or vector specifying the number of Likert levels 
 #'   per column (default = 7).
@@ -32,7 +32,7 @@
 #' library(lavaan)
 #' mod <- "F1 =~ x1 + x2 + x3"
 #' dat <- simulateData(mod, sample.nobs = 100)
-#' likert_dat <- continuous_to_likert_by_condition(
+#' likert_dat <- .continuous_to_likert_by_condition(
 #'   dat,
 #'   n_levels = 5,
 #'   ordered = TRUE,
@@ -43,19 +43,18 @@
 #' head(likert_dat)
 #' }
 #'
-#' @export
 #' @importFrom stats sd dnorm
 #' @importFrom latent2likert discretize_density
-continuous_to_likert_by_condition <- function(data,
-                                              n_levels = 7,
-                                              labels   = NULL,
-                                              ordered  = TRUE,
-                                              method   = c("per_column", "fixed"),
-                                              mu_ref   = 0,
-                                              sd_ref   = 1) {
+.continuous_to_likert_by_condition <- function(.data,
+                                               n_levels = 7,
+                                               labels   = NULL,
+                                               ordered  = TRUE,
+                                               method   = c("per_column", "fixed"),
+                                               mu_ref   = 0,
+                                               sd_ref   = 1) {
   method <- match.arg(method)
-  stopifnot(is.matrix(data) || is.data.frame(data))
-  X <- as.data.frame(data)
+  stopifnot(is.matrix(.data) || is.data.frame(.data))
+  X <- as.data.frame(.data)
   p <- ncol(X)
   
   # recycle n_levels if scalar
@@ -81,7 +80,7 @@ continuous_to_likert_by_condition <- function(data,
         lab_list[[j]] <- labels
       }
     } else {
-      stop("labels must be NULL, a list (length = ncol(data)), or a character vector of length n_levels.")
+      stop("labels must be NULL, a list (length = ncol(.data)), or a character vector of length n_levels.")
     }
   }
   
