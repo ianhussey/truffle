@@ -30,6 +30,7 @@ Adding mess, dirt, and data processing challenges:
 
 - {wakefield} and {fabricatr} :  As well as generating data, both packages also allow you to add problems. 
 - [{messy}](https://github.com/nrennie/messy) : A cool package for adding messiness to existing data. However, I wanted to make much, much more mess.
+- [{toddler}](https://github.com/rbcavanaugh/toddler) : Very well named and adds even more mess than {messy}, but I wanted even more chaos.
 
 
 
