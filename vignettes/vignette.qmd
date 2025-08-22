@@ -401,7 +401,7 @@ Which items are used in the sum scoring can be specified in a number of ways, e.
 
 dat_truffle_and_dirt <- 
   truffle_likert(study_design = "factorial_between2",
-                 n_per_condition = 5,
+                 n_per_condition = 10,
                  factors  = "X1_latent",
                  prefixes = "X1_item",
                  alpha = .70,
@@ -420,7 +420,7 @@ dat_truffle_and_dirt_snuffled <- dat_truffle_and_dirt |>
                      id_col = "id")
 
 dat_truffle_and_dirt_snuffled |>
-  head(n = 10) |>
+  head(n = 20) |>
   kable() |>
   kable_classic(full_width = FALSE)
 

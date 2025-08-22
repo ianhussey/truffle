@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Ian Hussey">
-<meta name="dcterms.date" content="2025-08-18">
+<meta name="dcterms.date" content="2025-08-22">
 
 <title>truffles vignette</title>
 <style>
@@ -106,6 +106,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#headers" id="toc-headers" class="nav-link" data-scroll-target="#headers">Headers</a></li>
   </ul></li>
   <li><a href="#truffle-and-dirt---more-complicated" id="toc-truffle-and-dirt---more-complicated" class="nav-link" data-scroll-target="#truffle-and-dirt---more-complicated">Truffle and dirt - more complicated</a></li>
+  <li><a href="#snuffle-functions-to-help-you-find-truffles" id="toc-snuffle-functions-to-help-you-find-truffles" class="nav-link" data-scroll-target="#snuffle-functions-to-help-you-find-truffles">Snuffle functions to help you find truffles</a>
+  <ul class="collapse">
+  <li><a href="#sum-scores" id="toc-sum-scores" class="nav-link" data-scroll-target="#sum-scores">Sum scores</a></li>
+  </ul></li>
   </ul>
 </nav>
 </div>
@@ -132,7 +136,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">August 18, 2025</p>
+      <p class="date">August 22, 2025</p>
     </div>
   </div>
   
@@ -2489,6 +2493,410 @@ $item_histograms</code></pre>
 </table>
 </div>
 </div>
+</section>
+<section id="snuffle-functions-to-help-you-find-truffles" class="level2">
+<h2 class="anchored" data-anchor-id="snuffle-functions-to-help-you-find-truffles">Snuffle functions to help you find truffles</h2>
+<p><code>snuffle_</code> functions are designed to help the user find truffles (underlying effects) among the dirt (data processing issues).</p>
+<section id="sum-scores" class="level3">
+<h3 class="anchored" data-anchor-id="sum-scores">Sum scores</h3>
+<p>Calculating sum scores is an extremely common task, and yet there are a surprising number of ways to mess it up given impossible scores in the dataset, missingness, and reversed items.</p>
+<p><code>snuffle_sum_scores()</code> calculates sum scores, imputing missing values from each participant’s mean. There are, of course, much better and more sophisticated ways to deal with item missingness, but this is probably the most common way - so much so that it’s often not even reported in articles. The function also excludes data that are beyond the scale’s response bounds (ie impossible values), and returns diagnostics on the number of missing items, which items were missing, the number of impossible values and which were missing. It can also reverse score a vector of specified items.</p>
+<p>Which items are used in the sum scoring can be specified in a number of ways, e.g., <code>select()</code>ing the items earlier in the chunk, or using a common naming prefix to select them (e.g., starting with “X1_”), or even a more sophisticated regex call to find the desired columns.</p>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>dat_truffle_and_dirt <span class="ot">&lt;-</span> </span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">truffle_likert</span>(<span class="at">study_design =</span> <span class="st">"factorial_between2"</span>,</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>                 <span class="at">n_per_condition =</span> <span class="dv">10</span>,</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>                 <span class="at">factors  =</span> <span class="st">"X1_latent"</span>,</span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>                 <span class="at">prefixes =</span> <span class="st">"X1_item"</span>,</span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>                 <span class="at">alpha =</span> .<span class="dv">70</span>,</span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>                 <span class="at">n_items =</span> <span class="dv">5</span>,</span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>                 <span class="at">n_levels =</span> <span class="dv">7</span>,</span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>                 <span class="at">approx_d_between_groups =</span> <span class="fl">0.50</span>,</span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a>                 <span class="at">seed =</span> <span class="dv">42</span>) <span class="sc">|&gt;</span></span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">truffle_demographics</span>() <span class="sc">|&gt;</span></span>
+<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dirt_missingness</span>(<span class="at">prop =</span> .<span class="dv">10</span>, <span class="at">dirtier =</span> <span class="cn">FALSE</span>) <span class="sc">|&gt;</span></span>
+<span id="cb25-13"><a href="#cb25-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dirt_impossible_values</span>(<span class="at">prop =</span> .<span class="dv">04</span>, <span class="at">replacement_value =</span> <span class="dv">8</span>)</span>
+<span id="cb25-14"><a href="#cb25-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-15"><a href="#cb25-15" aria-hidden="true" tabindex="-1"></a>dat_truffle_and_dirt_snuffled <span class="ot">&lt;-</span> dat_truffle_and_dirt <span class="sc">|&gt;</span></span>
+<span id="cb25-16"><a href="#cb25-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">snuffle_sum_scores</span>(<span class="st">"X1_"</span>, </span>
+<span id="cb25-17"><a href="#cb25-17" aria-hidden="true" tabindex="-1"></a>                     <span class="at">min =</span> <span class="dv">1</span>, </span>
+<span id="cb25-18"><a href="#cb25-18" aria-hidden="true" tabindex="-1"></a>                     <span class="at">max =</span> <span class="dv">7</span>, </span>
+<span id="cb25-19"><a href="#cb25-19" aria-hidden="true" tabindex="-1"></a>                     <span class="at">id_col =</span> <span class="st">"id"</span>)</span>
+<span id="cb25-20"><a href="#cb25-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-21"><a href="#cb25-21" aria-hidden="true" tabindex="-1"></a>dat_truffle_and_dirt_snuffled <span class="sc">|&gt;</span></span>
+<span id="cb25-22"><a href="#cb25-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(<span class="at">n =</span> <span class="dv">20</span>) <span class="sc">|&gt;</span></span>
+<span id="cb25-23"><a href="#cb25-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>() <span class="sc">|&gt;</span></span>
+<span id="cb25-24"><a href="#cb25-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_classic</span>(<span class="at">full_width =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<table class="lightable-classic caption-top table table-sm table-striped small" data-quarto-postprocess="true">
+<thead>
+<tr class="header">
+<th style="text-align: right;" data-quarto-table-cell-role="th">id</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">age</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">gender</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">condition</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">X1_item1</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">X1_item2</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">X1_item3</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">X1_item4</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">X1_item5</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">X1_n_nonmissing</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">X1_sum</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">X1_items</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">X1_reversed_items</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">X1_n_impossible</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">X1_impossible_items</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">41</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">9</td>
+<td style="text-align: left;">X1_item1, X1_item2, X1_item3, X1_item4, X1_item5</td>
+<td style="text-align: left;"></td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">19</td>
+<td style="text-align: left;">male</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">24</td>
+<td style="text-align: left;">X1_item1, X1_item2, X1_item3, X1_item4, X1_item5</td>
+<td style="text-align: left;"></td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">42</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">18</td>
+<td style="text-align: left;">X1_item1, X1_item2, X1_item3, X1_item4, X1_item5</td>
+<td style="text-align: left;"></td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">45</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">13</td>
+<td style="text-align: left;">X1_item1, X1_item2, X1_item3, X1_item4, X1_item5</td>
+<td style="text-align: left;"></td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">28</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">19</td>
+<td style="text-align: left;">X1_item1, X1_item2, X1_item3, X1_item4, X1_item5</td>
+<td style="text-align: left;"></td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">31</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">21</td>
+<td style="text-align: left;">X1_item1, X1_item2, X1_item3, X1_item4, X1_item5</td>
+<td style="text-align: left;"></td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">19</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">10</td>
+<td style="text-align: left;">X1_item1, X1_item2, X1_item3, X1_item4, X1_item5</td>
+<td style="text-align: left;"></td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">X1_item2</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">45</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">19</td>
+<td style="text-align: left;">X1_item1, X1_item2, X1_item3, X1_item4, X1_item5</td>
+<td style="text-align: left;"></td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">9</td>
+<td style="text-align: right;">19</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: left;">X1_item1, X1_item2, X1_item3, X1_item4, X1_item5</td>
+<td style="text-align: left;"></td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">X1_item2</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">10</td>
+<td style="text-align: right;">44</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">control</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">21</td>
+<td style="text-align: left;">X1_item1, X1_item2, X1_item3, X1_item4, X1_item5</td>
+<td style="text-align: left;"></td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">11</td>
+<td style="text-align: right;">27</td>
+<td style="text-align: left;">nonbinary</td>
+<td style="text-align: left;">treatment</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">10</td>
+<td style="text-align: left;">X1_item1, X1_item2, X1_item3, X1_item4, X1_item5</td>
+<td style="text-align: left;"></td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">X1_item4</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">12</td>
+<td style="text-align: right;">42</td>
+<td style="text-align: left;">male</td>
+<td style="text-align: left;">treatment</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">27</td>
+<td style="text-align: left;">X1_item1, X1_item2, X1_item3, X1_item4, X1_item5</td>
+<td style="text-align: left;"></td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">13</td>
+<td style="text-align: right;">45</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">treatment</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">10</td>
+<td style="text-align: left;">X1_item1, X1_item2, X1_item3, X1_item4, X1_item5</td>
+<td style="text-align: left;"></td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">14</td>
+<td style="text-align: right;">39</td>
+<td style="text-align: left;">male</td>
+<td style="text-align: left;">treatment</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">19</td>
+<td style="text-align: left;">X1_item1, X1_item2, X1_item3, X1_item4, X1_item5</td>
+<td style="text-align: left;"></td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">15</td>
+<td style="text-align: right;">22</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">treatment</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">23</td>
+<td style="text-align: left;">X1_item1, X1_item2, X1_item3, X1_item4, X1_item5</td>
+<td style="text-align: left;"></td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">16</td>
+<td style="text-align: right;">27</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">treatment</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">21</td>
+<td style="text-align: left;">X1_item1, X1_item2, X1_item3, X1_item4, X1_item5</td>
+<td style="text-align: left;"></td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">17</td>
+<td style="text-align: right;">34</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">treatment</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: left;">X1_item1, X1_item2, X1_item3, X1_item4, X1_item5</td>
+<td style="text-align: left;"></td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">18</td>
+<td style="text-align: right;">34</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">treatment</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">22</td>
+<td style="text-align: left;">X1_item1, X1_item2, X1_item3, X1_item4, X1_item5</td>
+<td style="text-align: left;"></td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">19</td>
+<td style="text-align: right;">22</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">treatment</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">27</td>
+<td style="text-align: left;">X1_item1, X1_item2, X1_item3, X1_item4, X1_item5</td>
+<td style="text-align: left;"></td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">X1_item2</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">20</td>
+<td style="text-align: right;">20</td>
+<td style="text-align: left;">female</td>
+<td style="text-align: left;">treatment</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">10</td>
+<td style="text-align: left;">X1_item1, X1_item2, X1_item3, X1_item4, X1_item5</td>
+<td style="text-align: left;"></td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;"></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
 </section>
 
 </main>
