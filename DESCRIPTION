@@ -1,6 +1,6 @@
 Package: truffle
 Title: Tools to create datasets with various known effects to be rediscovered, for teaching purposes
-Version: 0.1.2
+Version: 0.1.3
 Authors@R: person("Ian", "Hussey", 
 	                email = "ian.hussey@unibe.ch", 
                   role = c("aut", "cre"),
