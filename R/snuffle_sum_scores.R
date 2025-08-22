@@ -255,10 +255,13 @@ snuffle_sum_scores <- function(.data,
   out <- .compute_sum_and_counts(out, vars, sum_col, n_col, items_col)
   
   # Attach diagnostics and reversed-items column
-  out |>
+  out <- out |>
     dplyr::mutate(
-      !!rev_items_col := if (length(vars_to_reverse) == 0L) "" else paste(vars_to_reverse, collapse = ", "),
+      !!rev_items_col := if (length(vars_to_reverse) == 0L) NA_character_ 
+      else paste(vars_to_reverse, collapse = ", "),
       !!imp_n_col     := diag$n_imp,
-      !!imp_items_col := diag$imp_items
+      !!imp_items_col := ifelse(diag$imp_items == "", NA_character_, diag$imp_items)
     )
+  
+  return(out)
 }
