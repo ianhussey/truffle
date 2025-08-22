@@ -138,13 +138,15 @@
   df <- dplyr::select(.data, dplyr::all_of(vars))
   .check_numeric_integer_like(df, "scoring step")
   
+  k <- length(vars)  # total number of items
+  
   .data |>
     dplyr::mutate(
-      !!n_name := rowSums(!is.na(dplyr::pick(dplyr::all_of(vars)))),
-      !!sum_name := ifelse(
+      !!n_name := rowSums(!is.na(dplyr::pick(dplyr::all_of(vars)))),           # non-missing count (for info)
+      !!sum_name := dplyr::if_else(
         .data[[n_name]] == 0,
-        NA_real_,
-        rowMeans(dplyr::pick(dplyr::all_of(vars)), na.rm = TRUE) * .data[[n_name]]
+        NA_real_,                                                               # all missing -> NA
+        rowMeans(dplyr::pick(dplyr::all_of(vars)), na.rm = TRUE) * k            # mean-imputed full-length sum
       ),
       !!items_name := paste(vars, collapse = ", ")
     )
