@@ -14,10 +14,13 @@ Depends:
     R (>= 4.1.0),
     rlang,
     lavaan,
+    tibble,
     readr,
     dplyr,
     tidyr,
     tidyselect,
+    purrr,
+    stringr,
     latent2likert,
     ggplot2,
     missMethods
