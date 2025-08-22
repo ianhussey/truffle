@@ -426,5 +426,19 @@ dat_truffle_and_dirt_snuffled |>
 
 ```
 
+```{r}
+#| eval: false
+#| include: false
+
+md_table <- dat_truffle_and_dirt_snuffled |>
+  head(n = 20) |>
+  kable(format = "markdown") 
+
+cat(md_table)
+
+```
+
+
+
 
 
