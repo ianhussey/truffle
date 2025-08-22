@@ -172,6 +172,7 @@
 #' \itemize{
 #'   \item `<prefix>sumscore` — sum score over available items (`NA` if all missing)
 #'   \item `<prefix>nonmissing_n` — count of non-missing items per row.
+#'   \item `<prefix>complete_data` — are all items per row non-missing.
 #'   \item `<prefix>items` — comma-separated list of items included.
 #'   \item `<prefix>items_reversed` — comma-separated list of reversed items (constant per row).
 #'   \item `<prefix>impossible_n` — row-wise count of impossible values observed pre-cleaning.
@@ -228,16 +229,17 @@ snuffle_sum_scores <- function(.data,
   vars <- .select_scale_vars(.data, scale_identifier, regex)
   
   # Output names
-  prefix <- output_prefix %||% scale_identifier
+  prefix        <- output_prefix %||% scale_identifier
   sum_col       <- paste0(prefix, "sumscore")
   n_col         <- paste0(prefix, "nonmissing_n")
   items_col     <- paste0(prefix, "items")
   rev_items_col <- paste0(prefix, "items_reversed")
   imp_n_col     <- paste0(prefix, "impossible_n")
   imp_items_col <- paste0(prefix, "impossible_items")
+  complete_col  <- paste0(prefix, "complete_data")
   
   # Diagnostics (before cleaning)
-  diag <- .flag_impossible(.data, vars, min, max)
+  diagnostics <- .flag_impossible(.data, vars, min, max)
   
   # Clean → reverse → score
   out <- .clean_impossible(.data, vars, min, max)
@@ -254,13 +256,17 @@ snuffle_sum_scores <- function(.data,
   out <- .reverse_score_vars(out, vars_to_reverse, min, max)
   out <- .compute_sum_and_counts(out, vars, sum_col, n_col, items_col)
   
-  # Attach diagnostics and reversed-items column
+  # Number of items actually used for this scale
+  n_items <- length(vars)
+  
+  # Attach diagnostics, reversed-items, and complete_data flag
   out <- out |>
     dplyr::mutate(
-      !!rev_items_col := if (length(vars_to_reverse) == 0L) NA_character_ 
-      else paste(vars_to_reverse, collapse = ", "),
-      !!imp_n_col     := diag$n_imp,
-      !!imp_items_col := ifelse(diag$imp_items == "", NA_character_, diag$imp_items)
+      !!complete_col  := .data[[n_col]] == n_items,
+      !!rev_items_col := if (length(vars_to_reverse) == 0L) NA_character_
+                         else paste(vars_to_reverse, collapse = ", "),
+      !!imp_n_col     := diagnostics$n_imp,
+      !!imp_items_col := dplyr::na_if(diagnostics$imp_items, "")
     )
   
   return(out)

@@ -39,6 +39,7 @@ A tibble containing the original data plus:
 \itemize{
 \item \verb{<prefix>sumscore} — sum score over available items (\code{NA} if all missing)
 \item \verb{<prefix>nonmissing_n} — count of non-missing items per row.
+\item \verb{<prefix>complete_data} — are all items per row non-missing.
 \item \verb{<prefix>items} — comma-separated list of items included.
 \item \verb{<prefix>items_reversed} — comma-separated list of reversed items (constant per row).
 \item \verb{<prefix>impossible_n} — row-wise count of impossible values observed pre-cleaning.
