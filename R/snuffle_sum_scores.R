@@ -150,6 +150,7 @@
     )
 }
 
+
 #' Score Likert-style items with cleaning, optional reverse-scoring, and diagnostics
 #'
 #' Cleans out-of-range values to `NA`, optionally reverse-scores a subset of items,
@@ -169,11 +170,11 @@
 #'
 #' @return A tibble containing the original data plus:
 #' \itemize{
-#'   \item `<prefix>sum` — sum score over available items (`NA` if all missing)
-#'   \item `<prefix>n_nonmissing` — count of non-missing items per row.
+#'   \item `<prefix>sumscore` — sum score over available items (`NA` if all missing)
+#'   \item `<prefix>nonmissing_n` — count of non-missing items per row.
 #'   \item `<prefix>items` — comma-separated list of items included.
-#'   \item `<prefix>reversed_items` — comma-separated list of reversed items (constant per row).
-#'   \item `<prefix>n_impossible` — row-wise count of impossible values observed pre-cleaning.
+#'   \item `<prefix>items_reversed` — comma-separated list of reversed items (constant per row).
+#'   \item `<prefix>impossible_n` — row-wise count of impossible values observed pre-cleaning.
 #'   \item `<prefix>impossible_items` — row-wise comma-separated list of items with impossible values.
 #' }
 #'
@@ -229,7 +230,7 @@ snuffle_sum_scores <- function(.data,
   # Output names
   prefix <- output_prefix %||% scale_identifier
   sum_col       <- paste0(prefix, "sumscore")
-  n_col         <- paste0(prefix, "n_nonmissing")
+  n_col         <- paste0(prefix, "nonmissing_n")
   items_col     <- paste0(prefix, "items")
   rev_items_col <- paste0(prefix, "items_reversed")
   imp_n_col     <- paste0(prefix, "impossible_n")

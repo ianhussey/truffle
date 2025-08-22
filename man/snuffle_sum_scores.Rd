@@ -37,11 +37,11 @@ when \code{reverse_regex = TRUE}.}
 \value{
 A tibble containing the original data plus:
 \itemize{
-\item \verb{<prefix>sum} — sum score over available items (\code{NA} if all missing)
-\item \verb{<prefix>n_nonmissing} — count of non-missing items per row.
+\item \verb{<prefix>sumscore} — sum score over available items (\code{NA} if all missing)
+\item \verb{<prefix>nonmissing_n} — count of non-missing items per row.
 \item \verb{<prefix>items} — comma-separated list of items included.
-\item \verb{<prefix>reversed_items} — comma-separated list of reversed items (constant per row).
-\item \verb{<prefix>n_impossible} — row-wise count of impossible values observed pre-cleaning.
+\item \verb{<prefix>items_reversed} — comma-separated list of reversed items (constant per row).
+\item \verb{<prefix>impossible_n} — row-wise count of impossible values observed pre-cleaning.
 \item \verb{<prefix>impossible_items} — row-wise comma-separated list of items with impossible values.
 }
 }
