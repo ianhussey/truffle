@@ -161,6 +161,8 @@
 #' @param .data A data frame or tibble of responses.
 #' @param scale_identifier Character; prefix or regex used to select item columns (see `regex`).
 #' @param min,max Integer-like lower/upper bounds (inclusive) for valid responses.
+#' @param impute Logical; if `TRUE`, impute sum scores using participant's mean score. If `FALSE`,
+#'   only participants without complete and possible data have sum score = `NA`.
 #' @param id_col Optional character: name of a unique identifier column to check for duplicates.
 #' @param regex Logical; if `TRUE`, treat `scale_identifier` as a regex; otherwise as a prefix.
 #' @param output_prefix Optional character used to name derived columns. Defaults to `scale_identifier`.
@@ -171,12 +173,12 @@
 #' @return A tibble containing the original data plus:
 #' \itemize{
 #'   \item `<prefix>sumscore` — sum score over available items (`NA` if all missing)
+#'   \item `<prefix>complete_data` — are all items per row non-missing and possible
 #'   \item `<prefix>nonmissing_n` — count of non-missing items per row.
-#'   \item `<prefix>complete_data` — are all items per row non-missing.
-#'   \item `<prefix>items` — comma-separated list of items included.
-#'   \item `<prefix>items_reversed` — comma-separated list of reversed items (constant per row).
 #'   \item `<prefix>impossible_n` — row-wise count of impossible values observed pre-cleaning.
 #'   \item `<prefix>impossible_items` — row-wise comma-separated list of items with impossible values.
+#'   \item `<prefix>items` — comma-separated list of items included.
+#'   \item `<prefix>items_reversed` — comma-separated list of reversed items (constant per row).
 #' }
 #'
 #' @details
@@ -200,13 +202,15 @@
 #' @export
 snuffle_sum_scores <- function(.data,
                                scale_identifier,
-                               min, max,
+                               min, 
+                               max,
+                               impute = FALSE,
                                id_col = NULL,
                                regex = FALSE,
                                output_prefix = NULL,
                                reverse = NULL,
                                reverse_regex = FALSE) {
-  stopifnot(is.numeric(min), is.numeric(max), min < max)
+  stopifnot(is.numeric(min), is.numeric(max), min < max, is.logical(impute))
   
   if (!inherits(.data, "data.frame")) {
     rlang::abort("`.data` must be a rectangular data structure coercible to a data frame.")
@@ -268,26 +272,32 @@ snuffle_sum_scores <- function(.data,
       !!imp_n_col     := diagnostics$n_imp,
       !!imp_items_col := dplyr::na_if(diagnostics$imp_items, "")
     )
-  # 
-  # # Collect derived columns in the desired order
-  # derived_cols <- c(
-  #   complete_col,
-  #   sum_col,
-  #   items_col,
-  #   n_col,
-  #   rev_items_col,
-  #   imp_n_col,
-  #   imp_items_col
-  # )
-  # 
-  # # Relocate them in that order
-  # if (!is.null(id_col)) {
-  #   out <- out |>
-  #     dplyr::relocate(dplyr::all_of(derived_cols), .after = dplyr::all_of(id_col))
-  # } else {
-  #   out <- out |>
-  #     dplyr::relocate(dplyr::all_of(derived_cols), .after = dplyr::last_col())
-  # }
+  
+  # If not imputing, wipe out partial sum scores
+  if (!isTRUE(impute)) {
+    out <- out |>
+      dplyr::mutate(
+        !!sum_col := dplyr::if_else(.data[[complete_col]], .data[[sum_col]], NA_real_)
+      )
+  }
+  
+  # after you've created all derived columns:
+  derived_cols <- c(
+    sum_col,
+    complete_col,
+    n_col,
+    imp_n_col,
+    imp_items_col,
+    items_col,
+    rev_items_col
+  )
+  
+  # preserve current order of non-derived columns, then append derived columns
+  out <- out |>
+    dplyr::select(
+      dplyr::all_of(setdiff(names(out), derived_cols)),
+      dplyr::all_of(derived_cols)
+    )
   
   return(out)
 }

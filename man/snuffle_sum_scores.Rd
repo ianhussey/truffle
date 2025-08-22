@@ -9,6 +9,7 @@ snuffle_sum_scores(
   scale_identifier,
   min,
   max,
+  impute = FALSE,
   id_col = NULL,
   regex = FALSE,
   output_prefix = NULL,
@@ -22,6 +23,9 @@ snuffle_sum_scores(
 \item{scale_identifier}{Character; prefix or regex used to select item columns (see \code{regex}).}
 
 \item{min, max}{Integer-like lower/upper bounds (inclusive) for valid responses.}
+
+\item{impute}{Logical; if \code{TRUE}, impute sum scores using participant's mean score. If \code{FALSE},
+only participants without complete and possible data have sum score = \code{NA}.}
 
 \item{id_col}{Optional character: name of a unique identifier column to check for duplicates.}
 
@@ -38,12 +42,12 @@ when \code{reverse_regex = TRUE}.}
 A tibble containing the original data plus:
 \itemize{
 \item \verb{<prefix>sumscore} — sum score over available items (\code{NA} if all missing)
+\item \verb{<prefix>complete_data} — are all items per row non-missing and possible
 \item \verb{<prefix>nonmissing_n} — count of non-missing items per row.
-\item \verb{<prefix>complete_data} — are all items per row non-missing.
-\item \verb{<prefix>items} — comma-separated list of items included.
-\item \verb{<prefix>items_reversed} — comma-separated list of reversed items (constant per row).
 \item \verb{<prefix>impossible_n} — row-wise count of impossible values observed pre-cleaning.
 \item \verb{<prefix>impossible_items} — row-wise comma-separated list of items with impossible values.
+\item \verb{<prefix>items} — comma-separated list of items included.
+\item \verb{<prefix>items_reversed} — comma-separated list of reversed items (constant per row).
 }
 }
 \description{
