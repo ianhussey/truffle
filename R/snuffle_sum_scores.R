@@ -228,11 +228,11 @@ snuffle_sum_scores <- function(.data,
   
   # Output names
   prefix <- output_prefix %||% scale_identifier
-  sum_col       <- paste0(prefix, "sum")
+  sum_col       <- paste0(prefix, "sumscore")
   n_col         <- paste0(prefix, "n_nonmissing")
   items_col     <- paste0(prefix, "items")
-  rev_items_col <- paste0(prefix, "reversed_items")
-  imp_n_col     <- paste0(prefix, "n_impossible")
+  rev_items_col <- paste0(prefix, "items_reversed")
+  imp_n_col     <- paste0(prefix, "impossible_n")
   imp_items_col <- paste0(prefix, "impossible_items")
   
   # Diagnostics (before cleaning)
