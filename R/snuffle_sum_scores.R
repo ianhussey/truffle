@@ -268,6 +268,26 @@ snuffle_sum_scores <- function(.data,
       !!imp_n_col     := diagnostics$n_imp,
       !!imp_items_col := dplyr::na_if(diagnostics$imp_items, "")
     )
+  # 
+  # # Collect derived columns in the desired order
+  # derived_cols <- c(
+  #   complete_col,
+  #   sum_col,
+  #   items_col,
+  #   n_col,
+  #   rev_items_col,
+  #   imp_n_col,
+  #   imp_items_col
+  # )
+  # 
+  # # Relocate them in that order
+  # if (!is.null(id_col)) {
+  #   out <- out |>
+  #     dplyr::relocate(dplyr::all_of(derived_cols), .after = dplyr::all_of(id_col))
+  # } else {
+  #   out <- out |>
+  #     dplyr::relocate(dplyr::all_of(derived_cols), .after = dplyr::last_col())
+  # }
   
   return(out)
 }
