@@ -6,18 +6,6 @@
 #'   (b) a single-group cross-sectional design with specified latent correlations
 #'       ("crosssectional").
 #'
-#' @details
-#' The base measurement model and latent covariance structure are produced by
-#' the internal helper \code{.make_lavaan_kfactor_corr()}, which converts
-#' alphas into tau-equivalent loadings and sets residual variances so that
-#' item variances equal \code{x_var}. Latent means are fixed at 0 in the control
-#' group and shifted by \code{approx_d_between_groups} in the treatment group
-#' (on the latent scale; when \code{lv_var = 1}, the shift equals Cohen's \emph{d}).
-#'
-#' Continuous indicators are simulated via \code{lavaan::simulateData()} and
-#' discretized to Likert scores using shared cutpoints (fixed reference
-#' \eqn{\mu=0}, \eqn{\sigma=1}) across groups. This avoids washing out the
-#' treatment mean shift that would occur if cutpoints were fit per group/column.
 #' @param study_design Character scalar. One of \code{"factorial_between2"} (default)
 #'   or \code{"crosssectional"}.
 #' @param n_per_condition Integer. For \code{"factorial_between2"}: participants per group.
