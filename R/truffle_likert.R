@@ -16,7 +16,8 @@
 #'   If \code{NULL}, defaults to \code{X1_item}, \code{X2_item}, ...
 #' @param alpha Numeric scalar or length-K vector. Target Cronbach's alpha per factor (default 0.70).
 #' @param n_items Integer vector (length K). Number of items per factor (each >= 2).
-#' @param n_levels Integer. Number of Likert categories (default 7).
+#' @param n_levels Integer vector (length K). Number of Likert categories (default 7). Either a scalar 
+#'   K applied to all latents or a length-K vector.
 #' @param r_among_outcomes Either a single latent correlation in (-1,1) applied to all
 #'   pairs, or a K x K latent correlation matrix (symmetric, unit diagonal).
 #' @param approx_d_between_groups Numeric. Only used for \code{"factorial_between2"}.
@@ -48,7 +49,7 @@
 #'   alpha     = c(.70, .75, .80),
 #'   r_among_outcomes = 0.3,
 #'   n_per_condition = 500, # total N in cross-sectional mode
-#'   n_levels  = 5,
+#'   n_levels  = c(10, 7, 7),
 #'   seed = 123
 #' )
 #'
@@ -58,6 +59,7 @@
 #'   .4,   1, .3,
 #'   .2,  .3, 1
 #' ), 3, 3, byrow = TRUE)
+#' 
 #' dat_cs2 <- truffle_likert(
 #'   study_design = "crosssectional",
 #'   n_items   = c(4, 4, 4),
@@ -100,7 +102,7 @@ truffle_likert <- function(
     prefixes    = NULL,
     alpha       = 0.70,
     n_items,
-    n_levels    = 7,
+    n_levels    = 7,             # now scalar OR length-K
     r_among_outcomes = 0.30,
     approx_d_between_groups = 0.50,
     condition_names = c("control", "treatment"),
@@ -121,7 +123,56 @@ truffle_likert <- function(
     stop("study_design must be one of c('factorial_between2','crosssectional').")
   }
   
-  # Build base measurement + latent covariance model
+  # --- validate/prepare n_levels (scalar or length-K) ---
+  if (!is.numeric(n_levels) || any(!is.finite(n_levels)) || any(n_levels < 2)) {
+    stop("`n_levels` must be integer-like >= 2 (scalar or length-K).")
+  }
+  if (length(n_levels) == 1L) {
+    n_levels_vec <- rep(as.integer(n_levels), K)
+  } else if (length(n_levels) == K) {
+    n_levels_vec <- as.integer(n_levels)
+  } else {
+    stop("When a vector, `n_levels` must have length K = ", K, ".")
+  }
+  
+  # --- helpers ---
+  .regex_escape <- function(x) gsub("([][{}()+*^$|\\.?*\\\\])", "\\\\\\1", x)
+  escaped_prefixes <- vapply(prefixes, .regex_escape, character(1))
+  pref_regex <- paste0("^(", paste0(escaped_prefixes, collapse = "|"), ")\\d+$")
+  
+  # split detected item columns into blocks by prefix (preserving factor order)
+  .split_cols_by_prefix <- function(cols, prefixes) {
+    out <- vector("list", length(prefixes))
+    names(out) <- prefixes
+    for (i in seq_along(prefixes)) {
+      rx <- paste0("^", .regex_escape(prefixes[i]), "\\d+$")
+      out[[i]] <- grep(rx, cols, value = TRUE)
+    }
+    out
+  }
+  
+  # Discretize a continuous data.frame by blocks with per-factor n_levels
+  .discretize_by_blocks <- function(df_cont, blocks, n_levels_vec) {
+    stopifnot(length(blocks) == length(n_levels_vec))
+    pieces <- vector("list", length(blocks))
+    for (i in seq_along(blocks)) {
+      blk <- blocks[[i]]
+      if (length(blk) == 0L) next
+      pieces[[i]] <- .continuous_to_likert_by_condition(
+        df_cont[blk],
+        n_levels = n_levels_vec[i],
+        ordered  = FALSE,
+        method   = "fixed",
+        mu_ref   = 0,
+        sd_ref   = 1
+      )
+    }
+    # bind back in factor order; columns are disjoint by construction
+    keep <- !vapply(pieces, is.null, logical(1))
+    dplyr::bind_cols(pieces[keep])
+  }
+  
+  # --- measurement + latent covariance model ---
   mod <- .make_lavaan_kfactor_corr(
     n_items     = n_items,
     alpha       = alpha,
@@ -132,15 +183,12 @@ truffle_likert <- function(
     corr_latent = r_among_outcomes
   )
   
-  # Common item-column detection
-  pref_regex <- paste0("^(", paste0(prefixes, collapse = "|"), ")\\d+$")
-  
   # -------------------------------
   # Case 1: Two-group factorial
   # -------------------------------
   if (study_design == "factorial_between2") {
     
-    ## d-target handling: scalar or length-K (optionally named)
+    # d handling
     if (!is.numeric(approx_d_between_groups) || any(!is.finite(approx_d_between_groups))) {
       stop("`approx_d_between_groups` must be numeric and finite (scalar or length-K).")
     }
@@ -167,7 +215,7 @@ truffle_likert <- function(
     mod_ctrl  <- paste(mod, means_ctrl,  sep = "\n")
     mod_treat <- paste(mod, means_treat, sep = "\n")
     
-    # simulate continuous data
+    # simulate continuous
     dat_ctrl_cont  <- lavaan::simulateData(mod_ctrl,  sample.nobs = n_per_condition)
     dat_treat_cont <- lavaan::simulateData(mod_treat, sample.nobs = n_per_condition)
     dat_ctrl_cont$condition  <- "control"
@@ -179,19 +227,12 @@ truffle_likert <- function(
     if (!identical(sort(item_cols_ctrl), sort(item_cols_treat))) {
       stop("Item columns differ across conditions; check prefixes or model.")
     }
-    item_cols <- item_cols_ctrl
+    # blocks in the canonical factor/prefix order
+    blocks <- .split_cols_by_prefix(item_cols_ctrl, prefixes)
     
-    # discretize with shared cutpoints
-    dat_ctrl_lik <- .continuous_to_likert_by_condition(
-      dat_ctrl_cont[item_cols],
-      n_levels = n_levels, ordered = FALSE,
-      method = "fixed", mu_ref = 0, sd_ref = 1
-    )
-    dat_treat_lik <- .continuous_to_likert_by_condition(
-      dat_treat_cont[item_cols],
-      n_levels = n_levels, ordered = FALSE,
-      method = "fixed", mu_ref = 0, sd_ref = 1
-    )
+    # discretize by blocks with per-factor levels
+    dat_ctrl_lik  <- .discretize_by_blocks(dat_ctrl_cont,  blocks, n_levels_vec)
+    dat_treat_lik <- .discretize_by_blocks(dat_treat_cont, blocks, n_levels_vec)
     
     dat_ctrl_lik$condition  <- condition_names[1]
     dat_treat_lik$condition <- condition_names[2]
@@ -206,9 +247,10 @@ truffle_likert <- function(
         dat_lik        = dat_lik,
         dat_ctrl_cont  = dat_ctrl_cont,
         dat_treat_cont = dat_treat_cont,
-        item_cols      = item_cols,
+        item_cols      = unlist(blocks, use.names = FALSE),
         models         = list(base = mod, ctrl = mod_ctrl, treat = mod_treat),
-        d_per_factor   = d_vec
+        d_per_factor   = d_vec,
+        n_levels_per_factor = setNames(n_levels_vec, factors)
       ))
     } else {
       return(dat_lik)
@@ -219,28 +261,18 @@ truffle_likert <- function(
   # Case 2: Single-group cross-sectional
   # -------------------------------
   if (study_design == "crosssectional") {
-    if (!missing(condition_names)) {
-      # harmless nudge in case users assume two-group semantics here
-      if (!identical(condition_names, c("control","treatment"))) {
-        warning("`condition_names` is ignored for 'crosssectional'.")
-      }
+    if (!identical(condition_names, c("control","treatment"))) {
+      warning("`condition_names` is ignored for 'crosssectional'.")
     }
-    # All latent means 0
     means_zero <- paste0(factors, " ~ 0*1", collapse = "\n")
     mod_cs <- paste(mod, means_zero, sep = "\n")
     
-    # simulate continuous data; reuse n_per_condition as total N
     dat_cont <- lavaan::simulateData(mod_cs, sample.nobs = n_per_condition)
     
-    # item columns
     item_cols <- grep(pref_regex, names(dat_cont), value = TRUE)
+    blocks <- .split_cols_by_prefix(item_cols, prefixes)
     
-    # discretize with fixed global cutpoints (mu=0, sd=1)
-    dat_lik <- .continuous_to_likert_by_condition(
-      dat_cont[item_cols],
-      n_levels = n_levels, ordered = FALSE,
-      method = "fixed", mu_ref = 0, sd_ref = 1
-    )
+    dat_lik <- .discretize_by_blocks(dat_cont, blocks, n_levels_vec)
     
     dat_lik$id <- seq_len(nrow(dat_lik))
     dat_lik <- dplyr::relocate(dat_lik, id)
@@ -249,8 +281,9 @@ truffle_likert <- function(
       return(list(
         dat_lik   = dat_lik,
         dat_cont  = dat_cont,
-        item_cols = item_cols,
-        models    = list(base = mod, means0 = mod_cs)
+        item_cols = unlist(blocks, use.names = FALSE),
+        models    = list(base = mod, means0 = mod_cs),
+        n_levels_per_factor = setNames(n_levels_vec, factors)
       ))
     } else {
       return(dat_lik)

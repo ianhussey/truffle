@@ -38,7 +38,8 @@ If \code{NULL}, defaults to \code{X1_item}, \code{X2_item}, ...}
 
 \item{n_items}{Integer vector (length K). Number of items per factor (each >= 2).}
 
-\item{n_levels}{Integer. Number of Likert categories (default 7).}
+\item{n_levels}{Integer vector (length K). Number of Likert categories (default 7). Either a scalar
+K applied to all latents or a length-K vector.}
 
 \item{r_among_outcomes}{Either a single latent correlation in (-1,1) applied to all
 pairs, or a K x K latent correlation matrix (symmetric, unit diagonal).}
@@ -88,7 +89,7 @@ dat_cs <- truffle_likert(
   alpha     = c(.70, .75, .80),
   r_among_outcomes = 0.3,
   n_per_condition = 500, # total N in cross-sectional mode
-  n_levels  = 5,
+  n_levels  = c(10, 7, 7),
   seed = 123
 )
 
@@ -98,6 +99,7 @@ R <- matrix(c(
   .4,   1, .3,
   .2,  .3, 1
 ), 3, 3, byrow = TRUE)
+
 dat_cs2 <- truffle_likert(
   study_design = "crosssectional",
   n_items   = c(4, 4, 4),
