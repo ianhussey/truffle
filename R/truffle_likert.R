@@ -1,35 +1,10 @@
-#' Generate Likert-Scale Data for Two Conditions (with latent mean shifts)
+#' Generate Likert-Scale Data for Two-Group or Single-Group (Cross-Sectional) Designs
 #'
-#' Simulate item-level Likert data for two groups (e.g., control vs. treatment)
-#' by (i) specifying a multi-factor latent variable model, (ii) shifting latent
-#' means by a specified Cohen's \emph{d} in the treatment group, and
-#' (iii) discretizing continuous indicators to Likert categories using shared
-#' cutpoints across groups (to preserve mean differences).
-#'
-#' @param study_design Character scalar. Currently only \code{"factorial_between2"}
-#'   is supported (two independent groups). Default \code{"factorial_between2"}.
-#' @param n_per_condition Integer. Number of participants per group (default \code{100}).
-#' @param factors Character vector (length \eqn{K}). Latent factor names. If \code{NULL},
-#'   defaults to \code{X1_latent}, \code{X2_latent}, \dots.
-#' @param prefixes Character vector (length \eqn{K}). Item name prefixes per factor.
-#'   If \code{NULL}, defaults to \code{X1_item}, \code{X2_item}, \dots.
-#' @param alpha Numeric scalar or length-\eqn{K} vector. Target Cronbach's alpha
-#'   for each factor (default \code{0.70}). Scalars are recycled.
-#' @param n_items Integer vector (length \eqn{K}). Number of items per factor (each \eqn{\ge} 2).
-#' @param n_levels Integer. Number of Likert response categories (default \code{7}).
-#' @param r_among_outcomes Either a single latent correlation in \eqn{(-1,1)} applied to
-#'   all pairs, or a \eqn{K \times K} latent correlation matrix (symmetric, unit diagonal).
-#' @param approx_d_between_groups Numeric. Either a single Cohen's \emph{d} applied to
-#'   \emph{all} latents, or a length-\eqn{K} vector (optionally \emph{named} by \code{factors})
-#'   giving per-latent \emph{d} values. Scalars are recycled; named vectors are
-#'   matched to \code{factors}.
-#' @param condition_names Character length-2 vector giving group labels
-#'   (default \code{c("control","treatment")}).
-#' @param seed Optional integer seed for reproducibility.
-#' @param lv_var Numeric scalar or length-\eqn{K} vector of latent variances (default \code{1}).
-#' @param x_var Numeric scalar or length-\eqn{K} vector of item variances (default \code{1}).
-#' @param return_continuous Logical. If \code{TRUE}, return a list including the
-#'   continuous simulated data and model strings in addition to the Likert data.
+#' Simulate item-level Likert data under a multi-factor latent variable model.
+#' Supports:
+#'   (a) two independent groups with latent mean shifts ("factorial_between2"), or
+#'   (b) a single-group cross-sectional design with specified latent correlations
+#'       ("crosssectional").
 #'
 #' @details
 #' The base measurement model and latent covariance structure are produced by
@@ -43,25 +18,67 @@
 #' discretized to Likert scores using shared cutpoints (fixed reference
 #' \eqn{\mu=0}, \eqn{\sigma=1}) across groups. This avoids washing out the
 #' treatment mean shift that would occur if cutpoints were fit per group/column.
+#' @param study_design Character scalar. One of \code{"factorial_between2"} (default)
+#'   or \code{"crosssectional"}.
+#' @param n_per_condition Integer. For \code{"factorial_between2"}: participants per group.
+#'   For \code{"crosssectional"}: total N.
+#' @param factors Character vector (length K). Latent factor names. If \code{NULL},
+#'   defaults to \code{X1_latent}, \code{X2_latent}, ...
+#' @param prefixes Character vector (length K). Item name prefixes per factor.
+#'   If \code{NULL}, defaults to \code{X1_item}, \code{X2_item}, ...
+#' @param alpha Numeric scalar or length-K vector. Target Cronbach's alpha per factor (default 0.70).
+#' @param n_items Integer vector (length K). Number of items per factor (each >= 2).
+#' @param n_levels Integer. Number of Likert categories (default 7).
+#' @param r_among_outcomes Either a single latent correlation in (-1,1) applied to all
+#'   pairs, or a K x K latent correlation matrix (symmetric, unit diagonal).
+#' @param approx_d_between_groups Numeric. Only used for \code{"factorial_between2"}.
+#'   Either a scalar \(d\) applied to all latents or a length-K vector (optionally named).
+#' @param condition_names Character length-2 vector of group labels (default c("control","treatment")).
+#'   Ignored for \code{"crosssectional"}.
+#' @param seed Optional integer seed.
+#' @param lv_var Numeric scalar or length-K vector of latent variances (default 1).
+#' @param x_var Numeric scalar or length-K vector of item variances (default 1).
+#' @param return_continuous Logical. If TRUE, return a list including continuous data and model strings.
 #'
 #' @return
-#' If \code{return_continuous = FALSE} (default): a data frame with columns
-#' \itemize{
-#'   \item \code{id} — participant ID (integer sequence)
-#'   \item \code{condition} — group label (\code{condition_names})
-#'   \item item responses — Likert-scale items named \code{<prefix><index>}
-#' }
-#' If \code{return_continuous = TRUE}: a list with elements
-#' \itemize{
-#'   \item \code{dat_lik} — Likert data frame as above
-#'   \item \code{dat_ctrl_cont}, \code{dat_treat_cont} — continuous data per group
-#'   \item \code{item_cols} — character vector of item column names
-#'   \item \code{models} — list with \code{base}, \code{ctrl}, \code{treat} lavaan syntax
-#'   \item \code{d_per_factor} — the per-latent \emph{d} vector actually used
-#' }
+#' If \code{return_continuous = FALSE}:
+#'   * \code{"factorial_between2"}: data frame with \code{id}, \code{condition}, and item columns.
+#'   * \code{"crosssectional"}: data frame with \code{id} and item columns.
+#'
+#' If \code{return_continuous = TRUE}:
+#'   * \code{"factorial_between2"}: list with \code{dat_lik}, \code{dat_ctrl_cont}, \code{dat_treat_cont},
+#'     \code{item_cols}, \code{models} (base/ctrl/treat), and \code{d_per_factor}.
+#'   * \code{"crosssectional"}: list with \code{dat_lik}, \code{dat_cont}, \code{item_cols},
+#'     and \code{models} (base and means=0).
 #'
 #' @examples
 #' \dontrun{
+#' # Cross-sectional, three factors, scalar r among latents
+#' dat_cs <- truffle_likert(
+#'   study_design = "crosssectional",
+#'   n_items   = c(5, 6, 7),
+#'   alpha     = c(.70, .75, .80),
+#'   r_among_outcomes = 0.3,
+#'   n_per_condition = 500, # total N in cross-sectional mode
+#'   n_levels  = 5,
+#'   seed = 123
+#' )
+#'
+#' # Cross-sectional with a custom latent correlation matrix
+#' R <- matrix(c(
+#'   1,   .4, .2,
+#'   .4,   1, .3,
+#'   .2,  .3, 1
+#' ), 3, 3, byrow = TRUE)
+#' dat_cs2 <- truffle_likert(
+#'   study_design = "crosssectional",
+#'   n_items   = c(4, 4, 4),
+#'   alpha     = .75,
+#'   r_among_outcomes = R,
+#'   n_per_condition = 400,
+#'   seed = 42
+#' )
+#' 
 #' # Three-factor example with a common d applied to all latents
 #' dat <- truffle_likert(
 #'   study_design = "factorial_between2",
@@ -90,7 +107,7 @@
 #' @importFrom lavaan simulateData
 #' @importFrom dplyr bind_rows mutate relocate row_number
 truffle_likert <- function(
-    study_design = "factorial_between2", # only design possible right now
+    study_design = "factorial_between2",
     n_per_condition = 100,
     factors     = NULL,
     prefixes    = NULL,
@@ -113,25 +130,30 @@ truffle_likert <- function(
   if (is.null(factors))  factors  <- paste0("X", seq_len(K), "_latent")
   if (is.null(prefixes)) prefixes <- paste0("X", seq_len(K), "_item")
   
-  if (!study_design %in% c("factorial_between2")){
-    stop("study_design must be one of c('factorial_between2')")
+  if (!study_design %in% c("factorial_between2", "crosssectional")){
+    stop("study_design must be one of c('factorial_between2','crosssectional').")
   }
   
-  # if factorial design between two groups study:
-  # (only one possible for the moment)
-  if (study_design == "factorial_between2"){
+  # Build base measurement + latent covariance model
+  mod <- .make_lavaan_kfactor_corr(
+    n_items     = n_items,
+    alpha       = alpha,
+    lv_var      = lv_var,
+    x_var       = x_var,
+    factors     = factors,
+    prefixes    = prefixes,
+    corr_latent = r_among_outcomes
+  )
+  
+  # Common item-column detection
+  pref_regex <- paste0("^(", paste0(prefixes, collapse = "|"), ")\\d+$")
+  
+  # -------------------------------
+  # Case 1: Two-group factorial
+  # -------------------------------
+  if (study_design == "factorial_between2") {
     
-    mod <- .make_lavaan_kfactor_corr(
-      n_items     = n_items,
-      alpha       = alpha,
-      lv_var      = lv_var,
-      x_var       = x_var,
-      factors     = factors,
-      prefixes    = prefixes,
-      corr_latent = r_among_outcomes
-    )
-    
-    ## ---- d-target handling: scalar or length-K (optionally named) ----
+    ## d-target handling: scalar or length-K (optionally named)
     if (!is.numeric(approx_d_between_groups) || any(!is.finite(approx_d_between_groups))) {
       stop("`approx_d_between_groups` must be numeric and finite (scalar or length-K).")
     }
@@ -166,7 +188,6 @@ truffle_likert <- function(
     dat_treat_cont$condition <- "treatment"
     
     # item columns
-    pref_regex <- paste0("^(", paste0(prefixes, collapse = "|"), ")\\d+$")
     item_cols_ctrl  <- grep(pref_regex, names(dat_ctrl_cont),  value = TRUE)
     item_cols_treat <- grep(pref_regex, names(dat_treat_cont), value = TRUE)
     if (!identical(sort(item_cols_ctrl), sort(item_cols_treat))) {
@@ -202,6 +223,48 @@ truffle_likert <- function(
         item_cols      = item_cols,
         models         = list(base = mod, ctrl = mod_ctrl, treat = mod_treat),
         d_per_factor   = d_vec
+      ))
+    } else {
+      return(dat_lik)
+    }
+  }
+  
+  # -------------------------------
+  # Case 2: Single-group cross-sectional
+  # -------------------------------
+  if (study_design == "crosssectional") {
+    if (!missing(condition_names)) {
+      # harmless nudge in case users assume two-group semantics here
+      if (!identical(condition_names, c("control","treatment"))) {
+        warning("`condition_names` is ignored for 'crosssectional'.")
+      }
+    }
+    # All latent means 0
+    means_zero <- paste0(factors, " ~ 0*1", collapse = "\n")
+    mod_cs <- paste(mod, means_zero, sep = "\n")
+    
+    # simulate continuous data; reuse n_per_condition as total N
+    dat_cont <- lavaan::simulateData(mod_cs, sample.nobs = n_per_condition)
+    
+    # item columns
+    item_cols <- grep(pref_regex, names(dat_cont), value = TRUE)
+    
+    # discretize with fixed global cutpoints (mu=0, sd=1)
+    dat_lik <- .continuous_to_likert_by_condition(
+      dat_cont[item_cols],
+      n_levels = n_levels, ordered = FALSE,
+      method = "fixed", mu_ref = 0, sd_ref = 1
+    )
+    
+    dat_lik$id <- seq_len(nrow(dat_lik))
+    dat_lik <- dplyr::relocate(dat_lik, id)
+    
+    if (return_continuous) {
+      return(list(
+        dat_lik   = dat_lik,
+        dat_cont  = dat_cont,
+        item_cols = item_cols,
+        models    = list(base = mod, means0 = mod_cs)
       ))
     } else {
       return(dat_lik)
