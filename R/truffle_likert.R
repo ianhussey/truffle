@@ -90,7 +90,6 @@
 #' )
 #' }
 #'
-#' @seealso \code{\link[lavaan]{simulateData}}
 #' @export
 #' @importFrom lavaan simulateData
 #' @importFrom dplyr bind_rows mutate relocate row_number
@@ -102,8 +101,8 @@ truffle_likert <- function(
     alpha       = 0.70,
     n_items,
     n_levels    = 7,
-    r_among_outcomes = 0.30, # <- scalar or matrix
-    approx_d_between_groups = 0.50,   # <- scalar or length-K
+    r_among_outcomes = 0.30,
+    approx_d_between_groups = 0.50,
     condition_names = c("control", "treatment"),
     seed        = NULL,
     lv_var      = 1,
@@ -151,7 +150,6 @@ truffle_likert <- function(
     } else {
       d_vec <- approx_d_between_groups
       if (!is.null(names(d_vec))) {
-        # reorder to match `factors`
         if (!all(factors %in% names(d_vec))) {
           stop("Named `approx_d_between_groups` must include all factor names: ",
                paste(factors, collapse = ", "))
