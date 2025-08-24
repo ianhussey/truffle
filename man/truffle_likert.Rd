@@ -2,7 +2,7 @@
 % Please edit documentation in R/truffle_likert.R
 \name{truffle_likert}
 \alias{truffle_likert}
-\title{Generate Likert-Scale Data for Two Conditions (with latent mean shifts)}
+\title{Generate Likert-Scale Data for Two-Group or Single-Group (Cross-Sectional) Designs}
 \usage{
 truffle_likert(
   study_design = "factorial_between2",
@@ -22,82 +22,91 @@ truffle_likert(
 )
 }
 \arguments{
-\item{study_design}{Character scalar. Currently only \code{"factorial_between2"}
-is supported (two independent groups). Default \code{"factorial_between2"}.}
+\item{study_design}{Character scalar. One of \code{"factorial_between2"} (default)
+or \code{"crosssectional"}.}
 
-\item{n_per_condition}{Integer. Number of participants per group (default \code{100}).}
+\item{n_per_condition}{Integer. For \code{"factorial_between2"}: participants per group.
+For \code{"crosssectional"}: total N.}
 
-\item{factors}{Character vector (length \eqn{K}). Latent factor names. If \code{NULL},
-defaults to \code{X1_latent}, \code{X2_latent}, \dots.}
+\item{factors}{Character vector (length K). Latent factor names. If \code{NULL},
+defaults to \code{X1_latent}, \code{X2_latent}, ...}
 
-\item{prefixes}{Character vector (length \eqn{K}). Item name prefixes per factor.
-If \code{NULL}, defaults to \code{X1_item}, \code{X2_item}, \dots.}
+\item{prefixes}{Character vector (length K). Item name prefixes per factor.
+If \code{NULL}, defaults to \code{X1_item}, \code{X2_item}, ...}
 
-\item{alpha}{Numeric scalar or length-\eqn{K} vector. Target Cronbach's alpha
-for each factor (default \code{0.70}). Scalars are recycled.}
+\item{alpha}{Numeric scalar or length-K vector. Target Cronbach's alpha per factor (default 0.70).}
 
-\item{n_items}{Integer vector (length \eqn{K}). Number of items per factor (each \eqn{\ge} 2).}
+\item{n_items}{Integer vector (length K). Number of items per factor (each >= 2).}
 
-\item{n_levels}{Integer. Number of Likert response categories (default \code{7}).}
+\item{n_levels}{Integer. Number of Likert categories (default 7).}
 
-\item{r_among_outcomes}{Either a single latent correlation in \eqn{(-1,1)} applied to
-all pairs, or a \eqn{K \times K} latent correlation matrix (symmetric, unit diagonal).}
+\item{r_among_outcomes}{Either a single latent correlation in (-1,1) applied to all
+pairs, or a K x K latent correlation matrix (symmetric, unit diagonal).}
 
-\item{approx_d_between_groups}{Numeric. Either a single Cohen's \emph{d} applied to
-\emph{all} latents, or a length-\eqn{K} vector (optionally \emph{named} by \code{factors})
-giving per-latent \emph{d} values. Scalars are recycled; named vectors are
-matched to \code{factors}.}
+\item{approx_d_between_groups}{Numeric. Only used for \code{"factorial_between2"}.
+Either a scalar \(d\) applied to all latents or a length-K vector (optionally named).}
 
-\item{condition_names}{Character length-2 vector giving group labels
-(default \code{c("control","treatment")}).}
+\item{condition_names}{Character length-2 vector of group labels (default c("control","treatment")).
+Ignored for \code{"crosssectional"}.}
 
-\item{seed}{Optional integer seed for reproducibility.}
+\item{seed}{Optional integer seed.}
 
-\item{lv_var}{Numeric scalar or length-\eqn{K} vector of latent variances (default \code{1}).}
+\item{lv_var}{Numeric scalar or length-K vector of latent variances (default 1).}
 
-\item{x_var}{Numeric scalar or length-\eqn{K} vector of item variances (default \code{1}).}
+\item{x_var}{Numeric scalar or length-K vector of item variances (default 1).}
 
-\item{return_continuous}{Logical. If \code{TRUE}, return a list including the
-continuous simulated data and model strings in addition to the Likert data.}
+\item{return_continuous}{Logical. If TRUE, return a list including continuous data and model strings.}
 }
 \value{
-If \code{return_continuous = FALSE} (default): a data frame with columns
+If \code{return_continuous = FALSE}:
 \itemize{
-\item \code{id} — participant ID (integer sequence)
-\item \code{condition} — group label (\code{condition_names})
-\item item responses — Likert-scale items named \code{<prefix><index>}
+\item \code{"factorial_between2"}: data frame with \code{id}, \code{condition}, and item columns.
+\item \code{"crosssectional"}: data frame with \code{id} and item columns.
 }
-If \code{return_continuous = TRUE}: a list with elements
+
+If \code{return_continuous = TRUE}:
 \itemize{
-\item \code{dat_lik} — Likert data frame as above
-\item \code{dat_ctrl_cont}, \code{dat_treat_cont} — continuous data per group
-\item \code{item_cols} — character vector of item column names
-\item \code{models} — list with \code{base}, \code{ctrl}, \code{treat} lavaan syntax
-\item \code{d_per_factor} — the per-latent \emph{d} vector actually used
+\item \code{"factorial_between2"}: list with \code{dat_lik}, \code{dat_ctrl_cont}, \code{dat_treat_cont},
+\code{item_cols}, \code{models} (base/ctrl/treat), and \code{d_per_factor}.
+\item \code{"crosssectional"}: list with \code{dat_lik}, \code{dat_cont}, \code{item_cols},
+and \code{models} (base and means=0).
 }
 }
 \description{
-Simulate item-level Likert data for two groups (e.g., control vs. treatment)
-by (i) specifying a multi-factor latent variable model, (ii) shifting latent
-means by a specified Cohen's \emph{d} in the treatment group, and
-(iii) discretizing continuous indicators to Likert categories using shared
-cutpoints across groups (to preserve mean differences).
-}
-\details{
-The base measurement model and latent covariance structure are produced by
-the internal helper \code{.make_lavaan_kfactor_corr()}, which converts
-alphas into tau-equivalent loadings and sets residual variances so that
-item variances equal \code{x_var}. Latent means are fixed at 0 in the control
-group and shifted by \code{approx_d_between_groups} in the treatment group
-(on the latent scale; when \code{lv_var = 1}, the shift equals Cohen's \emph{d}).
-
-Continuous indicators are simulated via \code{lavaan::simulateData()} and
-discretized to Likert scores using shared cutpoints (fixed reference
-\eqn{\mu=0}, \eqn{\sigma=1}) across groups. This avoids washing out the
-treatment mean shift that would occur if cutpoints were fit per group/column.
+Simulate item-level Likert data under a multi-factor latent variable model.
+Supports:
+(a) two independent groups with latent mean shifts ("factorial_between2"), or
+(b) a single-group cross-sectional design with specified latent correlations
+("crosssectional").
 }
 \examples{
 \dontrun{
+# Cross-sectional, three factors, scalar r among latents
+dat_cs <- truffle_likert(
+  study_design = "crosssectional",
+  n_items   = c(5, 6, 7),
+  alpha     = c(.70, .75, .80),
+  r_among_outcomes = 0.3,
+  n_per_condition = 500, # total N in cross-sectional mode
+  n_levels  = 5,
+  seed = 123
+)
+
+# Cross-sectional with a custom latent correlation matrix
+R <- matrix(c(
+  1,   .4, .2,
+  .4,   1, .3,
+  .2,  .3, 1
+), 3, 3, byrow = TRUE)
+dat_cs2 <- truffle_likert(
+  study_design = "crosssectional",
+  n_items   = c(4, 4, 4),
+  alpha     = .75,
+  r_among_outcomes = R,
+  n_per_condition = 400,
+  seed = 42
+)
+
 # Three-factor example with a common d applied to all latents
 dat <- truffle_likert(
   study_design = "factorial_between2",
@@ -121,7 +130,4 @@ dat2 <- truffle_likert(
 )
 }
 
-}
-\seealso{
-\code{\link[lavaan]{simulateData}}
 }
