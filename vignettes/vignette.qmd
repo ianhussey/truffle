@@ -327,7 +327,62 @@ clean |>
 
 ```
 
-## Truffle and dirt - more complicated
+## Snuffle functions to help you find truffles 
+
+`snuffle_` functions are designed to help the user find truffles (underlying effects) among the dirt (data processing issues). 
+
+### Sum scores
+
+Calculating sum scores is an extremely common task, and yet there are a surprising number of ways to mess it up given impossible scores in the dataset, missingness, and reversed items. 
+
+`snuffle_sum_scores()` calculates sum scores, imputing missing values from each participant's mean. There are, of course, much better and more sophisticated ways to deal with item missingness, but this is probably the most common way - so much so that it's often not even reported in articles. The function also excludes data that are beyond the scale's response bounds (ie impossible values), and returns diagnostics on the number of missing items, which items were missing, the number of impossible values and which were missing. It can also reverse score a vector of specified items. 
+
+Which items are used in the sum scoring can be specified in a number of ways, e.g., `select()`ing the items earlier in the chunk, or using a common naming prefix to select them (e.g., starting with "X1_"), or even a more sophisticated regex call to find the desired columns. 
+
+```{r}
+
+dat_truffle_and_dirt <- 
+  truffle_likert(study_design = "factorial_between2",
+                 n_per_condition = 10,
+                 factors  = "X1_latent",
+                 prefixes = "X1_item",
+                 alpha = .70,
+                 n_items = 5,
+                 n_levels = 7,
+                 approx_d_between_groups = 0.50,
+                 seed = 42) |>
+  truffle_demographics() |>
+  dirt_missingness(prop = .10, dirtier = FALSE) |>
+  dirt_impossible_values(prop = .04, replacement_value = 8)
+
+dat_truffle_and_dirt_snuffled <- dat_truffle_and_dirt |>
+  snuffle_sum_scores("X1_", 
+                     min = 1, 
+                     max = 7, 
+                     id_col = "id")
+
+dat_truffle_and_dirt_snuffled |>
+  head(n = 20) |>
+  kable() |>
+  kable_classic(full_width = FALSE)
+
+```
+
+```{r}
+#| eval: false
+#| include: false
+
+md_table <- dat_truffle_and_dirt_snuffled |>
+  head(n = 20) |>
+  kable(format = "markdown") 
+
+cat(md_table)
+
+```
+
+## More complicated truffles 
+
+### Multiple correlated outcomes with more dirt
 
 ```{r}
 #| fig-height: 20
@@ -385,58 +440,44 @@ dat_truffle_and_dirt_complex |>
 
 ```
 
-## Snuffle functions to help you find truffles 
-
-`snuffle_` functions are designed to help the user find truffles (underlying effects) among the dirt (data processing issues). 
-
-### Sum scores
-
-Calculating sum scores is an extremely common task, and yet there are a surprising number of ways to mess it up given impossible scores in the dataset, missingness, and reversed items. 
-
-`snuffle_sum_scores()` calculates sum scores, imputing missing values from each participant's mean. There are, of course, much better and more sophisticated ways to deal with item missingness, but this is probably the most common way - so much so that it's often not even reported in articles. The function also excludes data that are beyond the scale's response bounds (ie impossible values), and returns diagnostics on the number of missing items, which items were missing, the number of impossible values and which were missing. It can also reverse score a vector of specified items. 
-
-Which items are used in the sum scoring can be specified in a number of ways, e.g., `select()`ing the items earlier in the chunk, or using a common naming prefix to select them (e.g., starting with "X1_"), or even a more sophisticated regex call to find the desired columns. 
+### Cross-sectional data
 
 ```{r}
 
-dat_truffle_and_dirt <- 
-  truffle_likert(study_design = "factorial_between2",
-                 n_per_condition = 10,
-                 factors  = "X1_latent",
-                 prefixes = "X1_item",
-                 alpha = .70,
-                 n_items = 5,
-                 n_levels = 7,
-                 approx_d_between_groups = 0.50,
-                 seed = 42) |>
-  truffle_demographics() |>
-  dirt_missingness(prop = .10, dirtier = FALSE) |>
-  dirt_impossible_values(prop = .04, replacement_value = 8)
+R <- matrix(c( 1, .1, .3,
+              .1,  1, .5,
+              .3, .5,  1), 
+            3, 3, byrow = TRUE)
 
-dat_truffle_and_dirt_snuffled <- dat_truffle_and_dirt |>
+dat_truffle <- 
+  truffle_likert(study_design = "crosssectional",
+                 n_per_condition = 1000,
+                 factors  = c("X1_latent", "X2_latent", "X3_latent"),
+                 prefixes = c("X1_item", "X2_item", "X3_item"),
+                 alpha = c(.90, .90, .70),
+                 n_items = c(10, 7, 15),
+                 r_among_outcomes = R,
+                 n_levels = c(10, 7, 7),
+                 seed = 42) |>
   snuffle_sum_scores("X1_", 
+                     min = 1, 
+                     max = 10, 
+                     id_col = "id") |>
+  snuffle_sum_scores("X2_", 
+                     min = 1, 
+                     max = 7, 
+                     id_col = "id") |>
+  snuffle_sum_scores("X3_", 
                      min = 1, 
                      max = 7, 
                      id_col = "id")
 
-dat_truffle_and_dirt_snuffled |>
-  head(n = 20) |>
-  kable() |>
-  kable_classic(full_width = FALSE)
+dat_truffle |>
+  select(X1_sumscore, X2_sumscore, X3_sumscore) |>
+  cor()
 
 ```
 
-```{r}
-#| eval: false
-#| include: false
-
-md_table <- dat_truffle_and_dirt_snuffled |>
-  head(n = 20) |>
-  kable(format = "markdown") 
-
-cat(md_table)
-
-```
 
 
 
