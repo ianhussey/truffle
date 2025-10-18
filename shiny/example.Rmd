@@ -1,0 +1,102 @@
+---
+title: "shiny truffle"
+author: "Ian Hussey"
+date: today
+---
+
+```{r}
+
+# dependencies
+#devtools::install_github("ianhussey/truffle")
+library(truffle)
+
+# needed by truffle
+library(lavaan)
+library(dplyr)
+library(tidyr)
+library(tidyselect)
+library(latent2likert)
+library(ggplot2)
+library(missMethods)
+
+# variables to be in the shiny app inputs
+project_identifier <- "student 1"
+seed <- 42
+design <- c("Cross sectional study", "Between 2 groups experiment") # this should be a dropdown
+n <- 200
+outcomes <- 3
+items <- 10
+response_options <- 7
+alpha <- 0.70
+r <- 0.5
+d <- 0.5
+
+# code to run in shiny app:
+simulation_specifications <- tibble(
+  project_identifier = project_identifier,
+  seed = seed,
+  design = design,
+  n = n,
+  outcomes = outcomes,
+  items = items,
+  response_options = response_options,
+  alpha = alpha,
+  r = r,
+  d = d
+) 
+
+if(design=="Between 2 groups experiment"){
+  # experiment
+  data_clean <- 
+    truffle_likert(study_design = "factorial_between2",
+                   n_per_condition = n,
+                   factors  = paste0("X", seq(from = 1, to = outcomes), "_latent"),
+                   prefixes = paste0("X", seq(from = 1, to = outcomes), "_item"),
+                   n_items = rep(items, outcomes),
+                   n_levels = response_options,
+                   alpha = rep(alpha, outcomes),
+                   r_among_outcomes = r,
+                   approx_d_between_groups = d,
+                   seed = seed)
+} else if(design=="Cross sectional study"){
+  # cross-sectional study
+  data_clean <- 
+    truffle_likert(study_design = "crosssectional",
+                   n_per_condition = n,
+                   factors  = paste0("X", seq(from = 1, to = outcomes), "_latent"),
+                   prefixes = paste0("X", seq(from = 1, to = outcomes), "_item"),
+                   n_items = rep(items, outcomes),
+                   n_levels = response_options,
+                   alpha = rep(alpha, outcomes),
+                   r_among_outcomes = r,
+                   seed = seed) |>
+    truffle_demographics()
+}
+
+data_untidy <- data_clean |>
+  dirt_impossible_values(prop = .04, replacement_value = 8) |>
+  # generate RT data and then add dirt
+  mutate(completion_time = truffle_reaction_times(n = n())) |>
+  dirt_numbers(cols = "completion_time", unit = " seconds") |>
+  dirt_dates(col = "date") |>
+  dirt_missingness(prop = .05) |>
+  dirt_untidy(col = "block_trial") |>
+  dirt_duplicates(prop = 0.05) |>
+  # move some columns around before renaming makes it hard
+  relocate(date, .after = "id") |>
+  relocate(completion_time, .after = "id") |>
+  relocate(block_trial, .after = "id") |>
+  dirt_colnames()
+
+# allow user to download a zip file named using the `project_identifier` variable (`project_identifier`.zip), containing three csv files created from:
+simulation_specifications # ie simulation_specifications.csv 
+data_untidy # ie data_untidy.csv 
+data_clean # ie data_clean.csv 
+
+```
+
+
+
+
+
+

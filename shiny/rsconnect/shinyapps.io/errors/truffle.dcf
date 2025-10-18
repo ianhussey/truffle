@@ -1,0 +1,13 @@
+name: truffle
+title: truffle
+username: errors
+account: errors
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 15795528
+bundleId: 11052063
+url: https://errors.shinyapps.io/truffle/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: example.Rmd
