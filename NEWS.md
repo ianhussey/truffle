@@ -1,4 +1,4 @@
-# truffle 0.1.5
+# truffle 0.1.6
 
 * Prepared the package for CRAN: moved runtime dependencies from `Depends` to
   `Imports`, namespaced all external function calls, and added `URL`,

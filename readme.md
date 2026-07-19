@@ -6,9 +6,10 @@
 [![R-CMD-check](https://github.com/ianhussey/truffle/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/ianhussey/truffle/actions/workflows/R-CMD-check.yaml)
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21441764.svg)](https://doi.org/10.5281/zenodo.21441764)
 <!-- badges: end -->
 
-{truffle} is an R package for teaching users to process data.
+{truffle} is an R package for teaching users to clean, process, and wrangle data.
 
 It allows you to create datasets with various known effects to be rediscovered (truffles, via `truffle_` functions), and then create data processing headaches that have to be solved (dirt, via `dirt_` functions). Users must then search for truffles among the dirt. 
 
@@ -169,4 +170,4 @@ MIT license
 
 ## Suggested citation
 
-Hussey, I. (2025) truffle: Create teaching datasets with known effects hidden in messy data. https://github.com/ianhussey/truffle
+Hussey, I. (2025) *truffle*: Create datasets with known effects hidden in messy data for teaching data wrangling. https://github.com/ianhussey/truffle. doi:[10.5281/zenodo.21441764](https://doi.org/10.5281/zenodo.21441764)
