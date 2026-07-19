@@ -18,7 +18,7 @@ Description: Generate datasets with known statistical effects (truffles) that
     wrangling exercises for teaching. The package is intentionally narrow: it
     currently generates a single study design (a between-groups experiment with
     equal group sizes) and relies on specific column-naming conventions.
-URL: https://github.com/ianhussey/truffle
+URL: https://doi.org/10.5281/zenodo.21441764
 BugReports: https://github.com/ianhussey/truffle/issues
 License: MIT + file LICENSE
 Encoding: UTF-8
