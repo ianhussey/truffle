@@ -28,7 +28,16 @@
 #' @export
 #' @importFrom dplyr across mutate where
 #' @importFrom stats runif
-dirt_impossible_values <- function(.data, prop = 0.03, replacement_value = 99L) {
-  mutate(.data, 
-         across(starts_with("X"), ~ replace(.x, runif(length(.x)) < prop, replacement_value)))
+dirt_impossible_values <- function(
+  .data,
+  prop = 0.03,
+  replacement_value = 99L
+) {
+  mutate(
+    .data,
+    across(
+      starts_with("X"),
+      ~ replace(.x, runif(length(.x)) < prop, replacement_value)
+    )
+  )
 }

@@ -64,52 +64,61 @@
 #' @importFrom tidyselect starts_with vars_select
 #' @importFrom missMethods delete_MCAR
 #' @importFrom stats runif
-dirt_missingness <- function(.data,
-                             prop = 0.05,
-                             dirtier = TRUE,
-                             pool = c(NA, "NA", -99, -999, "", "missing"),
-                             probs = NULL,
-                             col_pattern = "^X",
-                             seed = NULL) {
+dirt_missingness <- function(
+  .data,
+  prop = 0.05,
+  dirtier = TRUE,
+  pool = c(NA, "NA", -99, -999, "", "missing"),
+  probs = NULL,
+  col_pattern = "^X",
+  seed = NULL
+) {
   stopifnot(is.data.frame(.data))
-  if (!is.null(seed)) set.seed(seed)
-  
-  if(!dirtier){
-    
-    output <- delete_MCAR(.data,
-                          p = prop,
-                          cols_mis = vars_select(colnames(.data), starts_with("X")))
+  if (!is.null(seed)) {
+    set.seed(seed)
+  }
+
+  if (!dirtier) {
+    output <- delete_MCAR(
+      .data,
+      p = prop,
+      cols_mis = vars_select(colnames(.data), starts_with("X"))
+    )
     return(output)
-    
   } else if (dirtier) {
-    
     # normalize replacement probabilities
     if (is.null(probs)) {
       probs <- rep(1 / length(pool), length(pool))
     } else {
       stopifnot(length(probs) == length(pool))
-      if (any(probs < 0)) stop("`probs` must be non-negative.")
+      if (any(probs < 0)) {
+        stop("`probs` must be non-negative.")
+      }
       s <- sum(probs)
-      if (s == 0) stop("`probs` must not sum to 0.")
+      if (s == 0) {
+        stop("`probs` must not sum to 0.")
+      }
       probs <- probs / s
     }
-    
+
     # tidy verb: mutate across columns starting with pattern
     output <- dplyr::mutate(
       .data,
       dplyr::across(
-        .cols = tidyselect::starts_with(sub("^\\^", "", col_pattern)),  # allow "^X" or "X"
+        .cols = tidyselect::starts_with(sub("^\\^", "", col_pattern)), # allow "^X" or "X"
         .fns = ~ {
           n <- length(.x)
           k <- max(0L, round(prop * n))
-          if (k == 0L) return(as.character(.x))
-          
+          if (k == 0L) {
+            return(as.character(.x))
+          }
+
           idx <- sample.int(n, k, replace = FALSE)
-          
+
           # draw replacements; coerce to character safely (preserve NA)
           repl <- sample(pool, k, replace = TRUE, prob = probs)
           repl_chr <- ifelse(is.na(repl), NA_character_, as.character(repl))
-          
+
           y <- as.character(.x)
           y[idx] <- repl_chr
           y

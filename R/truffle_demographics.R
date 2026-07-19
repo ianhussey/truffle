@@ -31,33 +31,39 @@
 #' @export
 #' @importFrom dplyr mutate relocate
 truffle_demographics <- function(
-    .data,
-    gender_probs = c(male = 0.29, female = 0.68, nonbinary = 0.03),
-    age_min = 18L,
-    age_max = 45L
+  .data,
+  gender_probs = c(male = 0.29, female = 0.68, nonbinary = 0.03),
+  age_min = 18L,
+  age_max = 45L
 ) {
   stopifnot(is.data.frame(.data))
   n <- nrow(.data)
-  
+
   # ---- checks for age bounds ----
   stopifnot(is.numeric(age_min), is.numeric(age_max), age_min <= age_max)
   rng <- as.integer(seq(from = age_min, to = age_max))
-  
+
   # ---- checks for gender_probs ----
   if (is.null(names(gender_probs)) || any(names(gender_probs) == "")) {
-    stop("`gender_probs` must be a *named* numeric vector (e.g., c(male=.3, female=.7)).")
+    stop(
+      "`gender_probs` must be a *named* numeric vector (e.g., c(male=.3, female=.7))."
+    )
   }
-  if (any(gender_probs < 0)) stop("`gender_probs` must be non-negative.")
-  if (sum(gender_probs) == 0) stop("`gender_probs` must not sum to 0.")
+  if (any(gender_probs < 0)) {
+    stop("`gender_probs` must be non-negative.")
+  }
+  if (sum(gender_probs) == 0) {
+    stop("`gender_probs` must not sum to 0.")
+  }
   gp <- gender_probs / sum(gender_probs)
-  
+
   # ---- generate variables ----
-  age_vec    <- sample(rng, size = n, replace = TRUE)
+  age_vec <- sample(rng, size = n, replace = TRUE)
   gender_vec <- sample(names(gp), size = n, replace = TRUE, prob = gp)
-  
+
   # ---- assemble & order ----
   out <- dplyr::mutate(.data, age = age_vec, gender = gender_vec)
-  
+
   if ("id" %in% names(out)) {
     out <- dplyr::relocate(out, id, .before = 1)
     out <- dplyr::relocate(out, age, .after = id)
@@ -67,6 +73,6 @@ truffle_demographics <- function(
     out <- dplyr::relocate(out, age, .before = 1)
     out <- dplyr::relocate(out, gender, .after = age)
   }
-  
+
   out
 }

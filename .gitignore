@@ -26,3 +26,5 @@ data/outputs/plots/
 .DS_Store
 Thumbs.db
 /vignettes/vignette_files
+/doc/
+/Meta/

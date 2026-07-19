@@ -23,8 +23,11 @@
   bad_vars <- names(df)[!purrr::map_lgl(df, ~ all(is.na(.x) | .x == floor(.x)))]
   if (length(bad_vars) > 0L) {
     rlang::abort(paste0(
-      "Non-integer values detected in ", context, ": ",
-      paste(bad_vars, collapse = ", "), "."
+      "Non-integer values detected in ",
+      context,
+      ": ",
+      paste(bad_vars, collapse = ", "),
+      "."
     ))
   }
 }
@@ -41,13 +44,13 @@
   stopifnot(is.data.frame(.data))
   stopifnot(is.character(id), length(id) == 1)
   stopifnot(is.logical(regex), length(regex) == 1)
-  
+
   vars <- if (regex) {
     names(.data)[stringr::str_detect(names(.data), id)]
   } else {
     names(.data)[stringr::str_starts(names(.data), id)]
   }
-  
+
   if (length(vars) == 0L) {
     rlang::abort(paste0("No columns matched '", id, "'."))
   }
@@ -69,17 +72,20 @@
 .flag_impossible <- function(.data, vars, min, max) {
   df <- dplyr::select(.data, dplyr::all_of(vars))
   .check_numeric_integer_like(df, "impossible-value check")
-  
-  imp_mat <- df %>%
-    dplyr::mutate(dplyr::across(dplyr::everything(), ~ !dplyr::between(.x, min, max) & !is.na(.x)))
-  
+
+  imp_mat <- df |>
+    dplyr::mutate(dplyr::across(
+      dplyr::everything(),
+      ~ !dplyr::between(.x, min, max) & !is.na(.x)
+    ))
+
   n_imp <- rowSums(imp_mat)
   imp_list <- purrr::pmap_chr(imp_mat, function(...) {
     row_vals <- c(...)
     bads <- names(row_vals)[row_vals]
     if (length(bads) == 0L) "" else paste(bads, collapse = ", ")
   })
-  
+
   list(n_imp = n_imp, imp_items = imp_list)
 }
 
@@ -94,10 +100,13 @@
 .clean_impossible <- function(.data, vars, min, max) {
   df <- dplyr::select(.data, dplyr::all_of(vars))
   .check_numeric_integer_like(df, "cleaning step")
-  
+
   dplyr::mutate(
     .data,
-    dplyr::across(dplyr::all_of(vars), ~ ifelse(dplyr::between(.x, min, max), .x, NA_real_))
+    dplyr::across(
+      dplyr::all_of(vars),
+      ~ ifelse(dplyr::between(.x, min, max), .x, NA_real_)
+    )
   )
 }
 
@@ -110,10 +119,12 @@
 #' @details If `vars_to_reverse` is empty, returns `.data` unchanged. Validates numeric and integer-like.
 #' @keywords internal
 .reverse_score_vars <- function(.data, vars_to_reverse, min, max) {
-  if (length(vars_to_reverse) == 0L) return(.data)
+  if (length(vars_to_reverse) == 0L) {
+    return(.data)
+  }
   df <- dplyr::select(.data, dplyr::all_of(vars_to_reverse))
   .check_numeric_integer_like(df, "reverse-scoring step")
-  
+
   dplyr::mutate(
     .data,
     dplyr::across(
@@ -137,16 +148,16 @@
 .compute_sum_and_counts <- function(.data, vars, sum_name, n_name, items_name) {
   df <- dplyr::select(.data, dplyr::all_of(vars))
   .check_numeric_integer_like(df, "scoring step")
-  
-  k <- length(vars)  # total number of items
-  
+
+  k <- length(vars) # total number of items
+
   .data |>
     dplyr::mutate(
-      !!n_name := rowSums(!is.na(dplyr::pick(dplyr::all_of(vars)))),           # non-missing count (for info)
+      !!n_name := rowSums(!is.na(dplyr::pick(dplyr::all_of(vars)))), # non-missing count (for info)
       !!sum_name := dplyr::if_else(
         .data[[n_name]] == 0,
-        NA_real_,                                                               # all missing -> NA
-        rowMeans(dplyr::pick(dplyr::all_of(vars)), na.rm = TRUE) * k            # mean-imputed full-length sum
+        NA_real_, # all missing -> NA
+        rowMeans(dplyr::pick(dplyr::all_of(vars)), na.rm = TRUE) * k # mean-imputed full-length sum
       ),
       !!items_name := paste(vars, collapse = ", ")
     )
@@ -157,7 +168,7 @@
 #'
 #' Cleans out-of-range values to `NA`, optionally reverse-scores a subset of items,
 #' and computes row-wise **sum scores** and **non-missing item counts**, implicitly imputing
-#' missing data from each participant's mean. Also returns diagnostics about impossible values 
+#' missing data from each participant's mean. Also returns diagnostics about impossible values
 #' observed in the raw data.
 #'
 #' @param .data A data frame or tibble of responses.
@@ -197,28 +208,34 @@
 #'   bfi_2 = c(3, NA, 4),
 #'   bfi_3 = c(5, 4, 2)
 #' )
-#' 
+#'
 #' snuffle_sum_scores(dat, "bfi_", min = 1, max = 5, id_col = "id")
 #' }
 #'
 #' @export
-snuffle_sum_scores <- function(.data,
-                               scale_identifier,
-                               min, 
-                               max,
-                               impute = FALSE,
-                               id_col = NULL,
-                               regex = FALSE,
-                               output_prefix = NULL,
-                               reverse = NULL,
-                               reverse_regex = FALSE) {
+#' @importFrom rlang %||%
+#' @importFrom utils head
+snuffle_sum_scores <- function(
+  .data,
+  scale_identifier,
+  min,
+  max,
+  impute = FALSE,
+  id_col = NULL,
+  regex = FALSE,
+  output_prefix = NULL,
+  reverse = NULL,
+  reverse_regex = FALSE
+) {
   stopifnot(is.numeric(min), is.numeric(max), min < max, is.logical(impute))
-  
+
   if (!inherits(.data, "data.frame")) {
-    rlang::abort("`.data` must be a rectangular data structure coercible to a data frame.")
+    rlang::abort(
+      "`.data` must be a rectangular data structure coercible to a data frame."
+    )
   }
-  .data <- as_tibble(.data)
-  
+  .data <- tibble::as_tibble(.data)
+
   # ID checks (optional)
   if (!is.null(id_col)) {
     if (!id_col %in% names(.data)) {
@@ -226,30 +243,34 @@ snuffle_sum_scores <- function(.data,
     }
     if (anyDuplicated(.data[[id_col]]) > 0) {
       dupes <- .data[[id_col]][duplicated(.data[[id_col]])]
-      rlang::abort(paste0("Duplicate IDs detected in `", id_col, "`: ",
-                          paste(head(unique(dupes)), collapse = ", "),
-                          if (length(unique(dupes)) > 5) " \u2026"))
+      rlang::abort(paste0(
+        "Duplicate IDs detected in `",
+        id_col,
+        "`: ",
+        paste(head(unique(dupes)), collapse = ", "),
+        if (length(unique(dupes)) > 5) " \u2026"
+      ))
     }
   }
-  
+
   vars <- .select_scale_vars(.data, scale_identifier, regex)
-  
+
   # Output names
-  prefix        <- output_prefix %||% scale_identifier
-  sum_col       <- paste0(prefix, "sumscore")
-  n_col         <- paste0(prefix, "nonmissing_n")
-  items_col     <- paste0(prefix, "items")
+  prefix <- output_prefix %||% scale_identifier
+  sum_col <- paste0(prefix, "sumscore")
+  n_col <- paste0(prefix, "nonmissing_n")
+  items_col <- paste0(prefix, "items")
   rev_items_col <- paste0(prefix, "items_reversed")
-  imp_n_col     <- paste0(prefix, "impossible_n")
+  imp_n_col <- paste0(prefix, "impossible_n")
   imp_items_col <- paste0(prefix, "impossible_items")
-  complete_col  <- paste0(prefix, "complete_data")
-  
+  complete_col <- paste0(prefix, "complete_data")
+
   # Diagnostics (before cleaning)
   diagnostics <- .flag_impossible(.data, vars, min, max)
-  
+
   # Clean → reverse → score
   out <- .clean_impossible(.data, vars, min, max)
-  
+
   vars_to_reverse <- character(0)
   if (!is.null(reverse)) {
     if (reverse_regex) {
@@ -258,31 +279,38 @@ snuffle_sum_scores <- function(.data,
       vars_to_reverse <- intersect(vars, reverse)
     }
   }
-  
+
   out <- .reverse_score_vars(out, vars_to_reverse, min, max)
   out <- .compute_sum_and_counts(out, vars, sum_col, n_col, items_col)
-  
+
   # Number of items actually used for this scale
   n_items <- length(vars)
-  
+
   # Attach diagnostics, reversed-items, and complete_data flag
   out <- out |>
     dplyr::mutate(
-      !!complete_col  := .data[[n_col]] == n_items,
-      !!rev_items_col := if (length(vars_to_reverse) == 0L) NA_character_
-                         else paste(vars_to_reverse, collapse = ", "),
-      !!imp_n_col     := diagnostics$n_imp,
+      !!complete_col := .data[[n_col]] == n_items,
+      !!rev_items_col := if (length(vars_to_reverse) == 0L) {
+        NA_character_
+      } else {
+        paste(vars_to_reverse, collapse = ", ")
+      },
+      !!imp_n_col := diagnostics$n_imp,
       !!imp_items_col := dplyr::na_if(diagnostics$imp_items, "")
     )
-  
+
   # If not imputing, wipe out partial sum scores
   if (!isTRUE(impute)) {
     out <- out |>
       dplyr::mutate(
-        !!sum_col := dplyr::if_else(.data[[complete_col]], .data[[sum_col]], NA_real_)
+        !!sum_col := dplyr::if_else(
+          .data[[complete_col]],
+          .data[[sum_col]],
+          NA_real_
+        )
       )
   }
-  
+
   # after you've created all derived columns:
   derived_cols <- c(
     sum_col,
@@ -293,13 +321,13 @@ snuffle_sum_scores <- function(.data,
     items_col,
     rev_items_col
   )
-  
+
   # preserve current order of non-derived columns, then append derived columns
   out <- out |>
     dplyr::select(
       dplyr::all_of(setdiff(names(out), derived_cols)),
       dplyr::all_of(derived_cols)
     )
-  
+
   return(out)
 }

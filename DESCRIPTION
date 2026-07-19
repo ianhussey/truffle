@@ -1,31 +1,52 @@
 Package: truffle
-Title: Tools to create datasets with various known effects to be rediscovered, for teaching purposes
+Title: Create Teaching Datasets with Known Effects Hidden in Messy Data
 Version: 0.1.5
-Authors@R: person("Ian", "Hussey", 
-	                email = "ian.hussey@unibe.ch", 
-                  role = c("aut", "cre"),
-                  comment = c(ORCID = "0000-0001-8906-7559"))
-Description: An R package for creating datasets with various known effects to be rediscovered, for teaching purposes. Datasets contain demographics data and item-level Likert responses. Known effects (truffles) can be buried in the data including differences in sum-score means between conditions, known correlations between the different outcomes' sum-scores, known Cronbach's alpha values for each scale, etc. Data can also be made messy, contain impossible values, or contain missingness, to create data processing challenges. The package's functions are currently quite brittle: it is designed for a specific internal use case in our teaching and not (yet) highly flexible, nor does it contain tests or handle errors or make them visible. Currently it can only generate data for a single design: a between groups experiment with equal sample sizes.
+Authors@R:
+    person("Ian", "Hussey", email = "ian.hussey@unibe.ch",
+           role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0001-8906-7559"))
+Description: Generate datasets with known statistical effects (truffles) that
+    students must rediscover, then bury them in realistic data-processing
+    challenges (dirt) that must be cleaned first. Generated data contain
+    demographics and item-level Likert responses, with known differences in
+    sum-score means between conditions, known correlations between outcomes,
+    and known 'Cronbach's' alpha per scale. Data can be made messy in many
+    ways -- non-syntactic column names, duplicate rows, irregular missingness
+    codes, mixed date formats, misspelled demographics, numbers with thousands
+    separators and units, out-of-range values, disruptive header rows, and
+    untidy columns holding more than one variable -- to create realistic
+    wrangling exercises for teaching. The package is intentionally narrow: it
+    currently generates a single study design (a between-groups experiment with
+    equal group sizes) and relies on specific column-naming conventions.
+URL: https://github.com/ianhussey/truffle
+BugReports: https://github.com/ianhussey/truffle/issues
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
-Depends: 
-    R (>= 4.1.0),
-    rlang,
-    lavaan,
-    tibble,
-    readr,
+Depends:
+    R (>= 4.1.0)
+Imports:
     dplyr,
+    ggplot2,
+    latent2likert,
+    lavaan,
+    missMethods,
+    purrr,
+    readr,
+    rlang,
+    stats,
+    stringr,
+    tibble,
     tidyr,
     tidyselect,
-    purrr,
-    stringr,
-    latent2likert,
-    ggplot2,
-    missMethods
+    utils
 Suggests:
-    devtools,
-    roxygen2
+    kableExtra,
+    knitr,
+    rmarkdown,
+    spelling,
+    testthat (>= 3.0.0)
 VignetteBuilder: knitr
-BuildVignettes: true
+Language: en-US
+Config/testthat/edition: 3

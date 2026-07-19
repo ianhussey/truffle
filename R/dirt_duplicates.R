@@ -25,21 +25,23 @@
 dirt_duplicates <- function(.data, prop = 0.05, replace = TRUE) {
   stopifnot(is.data.frame(.data))
   stopifnot(is.numeric(prop), length(prop) == 1, prop >= 0, prop <= 1)
-  
+
   n <- nrow(.data)
   n_dup <- ceiling(n * prop)
-  
-  if (n_dup == 0) return(.data)
-  
+
+  if (n_dup == 0) {
+    return(.data)
+  }
+
   dup_idx <- sample(seq_len(n), size = n_dup, replace = replace)
   dup_rows <- .data[dup_idx, , drop = FALSE]
-  
+
   out <- dplyr::bind_rows(.data, dup_rows)
-  
+
   if ("id" %in% colnames(out)) {
     out <- dplyr::arrange(out, id)
   }
-  
+
   rownames(out) <- NULL
   out
 }

@@ -1,19 +1,19 @@
-#' Add an untidy column to a data frame 
+#' Add an untidy column to a data frame
 #'
-#' This helper function adds a new column (by default called `"block_trial"`) 
-#' that combines a randomly sampled block number and a sequential trial number. 
-#' The resulting column is a character vector in the format 
-#' `"block<block>_trial<trial>"` (e.g., `"block3_trial005"`), which breaks Tidy Data 
+#' This helper function adds a new column (by default called `"block_trial"`)
+#' that combines a randomly sampled block number and a sequential trial number.
+#' The resulting column is a character vector in the format
+#' `"block<block>_trial<trial>"` (e.g., `"block3_trial005"`), which breaks Tidy Data
 #' principles.
 #'
 #' @param .data A data frame.
 #' @param col A string giving the name of the new column (default: `"block_trial"`).
 #'
 #' @details
-#' - Block numbers are sampled uniformly from 1 to 6, with one block number 
+#' - Block numbers are sampled uniformly from 1 to 6, with one block number
 #'   assigned to the entire data frame.
 #' - Trial numbers are based on the row order of \code{dat} and zero-padded to 3 digits.
-#' - The function uses \code{dplyr::mutate()} and non-standard evaluation (NSE) 
+#' - The function uses \code{dplyr::mutate()} and non-standard evaluation (NSE)
 #'   to create the column.
 #'
 #' @return
@@ -27,8 +27,17 @@
 #' dirt_untidy(dat)
 #' dirt_untidy(dat, col = "trial_id")
 #' }
-#' 
+#'
 #' @export
+#' @importFrom dplyr mutate n row_number
+#' @importFrom rlang :=
 dirt_untidy <- function(.data, col = "block_trial") {
-  dplyr::mutate(.data, !!col := sprintf("block%d_trial%03d", sample(1:6, n(), 1), dplyr::row_number()))
+  dplyr::mutate(
+    .data,
+    !!col := sprintf(
+      "block%d_trial%03d",
+      sample(1:6, dplyr::n(), 1),
+      dplyr::row_number()
+    )
+  )
 }

@@ -4,11 +4,23 @@
 \name{truffle-package}
 \alias{truffle}
 \alias{truffle-package}
-\title{truffle}
+\title{truffle: Create Teaching Datasets with Known Effects Hidden in Messy Data}
 \description{
-An R package for creating datasets with various known effects to be rediscovered, for teaching purposes. Datasets contain demographics data and item-level Likert responses. Known effects (truffles) can be buried in the data including differences in sum-score means between conditions, known correlations between the different outcomes' sum-scores, known Cronbach's alpha values for each scale, etc. Data can also be made messy, contain impossible values, or contain missingness, to create data processing challenges. The package's functions are currently quite brittle: it is designed for a specific internal use case in our teaching and not (yet) highly flexible, nor does it contain tests or handle errors or make them visible. Currently it can only generate data for a single design: a between groups experiment with equal sample sizes.
+Generate datasets with known statistical effects (truffles) that students
+must rediscover, then bury them in realistic data-processing challenges
+(dirt) that must be cleaned first. See the package vignette for a worked
+example: \code{vignette("truffle", package = "truffle")}.
+}
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/ianhussey/truffle}
+  \item Report bugs at \url{https://github.com/ianhussey/truffle/issues}
+}
+
 }
 \author{
 \strong{Maintainer}: Ian Hussey \email{ian.hussey@unibe.ch} (\href{https://orcid.org/0000-0001-8906-7559}{ORCID})
 
 }
+\keyword{internal}

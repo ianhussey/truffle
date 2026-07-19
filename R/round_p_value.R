@@ -30,19 +30,26 @@ round_p_value <- function(p, digits = 3, decimal_separator = ".") {
   # coerce
   p <- as.numeric(p)
   thresh <- 10^(-digits)
-  
+
   # helper: escape separator for regex
   sep <- decimal_separator
-  sep_esc <- if (sep == ".") "\\." else gsub("([\\^$.|?*+(){}\\[\\]\\\\])", "\\\\\\1", sep)
-  
+  sep_esc <- if (sep == ".") {
+    "\\."
+  } else {
+    gsub("([\\^$.|?*+(){}\\[\\]\\\\])", "\\\\\\1", sep)
+  }
+
   fmt_no_leading_zero <- function(x) {
     out <- formatC(x, format = "f", digits = digits)
-    if (sep != ".") out <- gsub("\\.", sep, out)
+    if (sep != ".") {
+      out <- gsub("\\.", sep, out)
+    }
     sub(paste0("^0(?=", sep_esc, ")"), "", out, perl = TRUE)
   }
-  
+
   ifelse(
-    is.na(p), NA_character_,
+    is.na(p),
+    NA_character_,
     ifelse(
       p < thresh,
       paste0("< ", fmt_no_leading_zero(thresh)),

@@ -1,0 +1,277 @@
+---
+title: "Introduction to truffle"
+author: "Ian Hussey"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Introduction to truffle}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  warning = FALSE,
+  message = FALSE,
+  fig.width = 7,
+  fig.height = 4
+)
+```
+
+{truffle} is an R package for teaching data processing. It lets you create
+datasets with known effects to be rediscovered (*truffles*, via `truffle_`
+functions), and then create data-processing headaches that have to be solved
+(*dirt*, via `dirt_` functions). Students then search for truffles among the
+dirt.
+
+Generated datasets can include demographics and item-level Likert responses.
+Known effects (truffles) can be buried in the data, including differences in
+sum-score means between conditions, known correlations between outcomes' sum
+scores, and known Cronbach's alpha values for each scale. Data can also be made
+messy, given impossible values, or given missingness, to create data-processing
+challenges.
+
+The package is intentionally narrow: it is designed for a specific teaching use
+case and is not (yet) highly flexible. Currently the `truffle_` functions
+generate a single design: a between-groups experiment with equal group sizes,
+plus a single-group cross-sectional variant.
+
+```{r setup}
+library(truffle)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(knitr)
+
+set.seed(42)
+```
+
+# Create a truffle
+
+## Generate clean data
+
+The `truffle_likert()` function generates item-level Likert data for a
+between-groups experiment with:
+
+- Two conditions (control vs. treatment, renameable)
+- An arbitrary number of outcome scales
+- A known Cronbach's alpha for each scale
+- A known number of items per scale
+- A known number of Likert response options (`1:k`)
+- Known correlations between the latent scale scores
+- A known *approximate* Cohen's *d* between the two conditions (the recovered
+  value differs from the requested one because of reliability, and distortion
+  when converting continuous data to Likert)
+
+```{r}
+dat_truffle <-
+  truffle_likert(study_design = "factorial_between2",
+                 n_per_condition = 30,
+                 factors  = "X1_latent",
+                 prefixes = "X1_item",
+                 alpha = .70,
+                 n_items = 5,
+                 n_levels = 7,
+                 approx_d_between_groups = 0.50,
+                 seed = 42)
+
+dat_truffle |>
+  head() |>
+  kable()
+```
+
+## Add demographics
+
+```{r}
+dat_truffle <- dat_truffle |>
+  truffle_demographics()
+
+dat_truffle |>
+  head() |>
+  kable()
+```
+
+## Calculate sum scores by scale
+
+```{r}
+dat_truffle_sumscores <- dat_truffle |>
+  truffle_sum_scores_by_scale() |>
+  select(condition, X1_sum)
+
+# N, M, SD per condition
+dat_truffle_sumscores |>
+  pivot_longer(cols = starts_with("X"),
+               names_to = "scale",
+               values_to = "sum_score") |>
+  group_by(scale, condition) |>
+  summarize(n = n(),
+            mean = round(mean(sum_score, na.rm = TRUE), 2),
+            sd = round(sd(sum_score, na.rm = TRUE), 2),
+            .groups = "drop") |>
+  kable()
+```
+
+## Check the generated data
+
+`truffle_check()` recovers Cohen's *d* per scale, the correlation matrix among
+sum scores, and item-level histograms by condition.
+
+```{r, fig.height = 5}
+check <- truffle_check(dat_truffle)
+
+check$cohens_d
+check$r
+check$item_histograms
+```
+
+# Add dirt
+
+Now generate data for the same study, but add dirt step by step.
+
+```{r}
+dat <-
+  truffle_likert(n_per_condition = 30,
+                 factors  = "X1_latent",
+                 prefixes = "X1_item",
+                 alpha = .70,
+                 n_items = 5,
+                 n_levels = 7,
+                 approx_d_between_groups = 0.50,
+                 seed = 42) |>
+  # messy demographics with misspellings and erroneous entries
+  dirt_demographics() |>
+  # impossible values beyond the scale range
+  dirt_impossible_values(prop = .04, replacement_value = 8) |>
+  # reaction times, then format them with thousands separators and units
+  mutate(completion_time = truffle_reaction_times(n = n())) |>
+  dirt_numbers(cols = "completion_time") |>
+  # mixed date formats
+  dirt_dates(col = "date") |>
+  # missingness with irregular codings
+  dirt_missingness(prop = .05) |>
+  # a column holding more than one variable (block and trial)
+  dirt_untidy(col = "block_trial") |>
+  # duplicate rows
+  dirt_duplicates(prop = 0.05) |>
+  # move some columns before mangling the names makes it hard
+  relocate(date, .after = "id") |>
+  relocate(completion_time, .after = "id") |>
+  relocate(block_trial, .after = "id") |>
+  # poorly named columns that disagree with R
+  dirt_colnames()
+
+dat |>
+  head() |>
+  kable()
+```
+
+Header rows can also be prepended, so that reading the file into R requires
+skipping them. Here we write to a temporary file and read it back both naively
+and correctly.
+
+```{r}
+dat_with_header <- dat |>
+  dirt_header_rows()
+
+path <- file.path(tempdir(), "dat_truffle_and_dirt.csv")
+readr::write_lines(dat_with_header, path)
+
+# naive import: the header rows corrupt the parse
+readr::read_csv(path, show_col_types = FALSE) |>
+  head(3) |>
+  kable()
+
+# correct import: skip the two header rows
+readr::read_csv(path, skip = 2, show_col_types = FALSE) |>
+  head(3) |>
+  kable()
+```
+
+# Snuffle functions to help find truffles
+
+`snuffle_` functions help the user find truffles (underlying effects) among the
+dirt (data-processing issues).
+
+## Sum scores
+
+Calculating sum scores is a very common task, and yet there are a surprising
+number of ways to get it wrong given impossible scores, missingness, and
+reversed items. `snuffle_sum_scores()` computes sum scores (optionally imputing
+missing values from each participant's mean), excludes out-of-range values, and
+returns diagnostics on missing and impossible items. It can also reverse-score
+specified items.
+
+```{r}
+dat_snuffle <-
+  truffle_likert(n_per_condition = 20,
+                 factors  = "X1_latent",
+                 prefixes = "X1_item",
+                 alpha = .70,
+                 n_items = 5,
+                 n_levels = 7,
+                 approx_d_between_groups = 0.50,
+                 seed = 42) |>
+  truffle_demographics() |>
+  dirt_missingness(prop = .10, dirtier = FALSE) |>
+  dirt_impossible_values(prop = .04, replacement_value = 8)
+
+dat_snuffle |>
+  snuffle_sum_scores("X1_", min = 1, max = 7, id_col = "id") |>
+  select(id, condition, X1_sumscore, X1_nonmissing_n, X1_impossible_n) |>
+  head(10) |>
+  kable()
+```
+
+# More complicated truffles
+
+## Multiple correlated outcomes
+
+```{r, fig.height = 8, fig.width = 8}
+dat_complex <-
+  truffle_likert(n_per_condition = 100,
+                 factors  = c("X1_latent", "X2_latent", "X3_latent"),
+                 prefixes = c("X1_item", "X2_item", "X3_item"),
+                 alpha = c(.70, .75, .80),
+                 n_items = c(6, 5, 7),
+                 n_levels = 7,
+                 r_among_outcomes = 0.50,
+                 approx_d_between_groups = c(0.50, 0.20, 1.00),
+                 seed = 42)
+
+complex_check <- truffle_check(dat_complex)
+complex_check$cohens_d
+complex_check$r
+```
+
+## Cross-sectional data
+
+The cross-sectional design lets you specify a full latent correlation matrix
+among outcomes and recover it from the sum scores.
+
+```{r}
+R <- matrix(c( 1, .1, .3,
+              .1,  1, .5,
+              .3, .5,  1),
+            3, 3, byrow = TRUE)
+
+dat_cs <-
+  truffle_likert(study_design = "crosssectional",
+                 n_per_condition = 500,
+                 factors  = c("X1_latent", "X2_latent", "X3_latent"),
+                 prefixes = c("X1_item", "X2_item", "X3_item"),
+                 alpha = c(.90, .90, .70),
+                 n_items = c(10, 7, 15),
+                 r_among_outcomes = R,
+                 n_levels = c(10, 7, 7),
+                 seed = 42) |>
+  snuffle_sum_scores("X1_", min = 1, max = 10, id_col = "id") |>
+  snuffle_sum_scores("X2_", min = 1, max = 7,  id_col = "id") |>
+  snuffle_sum_scores("X3_", min = 1, max = 7,  id_col = "id")
+
+dat_cs |>
+  select(X1_sumscore, X2_sumscore, X3_sumscore) |>
+  cor() |>
+  round(2) |>
+  kable()
+```

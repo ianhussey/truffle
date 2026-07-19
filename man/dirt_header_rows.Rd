@@ -32,7 +32,7 @@ dat <- data.frame(
 )
 messy <- dirt_header_rows(dat)
 write_lines(messy, "messy.csv")
-# To re-import: 
+# To re-import:
 read_csv("messy.csv", skip = 2)
 }
 }
