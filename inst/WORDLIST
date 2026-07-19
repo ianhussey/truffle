@@ -9,12 +9,14 @@ MCAR
 NSE
 ORCID
 RCT
+README
 RTs
 crosssectional
 ctrl
 deduplication
 declaredesign
 disattenuation
+doi
 fabricatr
 faux
 ggplot
@@ -40,3 +42,4 @@ tidyselect
 tidyverse
 toddler
 wakefield
+zenodo

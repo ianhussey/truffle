@@ -15,7 +15,7 @@ generator and the package README and vignette for worked examples:
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://github.com/ianhussey/truffle}
+  \item \doi{10.5281/zenodo.21441764}
   \item Report bugs at \url{https://github.com/ianhussey/truffle/issues}
 }
 
