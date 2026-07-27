@@ -173,4 +173,4 @@ MIT license
 
 ## Suggested citation
 
-Hussey, I. (2025) *truffle*: Create datasets with known effects hidden in messy data for teaching data wrangling. https://github.com/ianhussey/truffle. doi:[10.5281/zenodo.21441764](https://doi.org/10.5281/zenodo.21441764)
+Hussey, I. (2026) *truffle*: Create datasets with known effects hidden in messy data for teaching data wrangling. https://github.com/ianhussey/truffle. doi:[10.5281/zenodo.21441764](https://doi.org/10.5281/zenodo.21441764)
