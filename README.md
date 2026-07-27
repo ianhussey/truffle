@@ -167,7 +167,7 @@ remotes::install_github("ianhussey/truffle")
 
 ## License
 
-© Ian Hussey (2025)
+© Ian Hussey (2025-2026)
 
 MIT license
 
