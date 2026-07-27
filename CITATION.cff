@@ -1,0 +1,32 @@
+cff-version: 1.2.0
+title: >-
+  truffle: Create datasets with known effects hidden in messy data for teaching
+  data wrangling
+message: >-
+  If you use this software, please cite it as below.
+type: software
+authors:
+  - family-names: Hussey
+    given-names: Ian
+    email: ian.hussey@unibe.ch
+    orcid: "https://orcid.org/0000-0001-8906-7559"
+abstract: >-
+  Generate datasets with known statistical effects (truffles) that students must
+  rediscover, then bury them in realistic data-processing challenges (dirt) that
+  must be cleaned first. Generated data contain demographics and item-level
+  Likert responses, with known differences in sum-score means between
+  conditions, known correlations between outcomes, and known Cronbach's alpha
+  per scale. Data can be made messy in many ways to create realistic wrangling
+  exercises for teaching.
+keywords:
+  - teaching
+  - data wrangling
+  - simulated data
+  - statistics education
+  - R
+version: 0.1.6
+date-released: "2026-07-19"
+doi: 10.5281/zenodo.21441764
+license: MIT
+url: "https://github.com/ianhussey/truffle"
+repository-code: "https://github.com/ianhussey/truffle"
