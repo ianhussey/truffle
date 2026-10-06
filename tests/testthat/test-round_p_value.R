@@ -8,9 +8,18 @@ test_that("round_p_value thresholds small values", {
   expect_equal(round_p_value(0.00004, digits = 4), "< .0001")
 })
 
-test_that("round_p_value caps values above 1 and passes through NA", {
-  expect_equal(round_p_value(1.5), "1.000")
+test_that("round_p_value never reports 1 and passes through NA", {
+  expect_equal(round_p_value(c(0.9994, 0.9995, 0.9996, 1)),
+               c(".999", "> .999", "> .999", "> .999"))
+  expect_equal(round_p_value(1, digits = 2), "> .99")
+  expect_equal(round_p_value(1, decimal_separator = ","), "> ,999")
   expect_true(is.na(round_p_value(NA_real_)))
+})
+
+test_that("round_p_value errors on values outside [0, 1]", {
+  expect_error(round_p_value(1.5), "between 0 and 1")
+  expect_error(round_p_value(c(0.5, -0.01)), "between 0 and 1")
+  expect_no_error(round_p_value(c(0, 1, NA)))
 })
 
 test_that("round_p_value honours a custom decimal separator", {

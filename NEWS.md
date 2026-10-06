@@ -6,6 +6,9 @@
 * `round_p_value()` gains an `alpha` argument (default `.05`). When rounding
   would move a value across `alpha` (e.g., `.0499` → `.050`), extra decimal
   places are shown instead (`.0499`). Use `alpha = NULL` to disable.
+* `round_p_value()` now reports values that round to 1 as `> .999` (as
+  `papaja::apa_p()` does) rather than `1.000`, and errors on values outside
+  [0, 1] instead of silently capping them.
 
 # truffle 0.1.6
 

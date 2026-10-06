@@ -25,7 +25,9 @@
 #'   are shown where needed to keep it on the correct side of `alpha`.
 #' - Values below the reporting threshold are displayed as
 #'   `< .00X` depending on `digits`.
-#' - Values greater than 1 are capped at 1.000 (or the chosen digits).
+#' - Values that would round to 1 (including exactly 1) are displayed as
+#'   `> .999` depending on `digits`, so a p-value is never reported as 1.
+#' - Values outside \[0, 1\] are an error.
 #' - `NA` inputs are returned as `NA_character_`.
 #'
 #' @return A character vector of formatted p-values.
@@ -36,11 +38,15 @@
 #' round_p_value(0.023, digits = 3, decimal_separator = ",")
 #' round_p_value(c(0.0499, 0.04996, 0.0501))
 #' round_p_value(0.0499, alpha = NULL)
+#' round_p_value(c(0.9994, 0.9996, 1))
 #'
 #' @export
 round_p_value <- function(p, digits = 3, decimal_separator = ".", alpha = .05) {
   # coerce
   p <- as.numeric(p)
+  if (any(p < 0 | p > 1, na.rm = TRUE)) {
+    stop("`p` must be between 0 and 1.", call. = FALSE)
+  }
   thresh <- 10^(-digits)
 
   # helper: escape separator for regex
@@ -87,7 +93,11 @@ round_p_value <- function(p, digits = 3, decimal_separator = ".", alpha = .05) {
     ifelse(
       p < thresh,
       paste0("< ", fmt_no_leading_zero(thresh)),
-      fmt_no_leading_zero(pmin(p, 1)) # cap at 1 for display
+      ifelse(
+        round_half_up(p, digits) >= 1,
+        paste0("> ", fmt_no_leading_zero(1 - thresh)),
+        fmt_no_leading_zero(p)
+      )
     )
   )
 }

@@ -40,7 +40,9 @@ rounding can move a value across a significance threshold, extra digits
 are shown where needed to keep it on the correct side of \code{alpha}.
 \item Values below the reporting threshold are displayed as
 \verb{< .00X} depending on \code{digits}.
-\item Values greater than 1 are capped at 1.000 (or the chosen digits).
+\item Values that would round to 1 (including exactly 1) are displayed as
+\verb{> .999} depending on \code{digits}, so a p-value is never reported as 1.
+\item Values outside [0, 1] are an error.
 \item \code{NA} inputs are returned as \code{NA_character_}.
 }
 }
@@ -50,5 +52,6 @@ round_p_value(c(0.023, 0.00004, 0.5), digits = 4)
 round_p_value(0.023, digits = 3, decimal_separator = ",")
 round_p_value(c(0.0499, 0.04996, 0.0501))
 round_p_value(0.0499, alpha = NULL)
+round_p_value(c(0.9994, 0.9996, 1))
 
 }
