@@ -9,10 +9,20 @@
 #'   `digits = 3`, values smaller than .001 are reported as `< .001`.
 #' @param decimal_separator Character. Decimal separator to use (default = ".").
 #'   Use `","` for locales that prefer a comma.
+#' @param alpha Numeric or `NULL`. Significance threshold that rounding must
+#'   not cross (default = .05). When rounding to `digits` would put a value on
+#'   the other side of `alpha` (e.g. `.0499` → `.050`), extra decimal places
+#'   are added until it no longer does (`.0499`). Use `NULL` to disable.
 #'
 #' @details
 #' - Leading zeros before the decimal separator are always removed
 #'   (e.g., `0.023` → `.023`).
+#' - Values are rounded half up (e.g., `.0445` → `.045`), with a small
+#'   tolerance so that floating-point representation error does not flip the
+#'   result (`0.1235` is stored as `0.12349999...` but is rounded to `.124`).
+#'   This follows the same approach as `roundwork::round_up()`. Because
+#'   rounding can move a value across a significance threshold, extra digits
+#'   are shown where needed to keep it on the correct side of `alpha`.
 #' - Values below the reporting threshold are displayed as
 #'   `< .00X` depending on `digits`.
 #' - Values greater than 1 are capped at 1.000 (or the chosen digits).
@@ -24,9 +34,11 @@
 #' round_p_value(c(0.023, 0.0004, 0.5))
 #' round_p_value(c(0.023, 0.00004, 0.5), digits = 4)
 #' round_p_value(0.023, digits = 3, decimal_separator = ",")
+#' round_p_value(c(0.0499, 0.04996, 0.0501))
+#' round_p_value(0.0499, alpha = NULL)
 #'
 #' @export
-round_p_value <- function(p, digits = 3, decimal_separator = ".") {
+round_p_value <- function(p, digits = 3, decimal_separator = ".", alpha = .05) {
   # coerce
   p <- as.numeric(p)
   thresh <- 10^(-digits)
@@ -39,8 +51,30 @@ round_p_value <- function(p, digits = 3, decimal_separator = ".") {
     gsub("([\\^$.|?*+(){}\\[\\]\\\\])", "\\\\\\1", sep)
   }
 
+  # round half up, tolerant of floating-point error (as roundwork::round_up()),
+  # rather than letting formatC() round the stored binary value
+  round_half_up <- function(x, d) {
+    p10 <- 10^d
+    floor(x * p10 + 0.5 + .Machine$double.eps^0.5 / 10) / p10
+  }
+
+  # digits needed so that rounding doesn't move a value across alpha
+  digits_needed <- function(x) {
+    d <- digits
+    if (is.null(alpha) || is.na(x)) return(d)
+    while (d < 15 && (round_half_up(x, d) < alpha) != (x < alpha)) {
+      d <- d + 1
+    }
+    d
+  }
+
   fmt_no_leading_zero <- function(x) {
-    out <- formatC(x, format = "f", digits = digits)
+    d <- vapply(x, digits_needed, numeric(1))
+    out <- mapply(
+      function(xi, di) formatC(round_half_up(xi, di), format = "f", digits = di),
+      x, d,
+      USE.NAMES = FALSE
+    )
     if (sep != ".") {
       out <- gsub("\\.", sep, out)
     }

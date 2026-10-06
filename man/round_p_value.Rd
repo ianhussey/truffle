@@ -4,7 +4,7 @@
 \alias{round_p_value}
 \title{Format p-values in APA style}
 \usage{
-round_p_value(p, digits = 3, decimal_separator = ".")
+round_p_value(p, digits = 3, decimal_separator = ".", alpha = 0.05)
 }
 \arguments{
 \item{p}{Numeric vector of p-values.}
@@ -15,6 +15,11 @@ The lower-bound threshold is set at 10^(-digits), e.g. with
 
 \item{decimal_separator}{Character. Decimal separator to use (default = ".").
 Use \code{","} for locales that prefer a comma.}
+
+\item{alpha}{Numeric or \code{NULL}. Significance threshold that rounding must
+not cross (default = .05). When rounding to \code{digits} would put a value on
+the other side of \code{alpha} (e.g. \code{.0499} → \code{.050}), extra decimal places
+are added until it no longer does (\code{.0499}). Use \code{NULL} to disable.}
 }
 \value{
 A character vector of formatted p-values.
@@ -27,6 +32,12 @@ Always removes the leading zero before the decimal separator.
 \itemize{
 \item Leading zeros before the decimal separator are always removed
 (e.g., \code{0.023} → \code{.023}).
+\item Values are rounded half up (e.g., \code{.0445} → \code{.045}), with a small
+tolerance so that floating-point representation error does not flip the
+result (\code{0.1235} is stored as \verb{0.12349999...} but is rounded to \code{.124}).
+This follows the same approach as \code{roundwork::round_up()}. Because
+rounding can move a value across a significance threshold, extra digits
+are shown where needed to keep it on the correct side of \code{alpha}.
 \item Values below the reporting threshold are displayed as
 \verb{< .00X} depending on \code{digits}.
 \item Values greater than 1 are capped at 1.000 (or the chosen digits).
@@ -37,5 +48,7 @@ Always removes the leading zero before the decimal separator.
 round_p_value(c(0.023, 0.0004, 0.5))
 round_p_value(c(0.023, 0.00004, 0.5), digits = 4)
 round_p_value(0.023, digits = 3, decimal_separator = ",")
+round_p_value(c(0.0499, 0.04996, 0.0501))
+round_p_value(0.0499, alpha = NULL)
 
 }

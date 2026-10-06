@@ -1,3 +1,12 @@
+# truffle 0.1.7
+
+* `round_p_value()` now rounds half up (e.g., `.0445` → `.045`), with a small
+  tolerance so floating-point representation error does not change the result
+  (`0.1235` → `.124`). Previously `formatC()` rounded the stored binary value.
+* `round_p_value()` gains an `alpha` argument (default `.05`). When rounding
+  would move a value across `alpha` (e.g., `.0499` → `.050`), extra decimal
+  places are shown instead (`.0499`). Use `alpha = NULL` to disable.
+
 # truffle 0.1.6
 
 * Prepared the package for CRAN: moved runtime dependencies from `Depends` to

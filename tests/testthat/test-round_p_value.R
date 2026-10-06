@@ -21,3 +21,22 @@ test_that("round_p_value is vectorised", {
   out <- round_p_value(c(0.023, 0.0004, 0.5))
   expect_equal(out, c(".023", "< .001", ".500"))
 })
+
+test_that("round_p_value rounds half up despite floating-point representation", {
+  expect_equal(
+    round_p_value(c(0.1235, 0.0445, 0.0045, 0.0125, 0.0499), alpha = NULL),
+    c(".124", ".045", ".005", ".013", ".050")
+  )
+  expect_equal(round_p_value(0.01235, digits = 4), ".0124")
+})
+
+test_that("round_p_value adds digits rather than rounding across alpha", {
+  expect_equal(round_p_value(0.0499), ".0499")
+  expect_equal(round_p_value(0.04996), ".04996")
+  expect_equal(round_p_value(0.0495), ".0495")
+  expect_equal(round_p_value(c(0.05, 0.0501, 0.0504)), c(".050", ".050", ".050"))
+  expect_equal(round_p_value(0.049), ".049")
+  expect_equal(round_p_value(0.0099, alpha = .01), ".0099")
+  expect_equal(round_p_value(0.0499, decimal_separator = ","), ",0499")
+  expect_equal(round_p_value(c(0.0499, NA, 0.2)), c(".0499", NA, ".200"))
+})
